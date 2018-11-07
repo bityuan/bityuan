@@ -10,5 +10,5 @@ import (
 )
 
 func main() {
-	cli.RunChain33("bityuan")
+	cli.Run("", "")
 }

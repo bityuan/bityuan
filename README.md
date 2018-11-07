@@ -19,7 +19,7 @@ govendor add +e
 ##### 3. 编译命令行
 
 ```
-go build -o bityuan gitlab.33.cn/chain33/chain33/cmd/chain33
+go build -o bityuan
 go build -o cli gitlab.33.cn/chain33/chain33/cmd/cli
 go build -o tool gitlab.33.cn/chain33/chain33/cmd/tools
 ```
