@@ -2,4 +2,7 @@ vendor
 bityuan
 bityuan-cli
 tool
-
+datadir/
+grpc33.log
+logs/
+wallet/
