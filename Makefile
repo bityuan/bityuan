@@ -10,7 +10,7 @@ vendor:
 	govendor fetch +m
 	govendor add +e
 clean:
-	@rm -rf govendor
+	@rm -rf vendor
 	@rm -rf bityuan
 	@rm -rf bityuan-cli
 	@rm -rf tool
