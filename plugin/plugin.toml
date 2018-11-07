@@ -11,9 +11,6 @@ gitrepo = "gitlab.33.cn/chain33/plugin/dapp/retrieve"
 [dapp-hashlock]
 gitrepo = "gitlab.33.cn/chain33/plugin/dapp/hashlock"
 
-[dapp-manage]
-gitrepo = "gitlab.33.cn/chain33/plugin/dapp/manage"
-
 [dapp-token]
 gitrepo = "gitlab.33.cn/chain33/plugin/dapp/token"
 
