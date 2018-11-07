@@ -21,7 +21,9 @@ make
 govendor init
 govendor fetch +m
 govendor add +e
-go build -o bityuan
-go build -o cli gitlab.33.cn/chain33/chain33/cmd/cli
-go build -o tool gitlab.33.cn/chain33/chain33/cmd/tools
+go build -i -o tool gitlab.33.cn/chain33/chain33/cmd/tools
+./tool updateinit --path "plugin" --packname "gitlab.33.cn/chain33/bityuan"
+./tool import -path "plugin" --packname "gitlab.33.cn/chain33/bityuan" --conf "plugin/plugin.toml"
+go build -i -o bityuan
+go build -i -o bityuan-cli gitlab.33.cn/chain33/bityuan/cli
 ```
