@@ -11,6 +11,7 @@ go get -u -v github.com/kardianos/govendor
 #### 支持make file的平台
 
 ```
+go get gitlab.33.cn/chain33/bityuan
 make
 ```
 就可以完成编译安装
@@ -18,6 +19,7 @@ make
 #### 不支持的平台，可以手工执行下面的命令
 
 ```
+go get gitlab.33.cn/chain33/bityuan
 govendor init
 govendor fetch +m
 govendor add +e
