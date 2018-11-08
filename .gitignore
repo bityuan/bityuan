@@ -8,6 +8,5 @@ logs/
 wallet/
 plugin/consensus/
 plugin/crypto/
-plugin/dapp/
 plugin/init.go
 plugin/store/
