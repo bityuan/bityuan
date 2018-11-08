@@ -8,12 +8,13 @@ build:
 	go build -i -o bityuan-cli gitlab.33.cn/chain33/bityuan/cli
 updatevendor:
 	govendor fetch +m
-	govendor add +e
 
 vendor:
+	go get -v -u gitlab.33.cn/chain33/chain33
 	govendor init
 	govendor fetch +m
 	govendor add +e
+
 clean:
 	@rm -rf vendor
 	@rm -rf bityuan
