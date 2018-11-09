@@ -6,7 +6,9 @@ build:
 	go build -i -o bityuan
 	go build -i -o bityuan-cli gitlab.33.cn/chain33/bityuan/cli
 
-vendor: update updatevendor
+vendor:
+	make update
+	make updatevendor
 
 update:
 	rm -rf vendor/${CHAIN33}
@@ -15,7 +17,7 @@ update:
 	cp -R vendor/${CHAIN33}/vendor/* vendor/
 	rm -rf vendor/${CHAIN33}/vendor
 	govendor init
-	go build -i -o tool gitlab.33.cn/chain33/plugin/vendor/${CHAIN33}/cmd/tools
+	go build -i -o tool gitlab.33.cn/chain33/bityuan/vendor/${CHAIN33}/cmd/tools
 	./tool import --path "plugin" --packname "gitlab.33.cn/chain33/bityuan/plugin" --conf ""
 
 updatevendor:
