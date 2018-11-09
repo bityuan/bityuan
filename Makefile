@@ -1,18 +1,26 @@
+CHAIN33=gitlab.33.cn/chain33/chain33
+
 all: vendor build
 
 build:
 	go build -i -o bityuan
 	go build -i -o bityuan-cli gitlab.33.cn/chain33/bityuan/cli
-updatevendor:
-	govendor fetch +m
 
-vendor:
-	go get -v -u gitlab.33.cn/chain33/chain33
+vendor: update updatevendor
+
+update:
+	rm -rf vendor/${CHAIN33}
+	git clone --depth 1 -b master https://${CHAIN33}.git vendor/${CHAIN33}
+	rm -rf vendor/${CHAIN33}/.git
+	cp -R vendor/${CHAIN33}/vendor/* vendor/
+	rm -rf vendor/${CHAIN33}/vendor
 	govendor init
-	govendor fetch +m
+	go build -i -o tool gitlab.33.cn/chain33/plugin/vendor/${CHAIN33}/cmd/tools
+	./tool import --path "plugin" --packname "gitlab.33.cn/chain33/bityuan/plugin" --conf ""
+
+updatevendor:
 	govendor add +e
-	go build -i -o tool gitlab.33.cn/chain33/chain33/cmd/tools
-	./tool import --path "plugin" --packname "gitlab.33.cn/chain33/bityuan/plugin" --conf "plugin/plugin.toml"
+	govendor fetch -v +m
 
 clean:
 	@rm -rf vendor

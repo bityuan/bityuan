@@ -1,18 +1,18 @@
 # type字段仅支持 consensus  dapp store
 [dapp-ticket]
-gitrepo = "gitlab.33.cn/chain33/plugin/dapp/ticket"
+gitrepo = "gitlab.33.cn/chain33/plugin/plugin/dapp/ticket"
 
 [consensus-ticket]
-gitrepo = "gitlab.33.cn/chain33/plugin/consensus/ticket"
+gitrepo = "gitlab.33.cn/chain33/plugin/plugin/consensus/ticket"
 
 [dapp-retrieve]
-gitrepo = "gitlab.33.cn/chain33/plugin/dapp/retrieve"
+gitrepo = "gitlab.33.cn/chain33/plugin/plugin/dapp/retrieve"
 
 [dapp-hashlock]
-gitrepo = "gitlab.33.cn/chain33/plugin/dapp/hashlock"
+gitrepo = "gitlab.33.cn/chain33/plugin/plugin/dapp/hashlock"
 
 [dapp-token]
-gitrepo = "gitlab.33.cn/chain33/plugin/dapp/token"
+gitrepo = "gitlab.33.cn/chain33/plugin/plugin/dapp/token"
 
 [dapp-trade]
-gitrepo = "gitlab.33.cn/chain33/plugin/dapp/trade"
+gitrepo = "gitlab.33.cn/chain33/plugin/plugin/dapp/trade"
