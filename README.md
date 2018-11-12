@@ -14,8 +14,11 @@ go get -u -v github.com/kardianos/govendor
 #### 支持make file的平台
 
 ```
+git clone https://github.com/bityuan/bityuan $GOPATH/src/github.com/bityuan/bityuan
+cd $GOPATH/src/github.com/bityuan/bityuan
 make
 ```
+
 就可以完成编译安装
 
 ### 更新chain33
