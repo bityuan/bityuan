@@ -19,7 +19,7 @@ update:
 	cp -Rf vendor/${CHAIN33}/vendor/* vendor/
 	rm -rf vendor/${CHAIN33}/vendor
 	govendor init
-	go build -i -o tool github.com/33cn/plugin/vendor/github.com/33cn/chain33/cmd/tools
+	go build -i -o tool github.com/bityuan/bityuan/vendor/github.com/33cn/chain33/cmd/tools
 	./tool import --path "plugin" --packname "github.com/bityuan/bityuan/plugin" --conf "plugin/plugin.toml"
 
 updatevendor:
