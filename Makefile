@@ -11,6 +11,7 @@ vendor:
 	make updatevendor
 
 update:
+	go get -u -v github.com/kardianos/govendor
 	rm -rf ${CHAIN33_PATH}
 	git clone --depth 1 -b master https://${CHAIN33}.git ${CHAIN33_PATH}
 	rm -rf vendor/${CHAIN33}/.git
