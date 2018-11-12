@@ -1,8 +1,11 @@
-bityuan 系统
+[![pipeline status](https://api.travis-ci.org/bityuan/bityuan.svg?branch=master)](https://travis-ci.org/bityuan/bityuan/)
+[![Go Report Card](https://goreportcard.com/badge/github.com/bityuan/bityuan)](https://goreportcard.com/report/github.com/bityuan/bityuan)
 
-### 安装
+# 基于 chain33 区块链开发 框架 开发的 bityuan 系统
 
-##### 1. 安装govendor 工具
+## 安装
+
+#### 安装govendor 工具
 
 ```
 go get -u -v github.com/kardianos/govendor

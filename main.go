@@ -3,10 +3,11 @@
 package main
 
 import (
-	_ "gitlab.33.cn/chain33/bityuan/plugin"
-	_ "gitlab.33.cn/chain33/chain33/system"
-	"gitlab.33.cn/chain33/chain33/types"
-	"gitlab.33.cn/chain33/chain33/util/cli"
+	_ "github.com/33cn/chain33/system"
+	_ "github.com/bityuan/bityuan/plugin"
+
+	"github.com/33cn/chain33/types"
+	"github.com/33cn/chain33/util/cli"
 )
 
 func main() {
