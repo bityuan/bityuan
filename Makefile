@@ -1,5 +1,6 @@
 CHAIN33=github.com/33cn/chain33
-CHAIN33_PATH=vendor/${CHAIN33}
+plugin=github.com/33cn/plugin
+
 all: vendor build
 
 build:
@@ -8,16 +9,17 @@ build:
 
 vendor:
 	make update
-	make updatevendor
+	#make updatevendor
 
 update:
 	go get -u -v github.com/kardianos/govendor
-	rm -rf ${CHAIN33_PATH}
-	git clone --depth 1 -b master https://${CHAIN33}.git ${CHAIN33_PATH}
-	rm -rf vendor/${CHAIN33}/.git
-	rm -rf vendor/${CHAIN33}/vendor/github.com/apache/thrift/tutorial/erl/
-	cp -Rf vendor/${CHAIN33}/vendor/* vendor/
-	rm -rf vendor/${CHAIN33}/vendor
+	rm -rf vendor/${CHAIN33}
+	rm -rf vendor/${plugin}
+	git clone --depth 1 -b master https://${plugin}.git vendor/${plugin}
+	rm -rf vendor/${plugin}/.git
+	cp -Rf vendor/${plugin}/vendor/* vendor/
+	rm -rf vendor/${plugin}/vendor
+
 	govendor init
 	go build -i -o tool github.com/bityuan/bityuan/vendor/github.com/33cn/chain33/cmd/tools
 	./tool import --path "plugin" --packname "github.com/bityuan/bityuan/plugin" --conf "plugin/plugin.toml"
