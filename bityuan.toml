@@ -52,9 +52,11 @@ maxTxNumPerAccount=100
 [store]
 dbPath="datadir/mavltree"
 dbCache=128
-enableMavlPrefix=false
+
+[store.sub.mavl]
+enableMavlPrefix=true
 enableMVCC=false
-enableMavlPrune=false
+enableMavlPrune=true
 pruneHeight=10000
 
 [wallet]
