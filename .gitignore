@@ -5,8 +5,3 @@ datadir/
 grpc33.log
 logs/
 /wallet
-plugin/consensus/init
-plugin/crypto/
-plugin/init.go
-plugin/dapp/init/
-plugin/store/
