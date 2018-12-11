@@ -12,6 +12,7 @@ driver="leveldb"
 isStrongConsistency=false
 singleMode=false
 
+
 [p2p]
 enable=true
 serverStart=true

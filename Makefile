@@ -1,5 +1,9 @@
 CHAIN33=github.com/33cn/chain33
+CHAIN33_PATH=vendor/${CHAIN33}
 plugin=github.com/33cn/plugin
+PKG_LIST_VET := `go list ./... | grep -v "vendor" | grep -v plugin/dapp/evm/executor/vm/common/crypto/bn256`
+PKG_LIST_INEFFASSIGN= `go list -f {{.Dir}} ./... | grep -v "vendor"`
+
 
 all: vendor build
 
@@ -27,6 +31,44 @@ update:
 updatevendor:
 	govendor add +e
 	govendor fetch -v +m
+
+vet:
+	@go vet ${PKG_LIST_VET}
+
+ineffassign:
+	@ineffassign -n ${PKG_LIST_INEFFASSIGN}
+
+linter: vet ineffassign ## Use gometalinter check code, ignore some unserious warning
+	@./golinter.sh "filter"
+	@find . -name '*.sh' -not -path "./vendor/*" | xargs shellcheck
+
+.PHONY: checkgofmt
+checkgofmt: ## get all go files and run go fmt on them
+	@files=$$(find . -name '*.go' -not -path "./vendor/*" | xargs gofmt -l -s); if [ -n "$$files" ]; then \
+		  echo "Error: 'make fmt' needs to be run on:"; \
+		  echo "${files}"; \
+		  exit 1; \
+		  fi;
+	@files=$$(find . -name '*.go' -not -path "./vendor/*" | xargs goimports -l -w); if [ -n "$$files" ]; then \
+		  echo "Error: 'make fmt' needs to be run on:"; \
+		  echo "${files}"; \
+		  exit 1; \
+		  fi;
+
+fmt_shell: ## check shell file
+	@find . -name '*.sh' -not -path "./vendor/*" | xargs shfmt -w -s -i 4 -ci -bn
+
+fmt: fmt_shell ## go fmt
+	@go fmt ./...
+	@find . -name '*.go' -not -path "./vendor/*" | xargs goimports -l -w
+
+autotest: ## build autotest binary
+	@cd build/autotest && bash ./build.sh && cd ../../
+	@if [ -n "$(dapp)" ]; then \
+		rm -rf build/autotest/local \
+		&& cp -r $(CHAIN33_PATH)/build/autotest/local $(CHAIN33_PATH)/build/autotest/*.sh build/autotest/ \
+		&& cd build/autotest && bash ./copy-autotest.sh local && cd local && bash ./local-autotest.sh $(dapp) && cd ../../../; fi
+
 
 clean:
 	@rm -rf vendor

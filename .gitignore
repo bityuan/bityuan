@@ -1,3 +1,5 @@
+.idea
+vendor
 bityuan
 bityuan-cli
 tool
@@ -5,3 +7,6 @@ datadir/
 grpc33.log
 logs/
 /wallet
+build/ci
+build/autotest/*
+!build/autotest/build.sh
