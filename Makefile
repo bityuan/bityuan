@@ -1,15 +1,20 @@
+# golang1.9 or latest
+
 CHAIN33=github.com/33cn/chain33
 CHAIN33_PATH=vendor/${CHAIN33}
 plugin=github.com/33cn/plugin
 PKG_LIST_VET := `go list ./... | grep -v "vendor" | grep -v plugin/dapp/evm/executor/vm/common/crypto/bn256`
 PKG_LIST_INEFFASSIGN= `go list -f {{.Dir}} ./... | grep -v "vendor"`
+.PHONY: default build
 
+default: build
 
 all: vendor build
 
 build:
-	go build -i -o bityuan
-	go build -i -o bityuan-cli github.com/bityuan/bityuan/cli
+	go build -v -i -o bityuan
+	go build -v -i -o bityuan-cli github.com/bityuan/bityuan/cli
+
 
 vendor:
 	make update

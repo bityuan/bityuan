@@ -24,7 +24,7 @@ jobs:
     - stage: auto-test
       go: "1.9.x"
       install: skip
-      before_script: make all
+      before_script: make
       script:
         - make autotest dapp=all
 
