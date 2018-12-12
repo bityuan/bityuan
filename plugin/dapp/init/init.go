@@ -1,7 +1,7 @@
 package init
 
 import (
-	_ "github.com/33cn/plugin/plugin/dapp/hashlock"
+	_ "github.com/33cn/plugin/plugin/dapp/hashlock" //register plugin init package
 	_ "github.com/33cn/plugin/plugin/dapp/retrieve"
 	_ "github.com/33cn/plugin/plugin/dapp/ticket"
 	_ "github.com/33cn/plugin/plugin/dapp/token"
