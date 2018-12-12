@@ -26,7 +26,13 @@ jobs:
       install: skip
       before_script: make
       script:
-        - make autotest dapp=all
+        - make autotest dapp=coins
+        - make autotest dapp=ticket
+        - make autotest dapp=hashlock
+        - make autotest dapp=retrieve
+        - make autotest dapp=manage
+        - make autotest dapp=token
+        - make autotest dapp=trade
 
 
 
