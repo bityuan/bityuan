@@ -2,7 +2,7 @@ package main
 
 var bityuan = `
 TestNet=false
-version="6.0.0"
+version="6.0.1"
 [blockchain]
 defCacheSize=128
 maxFetchBlockNum=128
@@ -20,6 +20,7 @@ msgCacheSize=10240
 driver="leveldb"
 
 [mempool]
+name="timeline"
 poolCacheSize=102400
 minTxFee=100000
 
