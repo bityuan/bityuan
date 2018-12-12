@@ -30,6 +30,7 @@ isRecordBlockSequence=false
 enableTxQuickIndex=false
 
 [p2p]
+port=13802
 seeds=[]
 isSeed=false
 innerSeedEnable=true
@@ -45,6 +46,9 @@ grpcBindAddr="localhost:8802"
 whitelist=["127.0.0.1"]
 jrpcFuncWhitelist=["*"]
 grpcFuncWhitelist=["*"]
+enableTLS=false
+certFile="cert.pem"
+keyFile="key.pem"
 
 [mempool]
 maxTxNumPerAccount=100

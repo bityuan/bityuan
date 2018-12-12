@@ -20,6 +20,7 @@ msgCacheSize=10240
 driver="leveldb"
 
 [mempool]
+name="timeline"
 poolCacheSize=102400
 minTxFee=100000
 
