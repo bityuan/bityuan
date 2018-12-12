@@ -8,10 +8,10 @@ package main
 
 import (
 	_ "github.com/33cn/chain33/system"
-	"github.com/33cn/plugin/cli/buildflags"
 	_ "github.com/33cn/plugin/plugin"
 
 	"github.com/33cn/chain33/util/cli"
+	"github.com/33cn/plugin/cli/buildflags"
 )
 
 func main() {
