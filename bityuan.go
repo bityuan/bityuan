@@ -2,7 +2,7 @@ package main
 
 var bityuan = `
 TestNet=false
-version="6.0.1"
+version="6.0.2"
 [blockchain]
 defCacheSize=128
 maxFetchBlockNum=128
@@ -139,6 +139,7 @@ ForkCheckBlockTime=1200000
 ForkTxHeight= -1
 ForkTxGroupPara= -1
 ForkChainParamV2= -1
+ForkMultiSignAddress=-1
 
 [fork.sub.coins]
 Enable=0
