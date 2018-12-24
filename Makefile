@@ -24,6 +24,7 @@ update:
 	go get -u -v github.com/kardianos/govendor
 	rm -rf vendor/${CHAIN33}
 	rm -rf vendor/${plugin}
+	rm -rf vendor/github.com/apache/thrift/tutorial/erl/
 	git clone --depth 1 -b master https://${plugin}.git vendor/${plugin}
 	rm -rf vendor/${plugin}/.git
 	cp -Rf vendor/${plugin}/vendor/* vendor/
