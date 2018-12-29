@@ -59,7 +59,7 @@ dbCache=128
 
 [store.sub.mavl]
 enableMavlPrefix=true
-enableMVCC=false
+enableMVCC=true
 enableMavlPrune=false
 pruneHeight=10000
 
