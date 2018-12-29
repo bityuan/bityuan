@@ -58,7 +58,7 @@ dbPath="datadir/mavltree"
 dbCache=128
 
 [store.sub.mavl]
-enableMavlPrefix=false
+enableMavlPrefix=true
 enableMVCC=false
 enableMavlPrune=false
 pruneHeight=10000
