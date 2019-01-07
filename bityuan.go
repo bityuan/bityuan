@@ -2,7 +2,7 @@ package main
 
 var bityuan = `
 TestNet=false
-version="6.0.181228"
+version="6.0.190107"
 [blockchain]
 defCacheSize=128
 maxFetchBlockNum=128
