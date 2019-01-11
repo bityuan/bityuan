@@ -7,6 +7,7 @@ import (
 	"github.com/33cn/chain33/common/db"
 	"github.com/33cn/chain33/common/log/log15"
 	"github.com/33cn/chain33/types"
+	"github.com/33cn/chain33/util"
 )
 
 var tablelog = log15.New("module", "db.table")
@@ -90,7 +91,7 @@ func NewJoinTable(left *Table, right *Table, indexes []string) (*JoinTable, erro
 			join.leftIndex = append(join.leftIndex, joinindex[0])
 		}
 		if joinindex[1] == "" || !right.canGet(joinindex[1]) {
-			return nil, errors.New("jointable: left table can not get: " + joinindex[1])
+			return nil, errors.New("jointable: right table can not get: " + joinindex[1])
 		}
 		if joinindex[1] != "" {
 			join.rightIndex = append(join.rightIndex, joinindex[1])
@@ -159,6 +160,7 @@ func (join *JoinTable) GetData(primaryKey []byte) (*Row, error) {
 	}
 	rowjoin := join.meta.CreateRow()
 	rowjoin.Ty = None
+	rowjoin.Primary = leftrow.Primary
 	rowjoin.Data.(*JoinData).Left = leftrow.Data
 	rowjoin.Data.(*JoinData).Right = rightrow.Data
 	return rowjoin, nil
@@ -214,7 +216,7 @@ func (join *JoinTable) Save() (kvs []*types.KeyValue, err error) {
 		return nil, err
 	}
 	kvs = append(kvs, rightkvs...)
-	return deldupKey(kvs), nil
+	return util.DelDupKey(kvs), nil
 }
 
 func (join *JoinTable) isLeftModify(row *Row) bool {
