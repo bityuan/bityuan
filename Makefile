@@ -26,6 +26,7 @@ update:
 	rm -rf vendor/${plugin}
 	rm -rf vendor/github.com/apache/thrift/tutorial/erl/
 	git clone --depth 1 -b master https://${plugin}.git vendor/${plugin}
+#	git clone --depth 1 -b update_chain33_191116 https://github.com/vipwzw/plugin.git vendor/${plugin}
 	rm -rf vendor/${plugin}/.git
 	cp -Rf vendor/${plugin}/vendor/* vendor/
 	rm -rf vendor/${plugin}/vendor
