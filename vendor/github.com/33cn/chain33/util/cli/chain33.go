@@ -194,8 +194,6 @@ func RunChain33(name string) {
 		rpcapi.Close()
 		log.Info("begin close wallet module")
 		walletm.Close()
-		log.Info("begin close health module")
-		health.Close()
 		log.Info("begin close queue module")
 		q.Close()
 
