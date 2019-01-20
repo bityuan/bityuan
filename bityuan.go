@@ -169,4 +169,13 @@ ForkTokenPrice= 300000
 Enable=0
 ForkTradeBuyLimit= 0
 ForkTradeAsset= -1
+
+[fork.sub.paracross]
+Enable=1500000
+
+[fork.sub.multisig]
+Enable=1500000
+
+[fork.sub.unfreeze]
+Enable=1500000
 `
