@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package commands
+package wallet
 
-type txHashes struct {
-	Hashes []string `json:"hashes"`
-}
+// MaxCountPerTime: 每次获取多重签名账户的数量
+const (
+	MaxCountPerTime int64 = 100
+)
