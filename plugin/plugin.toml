@@ -16,3 +16,12 @@ gitrepo = "github.com/33cn/plugin/plugin/dapp/token"
 
 [dapp-trade]
 gitrepo = "github.com/33cn/plugin/plugin/dapp/trade"
+
+[dapp-paracross]
+gitrepo = "github.com/33cn/plugin/plugin/dapp/paracross"
+
+[dapp-unfreeze]
+gitrepo = "github.com/33cn/plugin/plugin/dapp/unfreeze"
+
+[dapp-multisig]
+gitrepo = "github.com/33cn/plugin/plugin/dapp/multisig"

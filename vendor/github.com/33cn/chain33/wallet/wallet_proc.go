@@ -80,9 +80,6 @@ func (wallet *Wallet) ProcSignRawTx(unsigned *types.ReqSignRawTx) (string, error
 		return "", err
 	}
 
-	if unsigned.GetNewExecer() != nil {
-		tx.Execer = unsigned.NewExecer
-	}
 	if unsigned.NewToAddr != "" {
 		tx.To = unsigned.NewToAddr
 	}
@@ -95,7 +92,7 @@ func (wallet *Wallet) ProcSignRawTx(unsigned *types.ReqSignRawTx) (string, error
 		return "", err
 	}
 	tx.SetExpire(time.Duration(expire))
-	if policy, ok := wcom.PolicyContainer[string(tx.Execer)]; ok {
+	if policy, ok := wcom.PolicyContainer[string(types.GetParaExec(tx.Execer))]; ok {
 		// 尝试让策略自己去完成签名
 		needSysSign, signtx, err := policy.SignTransaction(key, unsigned)
 		if !needSysSign {
@@ -909,7 +906,7 @@ func (wallet *Wallet) ProcWalletAddBlock(block *types.BlockDetail) {
 	newbatch := wallet.walletStore.NewBatch(true)
 	for index := 0; index < txlen; index++ {
 		tx := block.Block.Txs[index]
-		execer := string(tx.Execer)
+		execer := string(types.GetParaExec(tx.Execer))
 		// 执行钱包业务逻辑策略
 		if policy, ok := wcom.PolicyContainer[execer]; ok {
 			wtxdetail := policy.OnAddBlockTx(block, tx, int32(index), newbatch)
@@ -1031,7 +1028,7 @@ func (wallet *Wallet) ProcWalletDelBlock(block *types.BlockDetail) {
 		heightstr := fmt.Sprintf("%018d", blockheight)
 		tx := block.Block.Txs[index]
 
-		execer := string(tx.Execer)
+		execer := string(types.GetParaExec(tx.Execer))
 		// 执行钱包业务逻辑策略
 		if policy, ok := wcom.PolicyContainer[execer]; ok {
 			wtxdetail := policy.OnDeleteBlockTx(block, tx, int32(index), newbatch)

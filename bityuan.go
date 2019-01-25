@@ -2,7 +2,7 @@ package main
 
 var bityuan = `
 TestNet=false
-version="6.0.190116"
+version="6.0.190125"
 [blockchain]
 defCacheSize=128
 maxFetchBlockNum=128
@@ -146,7 +146,7 @@ Enable=0
 
 [fork.sub.ticket]
 Enable=0
-ForkTicketId = 1500000
+ForkTicketId = 1600000
 
 [fork.sub.retrieve]
 Enable=0
@@ -169,4 +169,13 @@ ForkTokenPrice= 300000
 Enable=0
 ForkTradeBuyLimit= 0
 ForkTradeAsset= -1
+
+[fork.sub.paracross]
+Enable=1600000
+
+[fork.sub.unfreeze]
+Enable=1600000
+
+[fork.sub.multisig]
+Enable=1600000
 `

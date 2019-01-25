@@ -20,6 +20,8 @@ import (
 	//_ "github.com/33cn/plugin/plugin/dapp/paracross"
 	pp "github.com/33cn/plugin/plugin/dapp/paracross/executor"
 	//"github.com/33cn/plugin/plugin/dapp/paracross/rpc"
+	"time"
+
 	"github.com/33cn/chain33/queue"
 	"github.com/33cn/chain33/store"
 	_ "github.com/33cn/chain33/system"
@@ -34,7 +36,7 @@ func init() {
 	types.Init("user.p.para.", nil)
 	pp.Init("paracross", nil)
 	random = rand.New(rand.NewSource(types.Now().UnixNano()))
-	consensusInterval = 2
+	consensusInterval = 1
 	log.SetLogLevel("error")
 }
 
@@ -75,6 +77,7 @@ func (s *suiteParaCommitMsg) initEnv(cfg *types.Config, sub *types.ConfigSubModu
 	s.para = New(cfg.Consensus, sub.Consensus["para"]).(*client)
 	s.grpcCli = &typesmocks.Chain33Client{}
 
+	s.grpcCli.On("GetFork", mock.Anything, &types.ReqKey{Key: []byte("ForkBlockHash")}).Return(&types.Int64{Data: 1}, nil).Once()
 	// GetBlockBySeq return error to stop create's for cycle to request tx
 	s.grpcCli.On("GetBlockBySeq", mock.Anything, mock.Anything).Return(nil, errors.New("quit create"))
 	//data := &types.Int64{1}
@@ -183,7 +186,7 @@ func TestRunSuiteParaCommitMsg(t *testing.T) {
 }
 
 func (s *suiteParaCommitMsg) TearDownSuite() {
-	//time.Sleep(time.Second * 1)
+	time.Sleep(time.Second * 2)
 	s.block.Close()
 	s.para.Close()
 	s.exec.Close()

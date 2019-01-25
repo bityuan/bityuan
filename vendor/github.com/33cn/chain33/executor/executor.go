@@ -15,6 +15,7 @@ import (
 	clog "github.com/33cn/chain33/common/log"
 	log "github.com/33cn/chain33/common/log/log15"
 	"github.com/33cn/chain33/pluginmgr"
+	"github.com/33cn/chain33/rpc/grpcclient"
 	drivers "github.com/33cn/chain33/system/dapp"
 
 	// register drivers
@@ -40,6 +41,7 @@ func DisableLog() {
 type Executor struct {
 	client       queue.Client
 	qclient      client.QueueProtocolAPI
+	grpccli      types.Chain33Client
 	pluginEnable map[string]bool
 	alias        map[string]string
 }
@@ -102,6 +104,10 @@ func (exec *Executor) SetQueueClient(qcli queue.Client) {
 	if err != nil {
 		panic(err)
 	}
+	exec.grpccli, err = grpcclient.NewMainChainClient("")
+	if err != nil {
+		panic(err)
+	}
 	//recv 消息的处理
 	go func() {
 		for msg := range exec.client.Recv() {
@@ -141,10 +147,11 @@ func (exec *Executor) procExecQuery(msg queue.Message) {
 	opt := &StateDBOption{EnableMVCC: exec.pluginEnable["mvcc"], Height: header.GetHeight()}
 
 	db := NewStateDB(exec.client, data.StateHash, localdb, opt)
-	db.(*StateDB).enableMVCC()
+	db.(*StateDB).enableMVCC(nil)
 	driver.SetStateDB(db)
 	driver.SetAPI(exec.qclient)
-
+	driver.SetExecutorAPI(exec.qclient, exec.grpccli)
+	driver.SetEnv(header.GetHeight(), header.GetBlockTime(), uint64(header.GetDifficulty()))
 	//查询的情况下下，执行器不做严格校验，allow，尽可能的加载执行器，并且做查询
 
 	ret, err := driver.Query(data.FuncName, data.Param)
@@ -167,8 +174,7 @@ func (exec *Executor) procExecCheckTx(msg queue.Message) {
 		parentHash: datas.ParentHash,
 	}
 	execute := newExecutor(ctx, exec, datas.Txs, nil)
-	execute.enableMVCC()
-	execute.api = exec.qclient
+	execute.enableMVCC(nil)
 	//返回一个列表表示成功还是失败
 	result := &types.ReceiptCheckTxList{}
 	for i := 0; i < len(datas.Txs); i++ {
@@ -199,8 +205,7 @@ func (exec *Executor) procExecTxList(msg queue.Message) {
 		parentHash: datas.ParentHash,
 	}
 	execute := newExecutor(ctx, exec, datas.Txs, nil)
-	execute.enableMVCC()
-	execute.api = exec.qclient
+	execute.enableMVCC(nil)
 	var receipts []*types.Receipt
 	index := 0
 	for i := 0; i < len(datas.Txs); i++ {
@@ -269,8 +274,8 @@ func (exec *Executor) procExecAddBlock(msg queue.Message) {
 		parentHash: b.ParentHash,
 	}
 	execute := newExecutor(ctx, exec, b.Txs, datas.Receipts)
-	execute.enableMVCC()
-	execute.api = exec.qclient
+	//因为mvcc 还没有写入，所以目前的mvcc版本是前一个区块的版本
+	execute.enableMVCC(datas.PrevStatusHash)
 	var kvset types.LocalDBSet
 	for _, kv := range datas.KV {
 		execute.stateDB.Set(kv.Key, kv.Value)
@@ -293,6 +298,9 @@ func (exec *Executor) procExecAddBlock(msg queue.Message) {
 		}
 		if len(kvs) > 0 {
 			kvset.KV = append(kvset.KV, kvs...)
+			for _, kv := range kvs {
+				execute.localDB.Set(kv.Key, kv.Value)
+			}
 		}
 	}
 	for i := 0; i < len(b.Txs); i++ {
@@ -312,6 +320,9 @@ func (exec *Executor) procExecAddBlock(msg queue.Message) {
 				return
 			}
 			kvset.KV = append(kvset.KV, kv.KV...)
+			for _, kv := range kv.KV {
+				execute.localDB.Set(kv.Key, kv.Value)
+			}
 		}
 	}
 	msg.Reply(exec.client.NewMessage("", types.EventAddBlock, &kvset))
@@ -330,8 +341,7 @@ func (exec *Executor) procExecDelBlock(msg queue.Message) {
 		parentHash: b.ParentHash,
 	}
 	execute := newExecutor(ctx, exec, b.Txs, nil)
-	execute.enableMVCC()
-	execute.api = exec.qclient
+	execute.enableMVCC(nil)
 	var kvset types.LocalDBSet
 	for _, kv := range datas.KV {
 		execute.stateDB.Set(kv.Key, kv.Value)
