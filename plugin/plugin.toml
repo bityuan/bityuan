@@ -25,3 +25,9 @@ gitrepo = "github.com/33cn/plugin/plugin/dapp/multisig"
 
 [dapp-unfreeze]
 gitrepo = "github.com/33cn/plugin/plugin/dapp/unfreeze"
+
+[mempool-score]
+gitrepo = "github.com/33cn/plugin/plugin/mempool/score"
+
+[mempool-price]
+gitrepo = "github.com/33cn/plugin/plugin/mempool/price"
