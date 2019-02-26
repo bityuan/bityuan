@@ -184,7 +184,7 @@ ForkTokenSymbolWithNumber=1600000
 [fork.sub.trade]
 Enable=0
 ForkTradeBuyLimit= 0
-ForkTradeAsset= -1
+ForkTradeAsset= -1 #fork 6.2
 ForkTradeID = -1 #fork 6.2
 
 [fork.sub.paracross]
