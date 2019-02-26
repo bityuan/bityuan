@@ -149,11 +149,12 @@ ForkTxGroup= 200000
 ForkResetTx0= 200000
 ForkWithdraw= 200000
 ForkExecRollback= 450000
-ForkCheckBlockTime=-1
+ForkCheckBlockTime=-1 #fork 6.2
 ForkTxHeight= -1
 ForkTxGroupPara= -1
 ForkChainParamV2= -1
-ForkMultiSignAddress=-1
+ForkMultiSignAddress=-1 #fork 6.2
+ForkStateDBSet=-1 #fork 6.2
 
 [fork.sub.coins]
 Enable=0
@@ -184,6 +185,7 @@ ForkTokenSymbolWithNumber=1600000
 Enable=0
 ForkTradeBuyLimit= 0
 ForkTradeAsset= -1
+ForkTradeID = -1 #fork 6.2
 
 [fork.sub.paracross]
 Enable=1600000
@@ -195,4 +197,5 @@ Enable=1600000
 [fork.sub.unfreeze]
 Enable=1600000
 ForkTerminatePart=1600000
+ForkUnfreezeIDX= -1 #fork 6.2
 `
