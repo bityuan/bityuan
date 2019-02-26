@@ -7,6 +7,9 @@
 
 区块链浏览器: https://mainnet.bityuan.com
 
+```
+注意: master 分支不是 发布版本, 不要用于生产环境
+```
 ## 安装
 
 #### 安装govendor 工具
