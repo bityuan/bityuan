@@ -62,6 +62,8 @@ enableMavlPrefix=false
 enableMVCC=false
 enableMavlPrune=false
 pruneHeight=10000
+enableMemTree=true
+enableMemVal=true
 
 [wallet]
 dbPath="wallet"
