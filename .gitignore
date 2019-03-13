@@ -6,6 +6,9 @@ datadir/
 grpc33.log
 logs/
 /wallet
+/data2
+*.log
+*.tar.gz
 build/ci
 build/autotest/*
 !build/autotest/build.sh
