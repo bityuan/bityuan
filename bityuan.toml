@@ -27,7 +27,7 @@ dbPath="datadir"
 dbCache=64
 batchsync=false
 isRecordBlockSequence=false
-enableTxQuickIndex=false
+enableTxQuickIndex=true
 
 [p2p]
 port=13802
