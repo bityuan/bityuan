@@ -32,6 +32,10 @@ function para_set_toml() {
     sed -i $xsedfix 's/^# TestNet=.*/TestNet=true/g' "${1}"
     sed -i $xsedfix 's/^startHeight=.*/startHeight=0/g' "${1}"
     sed -i $xsedfix 's/^emptyBlockInterval=.*/emptyBlockInterval=4/g' "${1}"
+    sed -i $xsedfix '/^emptyBlockInterval=.*/a MainBlockHashForkHeight=1' "${1}"
+
+    #测试使用，主链也要替换ForkParacrossCommitTx 为300
+    # sed -i $xsedfix '/^emptyBlockInterval=.*/a MainParaSelfConsensusForkHeight=300' "${1}"
 
     # rpc
     sed -i $xsedfix 's/^jrpcBindAddr=.*/jrpcBindAddr="0.0.0.0:8901"/g' "${1}"
@@ -92,6 +96,12 @@ function para_transfer() {
     para_configkey "${CLI}" "paracross-nodes-user.p.${PARANAME}." "1JRNjdEqp4LJ5fqycUBm9ayCKSeeskgMKR"
     para_configkey "${CLI}" "paracross-nodes-user.p.${PARANAME}." "1NLHPEcbTWWxxU3dGUZBhayjrCHD3psX7k"
     para_configkey "${CLI}" "paracross-nodes-user.p.${PARANAME}." "1MCftFynyvG2F4ED5mdHYgziDxx6vDrScs"
+
+    para_configkey "${PARA_CLI}" "paracross-nodes-user.p.${PARANAME}." "1KSBd17H7ZK8iT37aJztFB22XGwsPTdwE4"
+    para_configkey "${PARA_CLI}" "paracross-nodes-user.p.${PARANAME}." "1JRNjdEqp4LJ5fqycUBm9ayCKSeeskgMKR"
+    para_configkey "${PARA_CLI}" "paracross-nodes-user.p.${PARANAME}." "1NLHPEcbTWWxxU3dGUZBhayjrCHD3psX7k"
+    para_configkey "${PARA_CLI}" "paracross-nodes-user.p.${PARANAME}." "1MCftFynyvG2F4ED5mdHYgziDxx6vDrScs"
+
     block_wait "${CLI}" 1
 
     txhash=$(para_configkey "${PARA_CLI}" "token-blacklist" "BTY")

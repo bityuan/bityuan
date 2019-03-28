@@ -5,27 +5,23 @@
 package executor
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
-
-	//"github.com/stretchr/testify/mock"
+	"bytes"
+	"math/rand"
 	"testing"
+	"time"
 
 	apimock "github.com/33cn/chain33/client/mocks"
+	"github.com/33cn/chain33/common"
+	"github.com/33cn/chain33/common/address"
 	"github.com/33cn/chain33/common/crypto"
 	dbm "github.com/33cn/chain33/common/db"
 	dbmock "github.com/33cn/chain33/common/db/mocks"
-	"github.com/33cn/chain33/types"
-
-	"bytes"
-	"math/rand"
-	"time"
-
-	"github.com/33cn/chain33/common"
-	"github.com/33cn/chain33/common/address"
 	"github.com/33cn/chain33/common/log"
 	mty "github.com/33cn/chain33/system/dapp/manage/types"
+	"github.com/33cn/chain33/types"
 	pt "github.com/33cn/plugin/plugin/dapp/paracross/types"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
 // 构造一个4个节点的平行链数据， 进行测试
@@ -57,6 +53,7 @@ var (
 
 	TokenSymbol                = "X"
 	MainBlockHeightForTransfer = int64(9)
+	tempTitle                  = ""
 )
 
 type CommitTestSuite struct {
@@ -138,7 +135,7 @@ func (suite *CommitTestSuite) SetupSuite() {
 			Items: []*types.BlockDetail{blockDetail},
 		}, nil)
 	suite.api.On("GetBlockHash", &types.ReqInt{Height: MainBlockHeight}).Return(
-		&types.ReplyHash{Hash: MainBlockHash10}, nil)
+		&types.ReplyHash{Hash: CurBlock}, nil)
 }
 
 func (suite *CommitTestSuite) TestSetup() {
@@ -167,7 +164,7 @@ func fillRawCommitTx(suite suite.Suite) (*types.Transaction, error) {
 		CrossTxResult:   []byte("abc"),
 		CrossTxHashs:    [][]byte{},
 	}
-	tx, err := pt.CreateRawCommitTx4MainChain(&st1, pt.ParaX, 0)
+	tx, err := pt.CreateRawCommitTx4MainChain(&st1, pt.GetExecName(), 0)
 	if err != nil {
 		suite.T().Error("TestExec", "create tx failed", err)
 	}
@@ -260,7 +257,7 @@ func checkCommitReceipt(suite *CommitTestSuite, receipt *types.Receipt, commitCn
 
 func checkDoneReceipt(suite suite.Suite, receipt *types.Receipt, commitCnt int) {
 	assert.Equal(suite.T(), receipt.Ty, int32(types.ExecOk))
-	assert.Len(suite.T(), receipt.KV, 2)
+	assert.Len(suite.T(), receipt.KV, 3)
 	assert.Len(suite.T(), receipt.Logs, 2)
 
 	key := calcTitleHeightKey(Title, TitleHeight)
@@ -331,7 +328,12 @@ func (suite *CommitTestSuite) TestExec() {
 }
 
 func TestCommitSuite(t *testing.T) {
+	tempTitle = types.GetTitle()
+	types.SetTitleOnlyForTest(Title)
+
 	suite.Run(t, new(CommitTestSuite))
+
+	types.SetTitleOnlyForTest(tempTitle)
 }
 
 func TestGetTitle(t *testing.T) {
@@ -517,12 +519,11 @@ func createCrossParaTx(s suite.Suite, to []byte) (*types.Transaction, error) {
 }
 
 func createTxsGroup(s suite.Suite, txs []*types.Transaction) ([]*types.Transaction, error) {
-
 	group, err := types.CreateTxGroup(txs)
 	if err != nil {
 		return nil, err
 	}
-	err = group.Check(0, types.GInt("MinFee"))
+	err = group.Check(0, types.GInt("MinFee"), types.GInt("MaxFee"))
 	if err != nil {
 		return nil, err
 	}
@@ -530,7 +531,6 @@ func createTxsGroup(s suite.Suite, txs []*types.Transaction) ([]*types.Transacti
 	for i := range group.Txs {
 		group.SignN(i, int32(types.SECP256K1), privKey)
 	}
-
 	return group.Txs, nil
 }
 

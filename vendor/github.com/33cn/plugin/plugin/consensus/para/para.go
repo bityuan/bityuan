@@ -47,9 +47,10 @@ var (
 	emptyBlockInterval int64 = 4 //write empty block every interval blocks in mainchain
 	zeroHash           [32]byte
 	//current miner tx take any privatekey for unify all nodes sign purpose, and para chain is free
-	minerPrivateKey               = "6da92a632ab7deb67d38c0f6560bcfed28167998f6496db64c258d5e8393a81b"
-	searchHashMatchDepth    int32 = 100
-	mainBlockHashForkHeight int64 = types.MaxHeight //calc block hash fork height in main chain
+	minerPrivateKey                       = "6da92a632ab7deb67d38c0f6560bcfed28167998f6496db64c258d5e8393a81b"
+	searchHashMatchDepth            int32 = 100
+	mainBlockHashForkHeight         int64 = 209186          //calc block hash fork height in main chain
+	mainParaSelfConsensusForkHeight int64 = types.MaxHeight //support paracross commit tx fork height in main chain: ForkParacrossCommitTx
 )
 
 func init() {
@@ -67,17 +68,20 @@ type client struct {
 	privateKey      crypto.PrivKey
 	wg              sync.WaitGroup
 	subCfg          *subConfig
+	mtx             sync.Mutex
 }
 
 type subConfig struct {
-	WriteBlockSeconds           int64  `json:"writeBlockSeconds,omitempty"`
-	ParaRemoteGrpcClient        string `json:"paraRemoteGrpcClient,omitempty"`
-	StartHeight                 int64  `json:"startHeight,omitempty"`
-	EmptyBlockInterval          int64  `json:"emptyBlockInterval,omitempty"`
-	AuthAccount                 string `json:"authAccount,omitempty"`
-	WaitBlocks4CommitMsg        int32  `json:"waitBlocks4CommitMsg,omitempty"`
-	SearchHashMatchedBlockDepth int32  `json:"searchHashMatchedBlockDepth,omitempty"`
-	GenesisAmount               int64  `json:"genesisAmount,omitempty"`
+	WriteBlockSeconds               int64  `json:"writeBlockSeconds,omitempty"`
+	ParaRemoteGrpcClient            string `json:"paraRemoteGrpcClient,omitempty"`
+	StartHeight                     int64  `json:"startHeight,omitempty"`
+	EmptyBlockInterval              int64  `json:"emptyBlockInterval,omitempty"`
+	AuthAccount                     string `json:"authAccount,omitempty"`
+	WaitBlocks4CommitMsg            int32  `json:"waitBlocks4CommitMsg,omitempty"`
+	SearchHashMatchedBlockDepth     int32  `json:"searchHashMatchedBlockDepth,omitempty"`
+	GenesisAmount                   int64  `json:"genesisAmount,omitempty"`
+	MainBlockHashForkHeight         int64  `json:"mainBlockHashForkHeight,omitempty"`
+	MainParaSelfConsensusForkHeight int64  `json:"mainParaSelfConsensusForkHeight,omitempty"`
 }
 
 // New function to init paracross env
@@ -105,6 +109,13 @@ func New(cfg *types.Consensus, sub []byte) queue.Module {
 	if subcfg.SearchHashMatchedBlockDepth > 0 {
 		searchHashMatchDepth = subcfg.SearchHashMatchedBlockDepth
 	}
+	if subcfg.MainBlockHashForkHeight > 0 {
+		mainBlockHashForkHeight = subcfg.MainBlockHashForkHeight
+	}
+
+	if subcfg.MainParaSelfConsensusForkHeight > 0 {
+		mainParaSelfConsensusForkHeight = subcfg.MainParaSelfConsensusForkHeight
+	}
 
 	pk, err := hex.DecodeString(minerPrivateKey)
 	if err != nil {
@@ -129,7 +140,6 @@ func New(cfg *types.Consensus, sub []byte) queue.Module {
 		grpcClient:  grpcCli,
 		authAccount: subcfg.AuthAccount,
 		privateKey:  priKey,
-		isCaughtUp:  false,
 		subCfg:      &subcfg,
 	}
 	if subcfg.WaitBlocks4CommitMsg < 2 {
@@ -166,7 +176,6 @@ func (client *client) SetQueueClient(c queue.Client) {
 		client.InitBlock()
 	})
 	go client.EventLoop()
-
 	client.wg.Add(1)
 	go client.commitMsgClient.handler()
 	go client.CreateBlock()
@@ -174,11 +183,6 @@ func (client *client) SetQueueClient(c queue.Client) {
 
 func (client *client) InitBlock() {
 	var err error
-	// get main chain calc block hash fork height
-	mainBlockHashForkHeight, err = client.GetBlockHashForkHeightOnMainChain()
-	if err != nil {
-		panic(err)
-	}
 
 	client.execAPI = api.New(client.BaseClient.GetAPI(), client.grpcClient)
 
@@ -202,6 +206,10 @@ func (client *client) InitBlock() {
 	} else {
 		client.SetCurrentBlock(block)
 	}
+
+	plog.Debug("para consensus init parameter", "mainBlockHashForkHeight", mainBlockHashForkHeight)
+	plog.Debug("para consensus init parameter", "mainParaSelfConsensusForkHeight", mainParaSelfConsensusForkHeight)
+
 }
 
 // GetStartSeq get startSeq in mainchain
@@ -354,27 +362,29 @@ func (client *client) getLastBlockInfo() (int64, *types.Block, error) {
 		return -2, nil, err
 	}
 
-	if lastBlock.Height > 0 || blockedSeq == -1 {
+	// 平行链创世区块特殊场景：
+	// 1,创世区块seq从-1开始，也就是从主链0高度同步区块，主链seq从0开始，平行链对seq=0的区块做特殊处理，不校验parentHash
+	// 2,创世区块seq不是-1， 也就是从主链seq=n高度同步区块，此时创世区块倒退一个seq，blockedSeq=n-1，
+	// 由于创世区块本身没有记录主块hash,需要在此处获取，有可能n-1 seq 是回退block 获取的Hash不对，这里获取主链第n seq的parentHash
+	// 在genesis create时候直接设mainhash也可以，但是会导致已有平行链所有block hash变化
+	if lastBlock.Height == 0 && blockedSeq > -1 {
+		main, err := client.GetBlockOnMainBySeq(blockedSeq + 1)
+		if err != nil {
+			return -2, nil, err
+		}
+		lastBlock.MainHash = main.Detail.Block.ParentHash
+		lastBlock.MainHeight = main.Detail.Block.Height - 1
 		return blockedSeq, lastBlock, nil
 	}
-	// lastBlockHeight=0 创世区块本身没有记录主块hash,有两种场景：
-	// 1, startSeq=-1,也就是从主链0高度同步区块，主链seq从0开始，此时特殊处理，获取主链seq=0区块,后续对请求seq=0的区块做特殊处理
-	// 2, startSeq!=-1, 也就是从主链n高度同步区块，此时创世区块倒退一个seq，seq=n-1 可以获取到主链n-1的hash
-	main, err := client.GetBlockOnMainBySeq(blockedSeq)
-	if err != nil {
-		return -2, nil, err
-	}
-	lastBlock.MainHash = main.Seq.Hash
-	lastBlock.MainHeight = main.Detail.Block.Height
-	return blockedSeq, lastBlock, nil
 
+	return blockedSeq, lastBlock, nil
 }
 
-func (client *client) GetBlockHashForkHeightOnMainChain() (int64, error) {
-	ret, err := client.grpcClient.GetFork(context.Background(), &types.ReqKey{Key: []byte("ForkBlockHash")})
+func (client *client) GetForkHeightOnMainChain(key string) (int64, error) {
+	ret, err := client.grpcClient.GetFork(context.Background(), &types.ReqKey{Key: []byte(key)})
 	if err != nil {
-		plog.Error("para get rpc ForkBlockHash fail", "err", err.Error())
-		return -1, err
+		plog.Error("para get rpc ForkHeight fail", "key", key, "err", err.Error())
+		return types.MaxHeight, err
 	}
 
 	return ret.Data, nil
@@ -465,11 +475,13 @@ func (client *client) RequestTx(currSeq int64, preMainBlockHash []byte) ([]*type
 			txs := client.FilterTxsForPara(blockSeq.Detail)
 			plog.Info("GetCurrentSeq", "Len of txs", len(txs), "seqTy", blockSeq.Seq.Type)
 
+			client.mtx.Lock()
 			if lastSeq-currSeq > emptyBlockInterval {
 				client.isCaughtUp = false
 			} else {
 				client.isCaughtUp = true
 			}
+			client.mtx.Unlock()
 
 			if client.authAccount != "" {
 				client.commitMsgClient.onMainBlockAdded(blockSeq.Detail)
@@ -800,7 +812,11 @@ func (client *client) Query_IsCaughtUp(req *types.ReqNil) (types.Message, error)
 	if client == nil {
 		return nil, fmt.Errorf("%s", "client not bind message queue.")
 	}
-	return &types.IsCaughtUp{Iscaughtup: client.isCaughtUp}, nil
+	client.mtx.Lock()
+	caughtUp := client.isCaughtUp
+	client.mtx.Unlock()
+
+	return &types.IsCaughtUp{Iscaughtup: caughtUp}, nil
 }
 
 func checkMinerTx(current *types.BlockDetail) error {
