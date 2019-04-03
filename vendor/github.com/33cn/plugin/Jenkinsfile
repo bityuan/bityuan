@@ -22,7 +22,7 @@ pipeline {
                 dir("${PROJ_DIR}"){
                     gitlabCommitStatus(name: 'deploy'){
                         sh 'make build_ci'
-                        sh "cd build && mkdir ${env.BUILD_NUMBER} && cp ci/* ${env.BUILD_NUMBER} -r && cp chain33* Dockerfile* docker* *.sh ${env.BUILD_NUMBER}/ && cd ${env.BUILD_NUMBER}/ && ./docker-compose-pre.sh run ${env.BUILD_NUMBER} all "
+                        sh "cd build && mkdir ${env.BUILD_NUMBER} && cp ci/* ${env.BUILD_NUMBER} -r && ./docker-compose-pre.sh modify && cp chain33* Dockerfile* docker* *.sh ${env.BUILD_NUMBER}/ && cd ${env.BUILD_NUMBER}/ && ./docker-compose-pre.sh run ${env.BUILD_NUMBER} all "
                     }
                 }
             }
@@ -47,6 +47,7 @@ pipeline {
         success {
             echo 'I succeeeded!'
             echo "email user: ${ghprbActualCommitAuthorEmail}"
+
             script{
                 try {
                     mail to: "${ghprbActualCommitAuthorEmail}",
@@ -56,8 +57,9 @@ pipeline {
                 catch (err){
                     echo 'email  err'
                 }
+                currentBuild.result = 'SUCCESS'
             }
-            echo currentBuild.result
+            echo 'SUCCESS'
 
         }
 

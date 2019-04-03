@@ -65,12 +65,21 @@ func RunChain33(name string) {
 			*configPath = name + ".toml"
 		}
 	}
-	d, _ := os.Getwd()
+	d, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
 	log.Info("current dir:", "dir", d)
-	os.Chdir(pwd())
-	d, _ = os.Getwd()
+	err = os.Chdir(pwd())
+	if err != nil {
+		panic(err)
+	}
+	d, err = os.Getwd()
+	if err != nil {
+		panic(err)
+	}
 	log.Info("current dir:", "dir", d)
-	err := limits.SetLimits()
+	err = limits.SetLimits()
 	if err != nil {
 		panic(err)
 	}
@@ -109,9 +118,15 @@ func RunChain33(name string) {
 	//set pprof
 	go func() {
 		if cfg.Pprof != nil {
-			http.ListenAndServe(cfg.Pprof.ListenAddr, nil)
+			err := http.ListenAndServe(cfg.Pprof.ListenAddr, nil)
+			if err != nil {
+				log.Info("ListenAndServe", "listen addr", cfg.Pprof.ListenAddr, "err", err)
+			}
 		} else {
-			http.ListenAndServe("localhost:6060", nil)
+			err := http.ListenAndServe("localhost:6060", nil)
+			if err != nil {
+				log.Info("ListenAndServe", "listen addr localhost:6060 err", err)
+			}
 		}
 	}()
 	//set maxprocs
@@ -119,6 +134,7 @@ func RunChain33(name string) {
 	//开始区块链模块加载
 	//channel, rabitmq 等
 	version.SetLocalDBVersion(cfg.Store.LocalDBVersion)
+	version.SetStoreDBVersion(cfg.Store.StoreDBVersion)
 	version.SetAppVersion(cfg.Version)
 	log.Info(cfg.Title + "-app:" + version.GetAppVersion() + " chain33:" + version.GetVersion() + " localdb:" + version.GetLocalDBVersion())
 	log.Info("loading queue")
@@ -137,14 +153,15 @@ func RunChain33(name string) {
 	exec := executor.New(cfg.Exec, sub.Exec)
 	exec.SetQueueClient(q.Client())
 
+	log.Info("loading blockchain module")
+	chain := blockchain.New(cfg.BlockChain)
+	chain.SetQueueClient(q.Client())
+
 	log.Info("loading store module")
 	s := store.New(cfg.Store, sub.Store)
 	s.SetQueueClient(q.Client())
 
-	log.Info("loading blockchain module")
-	chain := blockchain.New(cfg.BlockChain)
-	chain.SetQueueClient(q.Client())
-	chain.UpgradeChain()
+	chain.Upgrade()
 
 	log.Info("loading consensus module")
 	cs := consensus.New(cfg.Consensus, sub.Consensus)

@@ -202,6 +202,18 @@ func TestGetLastMemPool(t *testing.T) {
 	testGetLastMemPoolOK(t)
 }
 
+func testGetProperFeeOK(t *testing.T) {
+	qapi.On("GetProperFee").Return(nil, nil)
+	data, err := g.GetProperFee(getOkCtx(), nil)
+	assert.Nil(t, err, "the error should be nil")
+	assert.Nil(t, data)
+
+}
+
+func TestGetProperFee(t *testing.T) {
+	testGetProperFeeOK(t)
+}
+
 //func (g *Grpc) QueryChain(ctx context.Context, in *pb.Query) (*pb.Reply, error) {
 //	if !g.checkWhitlist(ctx) {
 //		return nil, fmt.Errorf("reject")
@@ -976,17 +988,6 @@ func TestGetLastHeader(t *testing.T) {
 //	testCreateRawTransactionOk(t)
 //}
 
-//func testSendRawTransactionReject(t *testing.T) {
-//	var in *pb.SignedTx
-//
-//	_, err := g.SendRawTransaction(getNokCtx(), in)
-//	assert.EqualError(t, err, "reject", "the erros should be reject")
-//}
-
-//func TestSendRawTransaction(t *testing.T) {
-//	testSendRawTransactionReject(t)
-//}
-
 //func testQueryTransactionReject(t *testing.T) {
 //	var in *pb.ReqHash
 //
@@ -1090,24 +1091,6 @@ func TestGrpc_CreateRawTxGroup(t *testing.T) {
 	assert.Equal(t, types.ErrTxGroupCountLessThanTwo, err)
 }
 
-func TestGrpc_SendRawTransaction(t *testing.T) {
-	transfer := &types.Transaction{
-		Execer: []byte(types.ExecName("ticket")),
-	}
-	payload := types.Encode(transfer)
-
-	qapi.On("SendTx", mock.Anything).Return(nil, nil)
-
-	var param = &types.SignedTx{
-		Unsign: payload,
-		Sign:   []byte("123"),
-		Pubkey: []byte("123"),
-		Ty:     1,
-	}
-	_, err := g.SendRawTransaction(getOkCtx(), param)
-	assert.NoError(t, err)
-}
-
 func TestGrpc_GetAddrOverview(t *testing.T) {
 	_, err := g.GetAddrOverview(getOkCtx(), &types.ReqAddr{})
 	assert.Equal(t, err, types.ErrInvalidAddress)
@@ -1164,4 +1147,15 @@ func TestGrpc_QueryRandNum(t *testing.T) {
 	qapi.On("Query", mock.Anything, mock.Anything, mock.Anything).Return(&pb.ReplyHash{Hash: []byte("test")}, nil)
 	_, err := g.QueryRandNum(getOkCtx(), &pb.ReqRandHash{})
 	assert.NoError(t, err)
+}
+
+func TestGrpc_GetFork(t *testing.T) {
+	pb.SetDappFork("local", "para", "fork100", 100)
+	val, err := g.GetFork(getOkCtx(), &pb.ReqKey{Key: []byte("para-fork100")})
+	assert.NoError(t, err)
+	assert.Equal(t, int64(100), val.Data)
+
+	val, err = g.GetFork(getOkCtx(), &pb.ReqKey{Key: []byte("ForkBlockHash")})
+	assert.NoError(t, err)
+	assert.Equal(t, int64(1), val.Data)
 }

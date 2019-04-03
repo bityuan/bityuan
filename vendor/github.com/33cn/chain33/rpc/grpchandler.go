@@ -8,6 +8,8 @@ import (
 	"encoding/hex"
 	"time"
 
+	"strings"
+
 	pb "github.com/33cn/chain33/types"
 	"golang.org/x/net/context"
 )
@@ -76,11 +78,6 @@ func (g *Grpc) CreateRawTxGroup(ctx context.Context, in *pb.CreateTransactionGro
 		return nil, err
 	}
 	return &pb.UnsignTx{Data: reply}, nil
-}
-
-// SendRawTransaction send rawtransaction
-func (g *Grpc) SendRawTransaction(ctx context.Context, in *pb.SignedTx) (*pb.Reply, error) {
-	return g.cli.SendRawTransaction(in)
 }
 
 // QueryTransaction query transaction by grpc
@@ -208,6 +205,11 @@ func (g *Grpc) GetLastMemPool(ctx context.Context, in *pb.ReqNil) (*pb.ReplyTxLi
 	return g.cli.GetLastMempool()
 }
 
+// GetProperFee return last mempool proper fee
+func (g *Grpc) GetProperFee(ctx context.Context, in *pb.ReqNil) (*pb.ReplyProperFee, error) {
+	return g.cli.GetProperFee()
+}
+
 // GetBlockOverview get block overview
 // GetBlockOverview(parm *types.ReqHash) (*types.BlockOverview, error)   //add by hyb
 func (g *Grpc) GetBlockOverview(ctx context.Context, in *pb.ReqHash) (*pb.BlockOverview, error) {
@@ -333,7 +335,10 @@ func (g *Grpc) GetFatalFailure(ctx context.Context, in *pb.ReqNil) (*pb.Int32, e
 func (g *Grpc) CloseQueue(ctx context.Context, in *pb.ReqNil) (*pb.Reply, error) {
 	go func() {
 		time.Sleep(time.Millisecond * 100)
-		g.cli.CloseQueue()
+		_, err := g.cli.CloseQueue()
+		if err != nil {
+			log.Error("CloseQueue", "Error", err)
+		}
 	}()
 
 	return &pb.Reply{IsOk: true}, nil
@@ -375,5 +380,9 @@ func (g *Grpc) QueryRandNum(ctx context.Context, in *pb.ReqRandHash) (*pb.ReplyH
 
 // GetFork get fork height by fork key
 func (g *Grpc) GetFork(ctx context.Context, in *pb.ReqKey) (*pb.Int64, error) {
+	keys := strings.Split(string(in.Key), "-")
+	if len(keys) == 2 {
+		return &pb.Int64{Data: pb.GetDappFork(keys[0], keys[1])}, nil
+	}
 	return &pb.Int64{Data: pb.GetFork(string(in.Key))}, nil
 }
