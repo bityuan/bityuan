@@ -155,6 +155,8 @@ ForkTxGroupPara= -1
 ForkChainParamV2= -1
 ForkMultiSignAddress=-1 #fork 6.2
 ForkStateDBSet=-1 #fork 6.2
+ForkLocalDBAccess=-1 #fork 6.2
+ForkBlockCheck=-1 #fork 6.2
 
 [fork.sub.coins]
 Enable=0
@@ -180,6 +182,7 @@ ForkTokenBlackList= 0
 ForkBadTokenSymbol= 0
 ForkTokenPrice= 300000
 ForkTokenSymbolWithNumber=1600000
+ForkTokenCheck= -1 #fork 6.2
 
 [fork.sub.trade]
 Enable=0
@@ -190,6 +193,7 @@ ForkTradeID = -1 #fork 6.2
 [fork.sub.paracross]
 Enable=1600000
 ForkParacrossWithdrawFromParachain=1600000
+ForkParacrossCommitTx=-1 #fork 6.2
 
 [fork.sub.multisig]
 Enable=1600000
