@@ -59,9 +59,9 @@ func ExecTx(client queue.Client, prevStateRoot []byte, block *types.Block) (*typ
 }
 
 //ExecKVMemSet : send kv values to memory store and set it in db
-func ExecKVMemSet(client queue.Client, prevStateRoot []byte, height int64, kvset []*types.KeyValue, sync bool) ([]byte, error) {
+func ExecKVMemSet(client queue.Client, prevStateRoot []byte, height int64, kvset []*types.KeyValue, sync bool, upgrade bool) ([]byte, error) {
 	set := &types.StoreSet{StateHash: prevStateRoot, KV: kvset, Height: height}
-	setwithsync := &types.StoreSetWithSync{Storeset: set, Sync: sync}
+	setwithsync := &types.StoreSetWithSync{Storeset: set, Sync: sync, Upgrade: upgrade}
 
 	msg := client.NewMessage("store", types.EventStoreMemSet, setwithsync)
 	err := client.Send(msg, true)
@@ -77,8 +77,8 @@ func ExecKVMemSet(client queue.Client, prevStateRoot []byte, height int64, kvset
 }
 
 //ExecKVSetCommit : commit the data set opetation to db
-func ExecKVSetCommit(client queue.Client, hash []byte) error {
-	req := &types.ReqHash{Hash: hash}
+func ExecKVSetCommit(client queue.Client, hash []byte, upgrade bool) error {
+	req := &types.ReqHash{Hash: hash, Upgrade: upgrade}
 	msg := client.NewMessage("store", types.EventStoreCommit, req)
 	err := client.Send(msg, true)
 	if err != nil {
@@ -163,7 +163,11 @@ func CheckTxDup(client queue.Client, txs []*types.TransactionCache, height int64
 	}
 	checkHashList.Count = height
 	hashList := client.NewMessage("blockchain", types.EventTxHashList, &checkHashList)
-	client.Send(hashList, true)
+	err = client.Send(hashList, true)
+	if err != nil {
+		log.Error("send", "to blockchain EventTxHashList msg err", err)
+		return nil, err
+	}
 	dupTxList, err := client.Wait(hashList)
 	if err != nil {
 		return nil, err
@@ -199,7 +203,10 @@ func ReportErrEventToFront(logger log.Logger, client queue.Client, frommodule st
 	reportErrEvent.Tomodule = tomodule
 	reportErrEvent.Error = err.Error()
 	msg := client.NewMessage(tomodule, types.EventErrToFront, &reportErrEvent)
-	client.Send(msg, false)
+	err = client.Send(msg, false)
+	if err != nil {
+		log.Error("send", "EventErrToFront msg err", err)
+	}
 }
 
 //DelDupKey 删除重复的key

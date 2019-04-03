@@ -114,12 +114,6 @@ func (c *GrpcCtx) Run() (err error) {
 			*c.Res.(*types.UnsignTx) = *reply
 		}
 		errRet = err
-	case "SendRawTransaction":
-		reply, err := rpc.SendRawTransaction(context.Background(), c.Params.(*types.SignedTx))
-		if err == nil {
-			*c.Res.(*types.Reply) = *reply
-		}
-		errRet = err
 	case "QueryTransaction":
 		reply, err := rpc.QueryTransaction(context.Background(), c.Params.(*types.ReqHash))
 		if err == nil {
@@ -223,6 +217,12 @@ func (c *GrpcCtx) Run() (err error) {
 		reply, err := rpc.GetLastMemPool(context.Background(), c.Params.(*types.ReqNil))
 		if err == nil {
 			*c.Res.(*types.ReplyTxList) = *reply
+		}
+		errRet = err
+	case "GetProperFee":
+		reply, err := rpc.GetProperFee(context.Background(), c.Params.(*types.ReqNil))
+		if err == nil {
+			*c.Res.(*types.ReplyProperFee) = *reply
 		}
 		errRet = err
 	case "GetWalletStatus":

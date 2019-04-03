@@ -14,6 +14,7 @@ import (
 	"github.com/33cn/chain33/common"
 	dbm "github.com/33cn/chain33/common/db"
 	log "github.com/33cn/chain33/common/log/log15"
+	"github.com/33cn/chain33/system/store/mavl/db/ticket"
 	"github.com/33cn/chain33/types"
 	farm "github.com/dgryski/go-farm"
 	"github.com/golang/protobuf/proto"
@@ -168,6 +169,16 @@ func (t *Tree) Hash() []byte {
 		return nil
 	}
 	hash := t.root.Hash(t)
+	// 更新memTree
+	if enableMemTree && memTree != nil {
+		for k := range t.obsoleteNode {
+			memTree.Delete(k)
+		}
+		for k, v := range t.updateNode {
+			memTree.Add(k, v)
+		}
+		treelog.Debug("Tree.Hash", "memTree len", memTree.Len(), "tree height", t.blockHeight)
+	}
 	return hash
 }
 
@@ -179,23 +190,19 @@ func (t *Tree) Save() []byte {
 	if t.ndb != nil {
 		if t.isRemoveLeafCountKey() {
 			//DelLeafCountKV 需要先提前将leafcoutkey删除,这里需先于t.ndb.Commit()
-			DelLeafCountKV(t.ndb.db, t.blockHeight)
+			err := DelLeafCountKV(t.ndb.db, t.blockHeight)
+			if err != nil {
+				treelog.Error("Tree.Save", "DelLeafCountKV err", err)
+			}
 		}
 		saveNodeNo := t.root.save(t)
 		treelog.Debug("Tree.Save", "saveNodeNo", saveNodeNo, "tree height", t.blockHeight)
 		// 保存每个高度的roothash
 		if enablePrune {
-			t.root.saveRootHash(t)
-		}
-		// 更新memTree
-		if enableMemTree && memTree != nil {
-			for k := range t.obsoleteNode {
-				memTree.Delete(k)
+			err := t.root.saveRootHash(t)
+			if err != nil {
+				treelog.Error("Tree.Save", "saveRootHash err", err)
 			}
-			for k, v := range t.updateNode {
-				memTree.Add(k, v)
-			}
-			treelog.Debug("Tree.Save", "memTree len", memTree.Len(), "tree height", t.blockHeight)
 		}
 
 		beg := types.Now()
@@ -335,7 +342,10 @@ func (t *Tree) isRemoveLeafCountKey() bool {
 		maxBlockHeight = t.getMaxBlockHeight()
 	}
 	if t.blockHeight > maxBlockHeight {
-		t.setMaxBlockHeight(t.blockHeight)
+		err := t.setMaxBlockHeight(t.blockHeight)
+		if err != nil {
+			panic(err)
+		}
 		maxBlockHeight = t.blockHeight
 		return false
 	}
@@ -370,7 +380,9 @@ func (t *Tree) RemoveLeafCountKey(height int64) {
 			treelog.Debug("RemoveLeafCountKey:", "height", height, "key:", string(k), "hash:", common.ToHex(hash))
 		}
 	}
-	batch.Write()
+	if err := batch.Write(); err != nil {
+		return
+	}
 }
 
 // Iterate 依次迭代遍历树的所有键
@@ -519,11 +531,6 @@ func (ndb *nodeDB) SaveNode(t *Tree, node *Node) {
 	node.persisted = true
 	ndb.cacheNode(node)
 	delete(ndb.orphans, string(node.hash))
-	//treelog.Debug("SaveNode", "hash", node.hash, "height", node.height, "value", node.value)
-	// Save node hashInt64 to localmem
-	if enableMemTree {
-		updateLocalMemTree(t, node)
-	}
 }
 
 func getNode4MemTree(hash []byte) (*Node, error) {
@@ -563,6 +570,13 @@ func updateGlobalMemTree(node *Node) {
 		Size:   node.size,
 	}
 	if node.height == 0 {
+		if bytes.HasPrefix(node.key, ticket.TicketPrefix) {
+			tk := &ticket.Ticket{}
+			err := proto.Unmarshal(node.value, tk)
+			if err == nil && tk.Status == ticket.StatusCloseTicket { //ticket为close状态下不做存储
+				return
+			}
+		}
 		memN.data = make([][]byte, 4)
 		memN.data[3] = node.value
 	} else {
@@ -588,6 +602,13 @@ func updateLocalMemTree(t *Tree, node *Node) {
 			Size:   node.size,
 		}
 		if node.height == 0 {
+			if bytes.HasPrefix(node.key, ticket.TicketPrefix) {
+				tk := &ticket.Ticket{}
+				err := proto.Unmarshal(node.value, tk)
+				if err == nil && tk.Status == ticket.StatusCloseTicket { //ticket为close状态下不做存储
+					return
+				}
+			}
 			memN.data = make([][]byte, 4)
 			memN.data[3] = node.value
 		} else {
@@ -749,7 +770,10 @@ func VerifyKVPairProof(db dbm.DB, roothash []byte, keyvalue types.KeyValue, proo
 // PrintTreeLeaf 通过roothash打印所有叶子节点
 func PrintTreeLeaf(db dbm.DB, roothash []byte) {
 	tree := NewTree(db, true)
-	tree.Load(roothash)
+	err := tree.Load(roothash)
+	if err != nil {
+		return
+	}
 	var i int32
 	if tree.root != nil {
 		leafs := tree.root.size
@@ -764,7 +788,10 @@ func PrintTreeLeaf(db dbm.DB, roothash []byte) {
 // IterateRangeByStateHash 在start和end之间的键进行迭代回调[start, end)
 func IterateRangeByStateHash(db dbm.DB, statehash, start, end []byte, ascending bool, fn func([]byte, []byte) bool) {
 	tree := NewTree(db, true)
-	tree.Load(statehash)
+	err := tree.Load(statehash)
+	if err != nil {
+		return
+	}
 	//treelog.Debug("IterateRangeByStateHash", "statehash", hex.EncodeToString(statehash), "start", string(start), "end", string(end))
 
 	tree.IterateRange(start, end, ascending, fn)

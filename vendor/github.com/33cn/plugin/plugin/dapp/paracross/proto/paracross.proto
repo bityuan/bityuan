@@ -3,6 +3,7 @@ syntax = "proto3";
 import "transaction.proto";
 import "common.proto";
 import "blockchain.proto";
+import "executor.proto";
 
 package types;
 
@@ -24,6 +25,80 @@ message ParacrossStatus {
     string title     = 1;
     int64  height    = 2;
     bytes  blockHash = 3;
+}
+
+message ParacrossConsensusStatus {
+    string title            = 1;
+    int64  chainHeight      = 2;
+    int64  consensHeight    = 3;
+    string consensBlockHash = 4;
+}
+
+message ParaNodeAddrConfig{
+    string title                = 1;
+    string op                   = 2;
+    string addr                 = 3;
+    string value                = 4;
+
+}
+
+message ParaNodeVoteDetail{
+    repeated string addrs      = 1;
+    repeated string votes      = 2;
+}
+
+message ParaNodeAddrStatus{
+    int32  status               = 1;
+    string title                = 2;
+    string applyAddr            = 3;
+    ParaNodeVoteDetail votes    = 4;
+}
+
+
+message ReceiptParaNodeConfig {
+    string                addr    = 1;
+    ParaNodeAddrConfig    config  = 2;
+    ParaNodeAddrStatus    prev    = 3;
+    ParaNodeAddrStatus    current = 4;
+}
+
+message ReceiptParaNodeVoteRecord {
+    string              fromAddr   = 1;
+    string              voteAddr   = 2;
+    int32               value      = 3;
+}
+
+message ReceiptParaNodeVoteDone {
+    string title            = 1;
+    string targetAddr       = 2;
+    int32  totalNodes       = 3;
+    int32  totalVote        = 4;
+    int32  mostVote         = 5;
+    string voteRst          = 6;
+    int32  doneStatus       = 7;
+
+}
+
+// node query
+message ReqParacrossNodeInfo {
+    string title  = 1;
+    string addr   = 2;
+    int32  status = 3;
+}
+
+message RespParacrossNodeAddrs {
+    repeated ParaNodeAddrStatus addrs = 1;
+}
+
+message ParaBlock2MainMap {
+    int64  height     = 1;
+    string blockHash  = 2;
+    int64  mainHeight = 3;
+    string mainHash   = 4;
+}
+
+message ParaBlock2MainInfo {
+    repeated ParaBlock2MainMap items = 1;
 }
 
 // action
@@ -60,6 +135,8 @@ message ParacrossAction {
         AssetsTransfer        transfer       = 6;
         AssetsWithdraw        withdraw       = 7;
         AssetsTransferToExec  transferToExec = 8;
+        ParaNodeAddrConfig    nodeConfig     = 9;
+
     }
     int32 ty = 2;
 }
@@ -104,8 +181,24 @@ message ReqParacrossTitleHeight {
     int64  height = 2;
 }
 
+message RespParacrossDone {
+    int32  totalNodes     = 1;
+    int32  totalCommit    = 2;
+    int32  mostSameCommit = 3;
+    string title          = 4;
+    int64  height         = 5;
+    string stateHash      = 6;
+    uint32 txCounts       = 7;
+    string txResult       = 8;
+}
+
 message RespParacrossTitles {
-    repeated ReceiptParacrossDone titles = 1;
+    repeated RespParacrossDone titles = 1;
+}
+
+message ReqParacrossTitleHash {
+    string title        = 1;
+    bytes  blockHash    = 2;
 }
 
 // 跨链转账相关
@@ -126,10 +219,12 @@ message ParacrossAsset {
     bool  success          = 23;
 }
 
+
+
 service paracross {
-    rpc GetTitle(ReqString) returns (ParacrossStatus) {}
+    rpc GetTitle(ReqString) returns (ParacrossConsensusStatus) {}
     rpc ListTitles(ReqNil) returns (RespParacrossTitles) {}
-    rpc GetTitleHeight(ReqParacrossTitleHeight) returns (ReceiptParacrossDone) {}
+    rpc GetTitleHeight(ReqParacrossTitleHeight) returns (RespParacrossDone) {}
     rpc GetAssetTxResult(ReqHash) returns (ParacrossAsset) {}
     rpc IsSync(ReqNil) returns (IsCaughtUp) {}
 }

@@ -16,6 +16,8 @@ var (
 	// ParaX paracross exec name
 	ParaX = "paracross"
 	glog  = log.New("module", ParaX)
+	// ForkCommitTx main chain support paracross commit tx
+	ForkCommitTx = "ForkParacrossCommitTx"
 )
 
 func init() {
@@ -24,6 +26,7 @@ func init() {
 	types.RegistorExecutor(ParaX, NewType())
 	types.RegisterDappFork(ParaX, "Enable", 0)
 	types.RegisterDappFork(ParaX, "ForkParacrossWithdrawFromParachain", 1298600)
+	types.RegisterDappFork(ParaX, ForkCommitTx, types.MaxHeight)
 }
 
 // GetExecName get para exec name
@@ -58,6 +61,9 @@ func (p *ParacrossType) GetLogMap() map[int64]*types.LogInfo {
 		TyLogParaAssetTransfer:     {Ty: reflect.TypeOf(types.ReceiptAccountTransfer{}), Name: "LogParaAssetTransfer"},
 		TyLogParaAssetDeposit:      {Ty: reflect.TypeOf(types.ReceiptAccountTransfer{}), Name: "LogParaAssetDeposit"},
 		TyLogParacrossMiner:        {Ty: reflect.TypeOf(ReceiptParacrossMiner{}), Name: "LogParacrossMiner"},
+		TyLogParaNodeConfig:        {Ty: reflect.TypeOf(ReceiptParaNodeConfig{}), Name: "LogParaNodeConfig"},
+		TyLogParaNodeGroupUpdate:   {Ty: reflect.TypeOf(types.ReceiptConfig{}), Name: "LogParaNodeGroupUpdate"},
+		TyLogParaNodeVoteDone:      {Ty: reflect.TypeOf(ReceiptParaNodeVoteDone{}), Name: "LogParaNodeVoteDone"},
 	}
 }
 
@@ -71,6 +77,7 @@ func (p *ParacrossType) GetTypeMap() map[string]int32 {
 		"Transfer":       ParacrossActionTransfer,
 		"Withdraw":       ParacrossActionWithdraw,
 		"TransferToExec": ParacrossActionTransferToExec,
+		"NodeConfig":     ParacrossActionNodeConfig,
 	}
 }
 
@@ -104,6 +111,17 @@ func (p ParacrossType) CreateTx(action string, message json.RawMessage) (*types.
 		action == "ParacrossTransferToExec" || action == "TransferToExec" {
 
 		return p.CreateRawTransferTx(action, message)
+	} else if action == "NodeConfig" {
+		if !types.IsPara() {
+			return nil, types.ErrNotSupport
+		}
+		var param ParaNodeAddrConfig
+		err := json.Unmarshal(message, &param)
+		if err != nil {
+			glog.Error("CreateTx.NodeConfig", "Error", err)
+			return nil, types.ErrInvalidParam
+		}
+		return CreateRawNodeConfigTx(&param)
 	}
 
 	return nil, types.ErrNotSupport

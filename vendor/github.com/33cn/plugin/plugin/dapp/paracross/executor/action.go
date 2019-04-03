@@ -39,36 +39,42 @@ func newAction(t *Paracross, tx *types.Transaction) *action {
 		t.GetBlockTime(), t.GetHeight(), dapp.ExecAddress(string(tx.Execer)), t.GetAPI(), tx, t}
 }
 
-func getNodes(db dbm.KV, title string) (map[string]struct{}, error) {
-	key := calcConfigNodesKey(title)
+func getNodes(db dbm.KV, key []byte) (map[string]struct{}, []string, error) {
 	item, err := db.Get(key)
 	if err != nil {
 		clog.Info("getNodes", "get db key", string(key), "failed", err)
 		if isNotFound(err) {
 			err = pt.ErrTitleNotExist
 		}
-		return nil, errors.Wrapf(err, "db get key:%s", string(key))
+		return nil, nil, errors.Wrapf(err, "db get key:%s", string(key))
 	}
 	var config types.ConfigItem
 	err = types.Decode(item, &config)
 	if err != nil {
-		return nil, errors.Wrap(err, "decode config")
+		return nil, nil, errors.Wrap(err, "decode config")
 	}
 
 	value := config.GetArr()
 	if value == nil {
 		// 在配置地址后，发现配置错了， 删除会出现这种情况
-		return map[string]struct{}{}, nil
+		return map[string]struct{}{}, nil, nil
 	}
-	uniqNode := make(map[string]struct{})
+	var nodesArray []string
+	nodesMap := make(map[string]struct{})
 	for _, v := range value.Value {
-		uniqNode[v] = struct{}{}
+		if _, exist := nodesMap[v]; !exist {
+			nodesMap[v] = struct{}{}
+			nodesArray = append(nodesArray, v)
+		}
 	}
 
-	return uniqNode, nil
+	return nodesMap, nodesArray, nil
 }
 
 func validTitle(title string) bool {
+	if types.IsPara() {
+		return types.GetTitle() == title
+	}
 	return len(title) > 0
 }
 
@@ -83,6 +89,10 @@ func checkCommitInfo(commit *pt.ParacrossCommitAction) error {
 	if commit.Status == nil {
 		return types.ErrInvalidParam
 	}
+	clog.Debug("paracross.Commit check input", "height", commit.Status.Height, "mainHeight", commit.Status.MainBlockHeight,
+		"mainHash", hex.EncodeToString(commit.Status.MainBlockHash), "blockHash", hex.EncodeToString(commit.Status.BlockHash),
+		"preBlockHash", hex.EncodeToString(commit.Status.PreBlockHash))
+
 	if commit.Status.Height == 0 {
 		if len(commit.Status.Title) == 0 || len(commit.Status.BlockHash) == 0 {
 			return types.ErrInvalidParam
@@ -204,19 +214,45 @@ func hasCommited(addrs []string, addr string) (bool, int) {
 	return false, 0
 }
 
+func (a *action) getNodesGroup(title string) (map[string]struct{}, error) {
+	if !types.IsDappFork(a.exec.GetMainHeight(), pt.ParaX, pt.ForkCommitTx) {
+		key := calcManageConfigNodesKey(title)
+		nodes, _, err := getNodes(a.db, key)
+		if err != nil {
+			return nil, errors.Wrapf(err, "getNodes for title:%s", title)
+		}
+		return nodes, nil
+	}
+
+	key := calcParaNodeGroupKey(title)
+	nodes, _, err := getNodes(a.db, key)
+	if err != nil {
+		if errors.Cause(err) != pt.ErrTitleNotExist {
+			return nil, errors.Wrapf(err, "getNodes para for title:%s", title)
+		}
+		key = calcManageConfigNodesKey(title)
+		nodes, _, err = getNodes(a.db, key)
+		if err != nil {
+			return nil, errors.Wrapf(err, "getNodes manager for title:%s", title)
+		}
+	}
+
+	return nodes, nil
+}
+
 func (a *action) Commit(commit *pt.ParacrossCommitAction) (*types.Receipt, error) {
 	err := checkCommitInfo(commit)
 	if err != nil {
 		return nil, err
 	}
-	clog.Debug("paracross.Commit check", "input", commit.Status)
+
 	if !validTitle(commit.Status.Title) {
 		return nil, pt.ErrInvalidTitle
 	}
 
-	nodes, err := getNodes(a.db, commit.Status.Title)
+	nodes, err := a.getNodesGroup(commit.Status.Title)
 	if err != nil {
-		return nil, errors.Wrapf(err, "getNodes for title:%s", commit.Status.Title)
+		return nil, err
 	}
 
 	if !validNode(a.fromaddr, nodes) {
@@ -241,23 +277,29 @@ func (a *action) Commit(commit *pt.ParacrossCommitAction) (*types.Receipt, error
 	// 主链   （1）Bn1        （3） rollback-Bn1   （4） commit-done in Bn2
 	// 平行链         （2）commit                                 （5） 将得到一个错误的块
 	// 所以有必要做这个检测
-	blockHash, err := getBlockHash(a.api, commit.Status.MainBlockHeight)
+	commitHeight := commit.Status.MainBlockHeight
+	commitHash := commit.Status.MainBlockHash
+	if types.IsPara() {
+		commitHeight = commit.Status.Height
+		commitHash = commit.Status.BlockHash
+	}
+	blockHash, err := getBlockHash(a.api, commitHeight)
 	if err != nil {
 		clog.Error("paracross.Commit getBlockHash", "err", err,
-			"commit tx Main.height", commit.Status.MainBlockHeight, "from", a.fromaddr)
+			"commit tx height", commitHeight, "isMain", !types.IsPara(), "from", a.fromaddr)
 		return nil, err
 	}
-	if !bytes.Equal(blockHash.Hash, commit.Status.MainBlockHash) && commit.Status.Height > 0 {
-		clog.Error("paracross.Commit blockHash not match", "db", hex.EncodeToString(blockHash.Hash),
-			"commit tx", hex.EncodeToString(commit.Status.MainBlockHash), "commitHeight", commit.Status.Height,
-			"from", a.fromaddr)
+	if !bytes.Equal(blockHash.Hash, commitHash) && commit.Status.Height > 0 {
+		clog.Error("paracross.Commit blockHash not match", "isMain", !types.IsPara(), "db", hex.EncodeToString(blockHash.Hash),
+			"commit tx", hex.EncodeToString(commitHash), "commitHeight", commit.Status.Height,
+			"commitMainHeight", commit.Status.MainBlockHeight, "from", a.fromaddr)
 		return nil, types.ErrBlockHashNoMatch
 	}
 
 	clog.Debug("paracross.Commit check input done")
 	// 在完成共识之后来的， 增加 record log， 只记录不修改已经达成的共识
 	if commit.Status.Height <= titleStatus.Height {
-		clog.Info("paracross.Commit record", "node", a.fromaddr, "titile", commit.Status.Title,
+		clog.Debug("paracross.Commit record", "node", a.fromaddr, "titile", commit.Status.Title,
 			"height", commit.Status.Height)
 		return makeRecordReceipt(a.fromaddr, commit), nil
 	}
@@ -282,7 +324,12 @@ func (a *action) Commit(commit *pt.ParacrossCommitAction) (*types.Receipt, error
 		}
 		receipt = makeCommitReceipt(a.fromaddr, commit, nil, stat)
 	} else {
-		copyStat := *stat
+		var copyStat pt.ParacrossHeightStatus
+		err = deepCopy(&copyStat, stat)
+		if err != nil {
+			clog.Error("paracross.Commit deep copy fail", "copy", copyStat, "stat", stat)
+			return nil, err
+		}
 		// 如有分叉， 同一个节点可能再次提交commit交易
 		found, index := hasCommited(stat.Details.Addrs, a.fromaddr)
 		if found {
@@ -293,19 +340,26 @@ func (a *action) Commit(commit *pt.ParacrossCommitAction) (*types.Receipt, error
 		}
 		receipt = makeCommitReceipt(a.fromaddr, commit, &copyStat, stat)
 	}
-	clog.Info("paracross.Commit commit", "stat", stat)
+	clog.Info("paracross.Commit commit", "stat.title", stat.Title, "stat.height", stat.Height, "notes", len(nodes))
+	for i, v := range stat.Details.Addrs {
+		clog.Info("paracross.Commit commit detail", "addr", v, "hash", hex.EncodeToString(stat.Details.BlockHash[i]))
+	}
 
 	if commit.Status.Height > titleStatus.Height+1 {
 		saveTitleHeight(a.db, calcTitleHeightKey(commit.Status.Title, commit.Status.Height), stat)
-		return receipt, nil
+		//平行链由主链共识无缝切换，即接收第一个收到的高度，可以不从0开始
+		if !(types.IsPara() && titleStatus.Height == -1) {
+			return receipt, nil
+		}
 	}
 
 	commitCount := len(stat.Details.Addrs)
-	most, _ := getMostCommit(stat)
+	most, mostHash := getMostCommit(stat)
 	if !isCommitDone(stat, nodes, most) {
 		saveTitleHeight(a.db, calcTitleHeightKey(commit.Status.Title, commit.Status.Height), stat)
 		return receipt, nil
 	}
+	clog.Info("paracross.Commit commit ----pass", "most", most, "mostHash", hex.EncodeToString([]byte(mostHash)))
 
 	stat.Status = pt.ParacrossStatusCommitDone
 	receiptDone := makeDoneReceipt(a.fromaddr, commit, stat, int32(most), int32(commitCount), int32(len(nodes)))
@@ -317,10 +371,15 @@ func (a *action) Commit(commit *pt.ParacrossCommitAction) (*types.Receipt, error
 	titleStatus.Height = commit.Status.Height
 	titleStatus.BlockHash = commit.Status.BlockHash
 	saveTitle(a.db, calcTitleKey(commit.Status.Title), titleStatus)
-	clog.Info("paracross.Commit commit", "commitDone", titleStatus)
 
-	clog.Info("paracross.Commit commit", "commitDone", titleStatus, "height", commit.Status.Height,
-		"cross tx count", len(commit.Status.CrossTxHashs))
+	clog.Info("paracross.Commit commit done", "height", commit.Status.Height,
+		"cross tx count", len(commit.Status.CrossTxHashs), "statusBlockHash", hex.EncodeToString(titleStatus.BlockHash))
+
+	//parallel chain not need to process cross commit tx here
+	if types.IsPara() {
+		return receipt, nil
+	}
+
 	if enableParacrossTransfer && commit.Status.Height > 0 && len(commit.Status.CrossTxHashs) > 0 {
 		clog.Debug("paracross.Commit commitDone", "do cross", "")
 		crossTxReceipt, err := a.execCrossTxs(commit)
@@ -367,7 +426,7 @@ func (a *action) execCrossTx(tx *types.TransactionDetail, commit *pt.ParacrossCo
 func (a *action) execCrossTxs(commit *pt.ParacrossCommitAction) (*types.Receipt, error) {
 	var receipt types.Receipt
 	for i := 0; i < len(commit.Status.CrossTxHashs); i++ {
-		clog.Info("paracross.Commit commitDone", "do cross number", i, "hash",
+		clog.Debug("paracross.Commit commitDone", "do cross number", i, "hash",
 			hex.EncodeToString(commit.Status.CrossTxHashs[i]),
 			"res", util.BitMapBit(commit.Status.CrossTxResult, uint32(i)))
 		if util.BitMapBit(commit.Status.CrossTxResult, uint32(i)) {
