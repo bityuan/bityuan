@@ -110,8 +110,9 @@ returnAddr="1AH9HRd4WBJ824h9PP1jYpvRZ4BSA4oN6Y"
 count=4733
 
 [store]
-name="mavl"
+name="kvmvccmavl"
 driver="leveldb"
+storedbVersion="2.0.0"
 
 [wallet]
 minFee=100000
