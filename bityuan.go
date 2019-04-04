@@ -19,9 +19,9 @@ serverStart=true
 msgCacheSize=10240
 driver="leveldb"
 
-#下一个版本改成: score 模式
+#下一个版本改成: price 模式
 [mempool]
-name="timeline"
+name="price"
 poolCacheSize=102400
 minTxFee=100000
 
@@ -35,8 +35,6 @@ pricePower=1     #常量比例
 
 [mempool.sub.price]
 poolCacheSize=102400
-minTxFee=100000
-maxTxNumPerAccount=100
 
 [consensus]
 name="ticket"
