@@ -65,6 +65,14 @@ pruneHeight=10000
 enableMemTree=true
 enableMemVal=true
 
+[store.sub.kvmvccmavl]
+enableMavlPrefix=false
+enableMVCC=false
+enableMavlPrune=false
+pruneHeight=10000
+enableMemTree=true
+enableMemVal=true
+
 [wallet]
 dbPath="wallet"
 dbCache=16
