@@ -28,6 +28,8 @@ dbCache=64
 batchsync=false
 isRecordBlockSequence=false
 enableTxQuickIndex=false
+# 升级storedb是否重新执行localdb，bityuan主链升级不需要开启，平行链升级需要开启
+enableReExecLocal=false
 
 [p2p]
 seeds=[]
