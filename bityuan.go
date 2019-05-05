@@ -201,4 +201,7 @@ Enable=1600000
 Enable=1600000
 ForkTerminatePart=1600000
 ForkUnfreezeIDX= -1 #fork 6.2
+
+[fork.sub.kvmvccmavl]
+ForkKvmvccmavl=-1 #fork 6.2
 `
