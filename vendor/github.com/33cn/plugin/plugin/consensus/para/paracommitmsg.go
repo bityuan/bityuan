@@ -286,11 +286,6 @@ func (client *commitMsgClient) singleCalcTx(status *pt.ParacrossNodeStatus) (*ty
 
 }
 
-// 从ch收到tx有两种可能，readTick和addBlock, 如果
-// 3 input case from ch: readTick , addBlock and delMsg to readTick, readTick trigger firstly and will block until received from addBlock
-// if sendCommitMsgTx block quite long, write channel will be block in handle(), addBlock will not send new msg until rpc send over
-// if sendCommitMsgTx block quite long, if delMsg occur, after send over, ignore previous tx succ or fail, new msg will be rcv and sent
-// if sendCommitMsgTx fail, wait 1s resend the failed tx, if new tx rcv from ch, send the new one.
 func (client *commitMsgClient) sendCommitMsg(ch chan *types.Transaction) {
 	var err error
 	var tx *types.Transaction
@@ -301,15 +296,12 @@ out:
 		select {
 		case tx = <-ch:
 			err = client.sendCommitMsgTx(tx)
-			if err != nil && err != types.ErrBalanceLessThanTenTimesFee {
-				resendTimer = time.After(time.Second * 1)
+			if err != nil && (err != types.ErrBalanceLessThanTenTimesFee && err != types.ErrNoBalance) {
+				resendTimer = time.After(time.Second * 2)
 			}
 		case <-resendTimer:
 			if err != nil && tx != nil {
-				err = client.sendCommitMsgTx(tx)
-				if err != nil && err != types.ErrBalanceLessThanTenTimesFee {
-					resendTimer = time.After(time.Second * 1)
-				}
+				client.sendCommitMsgTx(tx)
 			}
 		case <-client.quit:
 			break out
@@ -339,15 +331,15 @@ func (client *commitMsgClient) sendCommitMsgTx(tx *types.Transaction) error {
 }
 
 func checkTxInMainBlock(targetTx *types.Transaction, detail *types.BlockDetail) bool {
-	targetHash := targetTx.Hash()
+	txMap := make(map[string]bool)
 
 	for i, tx := range detail.Block.Txs {
-		if bytes.Equal(targetHash, tx.Hash()) && detail.Receipts[i].Ty == types.ExecOk {
-			return true
+		if bytes.HasSuffix(tx.Execer, []byte(pt.ParaX)) && detail.Receipts[i].Ty == types.ExecOk {
+			txMap[string(tx.Hash())] = true
 		}
 	}
-	return false
 
+	return txMap[string(targetTx.Hash())]
 }
 
 func isParaSelfConsensusForked(height int64) bool {
@@ -537,46 +529,50 @@ out:
 }
 
 func (client *commitMsgClient) getConsensusStatus(block *types.Block) (*pt.ParacrossStatus, error) {
-	//获取主链共识高度
-	if !isParaSelfConsensusForked(block.MainHeight) {
-		reply, err := client.paraClient.grpcClient.QueryChain(context.Background(), &types.ChainExecutor{
+	if isParaSelfConsensusForked(block.MainHeight) {
+		//从本地查询共识高度
+		ret, err := client.paraClient.GetAPI().QueryChain(&types.ChainExecutor{
 			Driver:   "paracross",
-			FuncName: "GetTitleByHash",
-			Param:    types.Encode(&pt.ReqParacrossTitleHash{Title: types.GetTitle(), BlockHash: block.MainHash}),
+			FuncName: "GetTitle",
+			Param:    types.Encode(&types.ReqString{Data: types.GetTitle()}),
 		})
 		if err != nil {
-			plog.Error("getMainConsensusHeight", "err", err.Error())
+			plog.Error("getConsensusHeight ", "err", err.Error())
 			return nil, err
 		}
-		if !reply.GetIsOk() {
-			plog.Info("getMainConsensusHeight nok", "error", reply.GetMsg())
+		resp, ok := ret.(*pt.ParacrossStatus)
+		if !ok {
+			plog.Error("getConsensusHeight ParacrossStatus nok")
 			return nil, err
 		}
-		var result pt.ParacrossStatus
-		err = types.Decode(reply.Msg, &result)
-		if err != nil {
-			plog.Error("getMainConsensusHeight decode", "err", err.Error())
-			return nil, err
+		//开启自共识后也要等到自共识真正切换之后再使用，如果本地区块已经过了自共识高度，但自共识的高度还没达成，就会导致共识机制出错
+		if resp.Height > -1 {
+			return resp, nil
 		}
-		return &result, nil
 	}
 
-	//从本地查询共识高度
-	ret, err := client.paraClient.GetAPI().QueryChain(&types.ChainExecutor{
+	//去主链获取共识高度
+	reply, err := client.paraClient.grpcClient.QueryChain(context.Background(), &types.ChainExecutor{
 		Driver:   "paracross",
-		FuncName: "GetTitle",
-		Param:    types.Encode(&types.ReqString{Data: types.GetTitle()}),
+		FuncName: "GetTitleByHash",
+		Param:    types.Encode(&pt.ReqParacrossTitleHash{Title: types.GetTitle(), BlockHash: block.MainHash}),
 	})
 	if err != nil {
-		plog.Error("getConsensusHeight ", "err", err.Error())
+		plog.Error("getMainConsensusHeight", "err", err.Error())
 		return nil, err
 	}
-	resp, ok := ret.(*pt.ParacrossStatus)
-	if !ok {
-		plog.Error("getConsensusHeight ParacrossStatus nok")
+	if !reply.GetIsOk() {
+		plog.Info("getMainConsensusHeight nok", "error", reply.GetMsg())
 		return nil, err
 	}
-	return resp, nil
+	var result pt.ParacrossStatus
+	err = types.Decode(reply.Msg, &result)
+	if err != nil {
+		plog.Error("getMainConsensusHeight decode", "err", err.Error())
+		return nil, err
+	}
+	return &result, nil
+
 }
 
 func (client *commitMsgClient) fetchPrivacyKey(ch chan crypto.PrivKey) {
