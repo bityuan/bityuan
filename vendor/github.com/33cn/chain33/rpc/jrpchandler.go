@@ -50,6 +50,7 @@ func (c *Chain33) ReWriteRawTx(in *rpctypes.ReWriteRawTx, result *interface{}) e
 		To:     in.To,
 		Fee:    in.Fee,
 		Expire: in.Expire,
+		Index:  in.Index,
 	}
 
 	reply, err := c.cli.ReWriteRawTx(inpb)
@@ -936,17 +937,33 @@ func (c *Chain33) GetFatalFailure(in *types.ReqNil, result *interface{}) error {
 
 }
 
-// DecodeRawTransaction decode rawtransaction
+// DecodeRawTransaction 考虑交易组的解析统一返回ReplyTxList列表
 func (c *Chain33) DecodeRawTransaction(in *types.ReqDecodeRawTransaction, result *interface{}) error {
-	reply, err := c.cli.DecodeRawTransaction(in)
+	tx, err := c.cli.DecodeRawTransaction(in)
 	if err != nil {
 		return err
 	}
-	res, err := rpctypes.DecodeTx(reply)
+	txs, err := tx.GetTxGroup()
 	if err != nil {
 		return err
 	}
-	*result = res
+	var rpctxs rpctypes.ReplyTxList
+	if txs == nil {
+		res, err := rpctypes.DecodeTx(tx)
+		if err != nil {
+			return err
+		}
+		rpctxs.Txs = append(rpctxs.Txs, res)
+	} else {
+		for _, rpctx := range txs.GetTxs() {
+			res, err := rpctypes.DecodeTx(rpctx)
+			if err != nil {
+				return err
+			}
+			rpctxs.Txs = append(rpctxs.Txs, res)
+		}
+	}
+	*result = &rpctxs
 	return nil
 }
 
