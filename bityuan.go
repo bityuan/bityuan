@@ -157,6 +157,7 @@ ForkStateDBSet=-1 #fork 6.2
 ForkLocalDBAccess=-1 #fork 6.2
 ForkBlockCheck=-1 #fork 6.2
 ForkBase58AddressCheck=-1 #fork 6.2
+ForkEnableParaRegExec=-1 #fork 6.2
 
 [fork.sub.coins]
 Enable=0
@@ -164,6 +165,7 @@ Enable=0
 [fork.sub.ticket]
 Enable=0
 ForkTicketId = 1600000
+ForkTicketVrf = -1 # 6.2
 
 [fork.sub.retrieve]
 Enable=0
