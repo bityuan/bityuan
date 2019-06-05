@@ -26,7 +26,7 @@ func init() {
 	types.RegistorExecutor(ParaX, NewType())
 	types.RegisterDappFork(ParaX, "Enable", 0)
 	types.RegisterDappFork(ParaX, "ForkParacrossWithdrawFromParachain", 1298600)
-	types.RegisterDappFork(ParaX, ForkCommitTx, types.MaxHeight)
+	types.RegisterDappFork(ParaX, ForkCommitTx, 1850000)
 }
 
 // GetExecName get para exec name
@@ -54,19 +54,19 @@ func (p *ParacrossType) GetName() string {
 // GetLogMap get receipt log map
 func (p *ParacrossType) GetLogMap() map[int64]*types.LogInfo {
 	return map[int64]*types.LogInfo{
-		TyLogParacrossCommit:       {Ty: reflect.TypeOf(ReceiptParacrossCommit{}), Name: "LogParacrossCommit"},
-		TyLogParacrossCommitDone:   {Ty: reflect.TypeOf(ReceiptParacrossDone{}), Name: "LogParacrossCommitDone"},
-		TyLogParacrossCommitRecord: {Ty: reflect.TypeOf(ReceiptParacrossRecord{}), Name: "LogParacrossCommitRecord"},
-		TyLogParaAssetWithdraw:     {Ty: reflect.TypeOf(types.ReceiptAccountTransfer{}), Name: "LogParaAssetWithdraw"},
-		TyLogParaAssetTransfer:     {Ty: reflect.TypeOf(types.ReceiptAccountTransfer{}), Name: "LogParaAssetTransfer"},
-		TyLogParaAssetDeposit:      {Ty: reflect.TypeOf(types.ReceiptAccountTransfer{}), Name: "LogParaAssetDeposit"},
-		TyLogParacrossMiner:        {Ty: reflect.TypeOf(ReceiptParacrossMiner{}), Name: "LogParacrossMiner"},
-		TyLogParaNodeConfig:        {Ty: reflect.TypeOf(ReceiptParaNodeConfig{}), Name: "LogParaNodeConfig"},
-		TyLogParaNodeGroupUpdate:   {Ty: reflect.TypeOf(types.ReceiptConfig{}), Name: "LogParaNodeGroupUpdate"},
-		TyLogParaNodeVoteDone:      {Ty: reflect.TypeOf(ReceiptParaNodeVoteDone{}), Name: "LogParaNodeVoteDone"},
-		TyLogParaNodeGroupApply:    {Ty: reflect.TypeOf(ReceiptParaNodeConfig{}), Name: "LogParaNodeGroupApply"},
-		TyLogParaNodeGroupApprove:  {Ty: reflect.TypeOf(ReceiptParaNodeConfig{}), Name: "LogParaNodeGroupApprove"},
-		TyLogParaNodeGroupQuit:     {Ty: reflect.TypeOf(ReceiptParaNodeConfig{}), Name: "LogParaNodeGroupQuit"},
+		TyLogParacrossCommit:           {Ty: reflect.TypeOf(ReceiptParacrossCommit{}), Name: "LogParacrossCommit"},
+		TyLogParacrossCommitDone:       {Ty: reflect.TypeOf(ReceiptParacrossDone{}), Name: "LogParacrossCommitDone"},
+		TyLogParacrossCommitRecord:     {Ty: reflect.TypeOf(ReceiptParacrossRecord{}), Name: "LogParacrossCommitRecord"},
+		TyLogParaAssetWithdraw:         {Ty: reflect.TypeOf(types.ReceiptAccountTransfer{}), Name: "LogParaAssetWithdraw"},
+		TyLogParaAssetTransfer:         {Ty: reflect.TypeOf(types.ReceiptAccountTransfer{}), Name: "LogParaAssetTransfer"},
+		TyLogParaAssetDeposit:          {Ty: reflect.TypeOf(types.ReceiptAccountTransfer{}), Name: "LogParaAssetDeposit"},
+		TyLogParacrossMiner:            {Ty: reflect.TypeOf(ReceiptParacrossMiner{}), Name: "LogParacrossMiner"},
+		TyLogParaNodeConfig:            {Ty: reflect.TypeOf(ReceiptParaNodeConfig{}), Name: "LogParaNodeConfig"},
+		TyLogParaNodeStatusUpdate:      {Ty: reflect.TypeOf(ReceiptParaNodeAddrStatUpdate{}), Name: "LogParaNodeAddrStatUpdate"},
+		TyLogParaNodeGroupAddrsUpdate:  {Ty: reflect.TypeOf(types.ReceiptConfig{}), Name: "LogParaNodeGroupAddrsUpdate"},
+		TyLogParaNodeVoteDone:          {Ty: reflect.TypeOf(ReceiptParaNodeVoteDone{}), Name: "LogParaNodeVoteDone"},
+		TyLogParaNodeGroupConfig:       {Ty: reflect.TypeOf(ReceiptParaNodeGroupConfig{}), Name: "LogParaNodeGroupConfig"},
+		TyLogParaNodeGroupStatusUpdate: {Ty: reflect.TypeOf(ReceiptParaNodeGroupConfig{}), Name: "LogParaNodeGroupStatusUpdate"},
 	}
 }
 
@@ -126,7 +126,7 @@ func (p ParacrossType) CreateTx(action string, message json.RawMessage) (*types.
 			return nil, types.ErrInvalidParam
 		}
 		return CreateRawNodeConfigTx(&param)
-	} else if action == "NodeGroupApply" {
+	} else if action == "NodeGroupConfig" {
 		if !types.IsPara() {
 			return nil, types.ErrNotSupport
 		}

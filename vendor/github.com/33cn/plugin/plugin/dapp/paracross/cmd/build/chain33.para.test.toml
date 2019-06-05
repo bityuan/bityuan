@@ -1,4 +1,5 @@
 Title="user.p.para."
+CoinSymbol="paracoin"
 
 [log]
 # 日志级别，支持debug(dbug)/info/warn/error(eror)/crit
@@ -62,7 +63,7 @@ grpcFuncWhitelist=["*"]
 mainnetJrpcAddr= "http://localhost:8801"
 
 [mempool]
-name="timeline"
+name="para"
 poolCacheSize=10240
 minTxFee=100000
 maxTxNumPerAccount=10000

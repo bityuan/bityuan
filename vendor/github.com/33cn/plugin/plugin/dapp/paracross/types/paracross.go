@@ -7,6 +7,7 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/33cn/chain33/common/address"
 	"github.com/33cn/chain33/common/log/log15"
@@ -36,12 +37,12 @@ const (
 	// TyLogParaAssetDeposit asset deposit log key
 	TyLogParaAssetDeposit = 656
 	// TyLogParaNodeConfig config super node log key
-	TyLogParaNodeConfig       = 657
-	TyLogParaNodeVoteDone     = 658
-	TyLogParaNodeGroupUpdate  = 659
-	TyLogParaNodeGroupApply   = 660
-	TyLogParaNodeGroupApprove = 661
-	TyLogParaNodeGroupQuit    = 662
+	TyLogParaNodeConfig            = 657
+	TyLogParaNodeVoteDone          = 658
+	TyLogParaNodeGroupAddrsUpdate  = 659
+	TyLogParaNodeGroupConfig       = 660
+	TyLogParaNodeStatusUpdate      = 661
+	TyLogParaNodeGroupStatusUpdate = 664
 )
 
 type paracrossCommitTx struct {
@@ -89,23 +90,40 @@ const (
 
 // node config op
 const (
-	ParaNodeJoin = "join"
-	ParaNodeQuit = "quit"
-	ParaNodeVote = "vote"
-
-	ParaNodeVoteYes = "yes"
-	ParaNodeVoteNo  = "no"
+	ParaNodeJoin = iota + 1
+	ParaNodeVote
+	ParaNodeQuit
+	ParaNodeCancel
 )
 
+// node vote op
 const (
-	// ParacrossNodeAdding apply for adding group
-	ParacrossNodeAdding = iota + 1
-	// ParacrossNodeAdded pass to add by votes
-	ParacrossNodeAdded
-	// ParacrossNodeQuiting apply for quiting
-	ParacrossNodeQuiting
+	ParaNodeVoteInvalid = iota
+	ParaNodeVoteYes
+	ParaNodeVoteNo
+	ParaNodeVoteEnd
+)
+
+// ParaNodeVoteStr ...
+var ParaNodeVoteStr = []string{"invalid", "yes", "no"}
+
+const (
+	// ParacrossNodeJoined pass to add by votes
+	ParacrossNodeJoined = iota + 10
 	// ParacrossNodeQuited pass to quite by votes
 	ParacrossNodeQuited
+)
+
+//voting status
+const (
+	// ParacrossNodeIDJoining apply for join group
+	ParacrossNodeJoining = iota + 1
+	// ParacrossNodeIDQuiting apply for quiting group
+	ParacrossNodeQuiting
+	// ParacrossNodeIDClosed id voting closed
+	ParacrossNodeClosed
+	// ParacrossNodeCanceled to cancel apply of joining or quiting
+	ParacrossNodeCanceled
 )
 
 const (
@@ -115,6 +133,8 @@ const (
 	ParacrossNodeGroupApprove
 	//ParacrossNodeGroupQuit applyer quit the apply when not be approved
 	ParacrossNodeGroupQuit
+	//ParacrossNodeGroupModify applyer modify some parameters
+	ParacrossNodeGroupModify
 )
 
 var (
@@ -177,6 +197,8 @@ func createRawCommitTx(status *ParacrossNodeStatus, name string, fee int64) (*ty
 // CreateRawNodeConfigTx create raw tx for node config
 func CreateRawNodeConfigTx(config *ParaNodeAddrConfig) (*types.Transaction, error) {
 	config.Title = types.GetTitle()
+	config.Addr = strings.Trim(config.Addr, " ")
+	config.Id = strings.Trim(config.Id, " ")
 
 	action := &ParacrossAction{
 		Ty:    ParacrossActionNodeConfig,
@@ -192,11 +214,7 @@ func CreateRawNodeConfigTx(config *ParaNodeAddrConfig) (*types.Transaction, erro
 //CreateRawNodeGroupApplyTx create raw tx for node group
 func CreateRawNodeGroupApplyTx(apply *ParaNodeGroupConfig) (*types.Transaction, error) {
 	apply.Title = types.GetTitle()
-	apply.EmptyBlockInterval = 4
-	interval := types.Conf("config.consensus.sub.para").GInt("emptyBlockInterval")
-	if interval > 0 {
-		apply.EmptyBlockInterval = uint32(interval)
-	}
+	apply.Id = strings.Trim(apply.Id, " ")
 
 	action := &ParacrossAction{
 		Ty:    ParacrossActionNodeGroupApply,

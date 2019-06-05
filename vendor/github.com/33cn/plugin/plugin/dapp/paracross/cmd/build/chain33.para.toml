@@ -1,5 +1,6 @@
 Title="user.p.guodun."
 # TestNet=true
+CoinSymbol="paracoin"
 
 [log]
 # 日志级别，支持debug(dbug)/info/warn/error(eror)/crit
@@ -63,7 +64,7 @@ grpcFuncWhitelist=["*"]
 
 
 [mempool]
-name="timeline"
+name="para"
 poolCacheSize=10240
 minTxFee=100000
 maxTxNumPerAccount=10000
@@ -108,6 +109,8 @@ searchHashMatchedBlockDepth=10000
 genesisAmount=100000000
 #主链支持平行链共识tx分叉高度，需要和主链保持严格一致
 MainForkParacrossCommitTx=-1
+#平行链自共识开启对应的主链高度，需要大于等于MainForkParacrossCommitTx
+MainParaSelfConsensusForkHeight=-1
 
 [store]
 name="mavl"
@@ -133,7 +136,7 @@ minExecFee=100000
 enableStat=false
 
 [exec.sub.relay]
-genesis="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
+genesis="12qyocayNF7Lv6C9qW4avxs2E7U41fKSfv"
 
 [exec.sub.manage]
 superManager=[
@@ -154,6 +157,7 @@ tokenApprs = [
 ]
 
 [exec.sub.paracross]
+#平行链自共识停止n个空块的对应主链高度后，超级账户可以直接参与投票
 paraConsensusStopBlocks=100
 
 [pprof]
