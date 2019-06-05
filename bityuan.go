@@ -2,7 +2,9 @@ package main
 
 var bityuan = `
 TestNet=false
-version="6.1.1.0507"
+version="6.2.0.0605"
+CoinSymbol="bty"
+
 [blockchain]
 defCacheSize=128
 maxFetchBlockNum=128
@@ -24,6 +26,7 @@ driver="leveldb"
 name="price"
 poolCacheSize=102400
 minTxFee=100000
+isLevelFee=true
 
 [mempool.sub.score]
 poolCacheSize=102400
@@ -56,6 +59,13 @@ ticketMinerWaitTime = 7200
 maxTxNumber = 1500
 targetTimespan = 2160
 targetTimePerBlock = 15
+
+[mver.consensus.ForkChainParamV2]
+coinReward = 5
+coinDevFund = 3
+targetTimespan = 720
+targetTimePerBlock = 5
+ticketPrice = 3000
 
 [consensus.sub.ticket]
 genesisBlockTime=1526486816
@@ -135,6 +145,11 @@ superManager=[
     "1JmFaA6unrCFYEWPGRi7uuXY1KthTJxJEP", 
 ]
 
+[exec.sub.paracross]
+nodeGroupFrozenCoins=0
+#平行链共识停止后主链等待的高度
+paraConsensusStopBlocks=30000
+
 #系统中所有的fork,默认用chain33的测试网络的
 #但是我们可以替换
 [fork.system]
@@ -148,16 +163,16 @@ ForkTxGroup= 200000
 ForkResetTx0= 200000
 ForkWithdraw= 200000
 ForkExecRollback= 450000
-ForkCheckBlockTime=-1 #fork 6.2
+ForkCheckBlockTime=2270000
 ForkTxHeight= -1
-ForkTxGroupPara= -1
-ForkChainParamV2= -1
-ForkMultiSignAddress=-1 #fork 6.2
-ForkStateDBSet=-1 #fork 6.2
-ForkLocalDBAccess=-1 #fork 6.2
-ForkBlockCheck=-1 #fork 6.2
-ForkBase58AddressCheck=-1 #fork 6.2
-ForkEnableParaRegExec=-1 #fork 6.2
+ForkTxGroupPara= 2270000
+ForkChainParamV2= 2270000
+ForkMultiSignAddress=2270000
+ForkStateDBSet=2270000
+ForkLocalDBAccess=2270000
+ForkBlockCheck=2270000
+ForkBase58AddressCheck=2270000
+ForkEnableParaRegExec=2270000
 
 [fork.sub.coins]
 Enable=0
@@ -165,7 +180,7 @@ Enable=0
 [fork.sub.ticket]
 Enable=0
 ForkTicketId = 1600000
-ForkTicketVrf = -1 # 6.2
+ForkTicketVrf = 2270000
 
 [fork.sub.retrieve]
 Enable=0
@@ -184,18 +199,18 @@ ForkTokenBlackList= 0
 ForkBadTokenSymbol= 0
 ForkTokenPrice= 300000
 ForkTokenSymbolWithNumber=1600000
-ForkTokenCheck= -1 #fork 6.2
+ForkTokenCheck= 2270000
 
 [fork.sub.trade]
 Enable=0
 ForkTradeBuyLimit= 0
-ForkTradeAsset= -1 #fork 6.2
-ForkTradeID = -1 #fork 6.2
+ForkTradeAsset= 2270000
+ForkTradeID = 2270000
 
 [fork.sub.paracross]
 Enable=1600000
 ForkParacrossWithdrawFromParachain=1600000
-ForkParacrossCommitTx=-1 #fork 6.2
+ForkParacrossCommitTx=2270000
 
 [fork.sub.multisig]
 Enable=1600000
@@ -203,8 +218,8 @@ Enable=1600000
 [fork.sub.unfreeze]
 Enable=1600000
 ForkTerminatePart=1600000
-ForkUnfreezeIDX= -1 #fork 6.2
+ForkUnfreezeIDX= 2270000
 
 [fork.sub.store-kvmvccmavl]
-ForkKvmvccmavl=-1 #fork 6.2
+ForkKvmvccmavl=2270000
 `

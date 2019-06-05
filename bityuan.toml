@@ -41,6 +41,8 @@ innerBounds=300
 dbPath="datadir/addrbook"
 dbCache=4
 grpcLogFile="grpc33.log"
+#waitPid 等待seed导入
+waitPid=false
 
 [rpc]
 jrpcBindAddr="localhost:8801"
@@ -54,6 +56,7 @@ keyFile="key.pem"
 
 [mempool]
 maxTxNumPerAccount=100
+
 
 [store]
 dbPath="datadir/mavltree"
