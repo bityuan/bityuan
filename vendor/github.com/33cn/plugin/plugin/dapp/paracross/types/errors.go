@@ -45,10 +45,8 @@ var (
 	ErrParaNodeVoteSelf = errors.New("ErrParaNodeVoteSelf")
 	//ErrParaNodeGroupFrozenCoinsNotEnough node group coins in tx less than conf's minimum coins
 	ErrParaNodeGroupFrozenCoinsNotEnough = errors.New("ErrParaNodeGroupFrozenCoinsNotEnough")
-	//ErrParaNodeGroupStatusWrong node group process wrong status
-	ErrParaNodeGroupStatusWrong = errors.New("ErrParaNodeGroupStatusWrong")
-	//ErrParaNodeGroupAddrNotMatch group addrs not match with apply
-	ErrParaNodeGroupAddrNotMatch = errors.New("ErrParaNodeGroupAddrNotMatch")
+	//ErrParaNodeOpStatusWrong node process wrong status
+	ErrParaNodeOpStatusWrong = errors.New("ErrParaNodeOpStatusWrong")
 	//ErrParaConsensStopBlocksNotReach consensus stop blocks not reach
 	ErrParaConsensStopBlocksNotReach = errors.New("ErrParaConsensStopBlocksNotReach")
 )

@@ -452,14 +452,14 @@ type VoteTestSuite struct {
 }
 
 func (s *VoteTestSuite) SetupSuite() {
-	types.Init(Title, nil)
+	para_init(Title)
 	s.exec = newParacross().(*Paracross)
 }
 
 func (s *VoteTestSuite) TestVoteTx() {
 	status := &pt.ParacrossNodeStatus{
 		MainBlockHash:   MainBlockHash10,
-		MainBlockHeight: MainBlockHeight,
+		MainBlockHeight: 0,
 		PreBlockHash:    PerBlock,
 		Height:          CurHeight,
 		Title:           Title,
@@ -488,10 +488,14 @@ func (s *VoteTestSuite) TestVoteTx() {
 
 	tx7, err := createAssetTransferTx(s.Suite, PrivKeyC, nil)
 	s.Nil(err)
+	tx8, err := createCrossCommitTx(s.Suite)
+	s.Nil(err)
+
 	txs := []*types.Transaction{tx, tx1, tx2}
 	txs = append(txs, txGroup34...)
 	txs = append(txs, txGroup56...)
 	txs = append(txs, tx7)
+	txs = append(txs, tx8)
 	s.exec.SetTxs(txs)
 
 	//for i,tx := range txs{
@@ -508,7 +512,8 @@ func (s *VoteTestSuite) TestVoteTx() {
 	recpt5 := &types.ReceiptData{Ty: types.ExecPack}
 	recpt6 := &types.ReceiptData{Ty: types.ExecPack}
 	recpt7 := &types.ReceiptData{Ty: types.ExecOk}
-	receipts := []*types.ReceiptData{recpt0, recpt1, recpt2, recpt3, recpt4, recpt5, recpt6, recpt7}
+	recpt8 := &types.ReceiptData{Ty: types.ExecOk}
+	receipts := []*types.ReceiptData{recpt0, recpt1, recpt2, recpt3, recpt4, recpt5, recpt6, recpt7, recpt8}
 	s.exec.SetReceipt(receipts)
 	set, err := s.exec.ExecLocal(tx, recpt0, 0)
 	s.Nil(err)
@@ -588,7 +593,8 @@ func (s *VoteTestSuite) TestVoteTxFork() {
 	//	s.T().Log("tx exec name","i",i,"name",string(tx.Execer))
 	//}
 
-	types.S("config.consensus.sub.para.MainForkParacrossCommitTx", int64(1))
+	//types.S("config.consensus.sub.para.MainForkParacrossCommitTx", int64(1))
+	//val,_:=types.G("config.consensus.sub.para.MainForkParacrossCommitTx")
 
 	errlog := &types.ReceiptLog{Ty: types.TyLogErr, Log: []byte("")}
 	feelog := &types.Receipt{}
@@ -614,8 +620,8 @@ func (s *VoteTestSuite) TestVoteTxFork() {
 		if bytes.Equal(key, kv.Key) {
 			var rst pt.ParacrossNodeStatus
 			types.Decode(kv.GetValue(), &rst)
-			s.Equal([]uint8([]byte{0x8e}), rst.TxResult)
-			s.Equal([]uint8([]byte{0x22}), rst.CrossTxResult)
+			s.Equal([]byte("8e"), rst.TxResult)
+			s.Equal([]byte("22"), rst.CrossTxResult)
 			s.Equal(1, len(rst.TxHashs))
 			s.Equal(1, len(rst.CrossTxHashs))
 
@@ -682,6 +688,24 @@ func createCrossParaTx(s suite.Suite, to []byte) (*types.Transaction, error) {
 		ExecName:    Title + pt.ParaX,
 	}
 	tx, err := pt.CreateRawAssetTransferTx(&param)
+	assert.Nil(s.T(), err, "create asset transfer failed")
+	if err != nil {
+		return nil, err
+	}
+
+	//tx, err = signTx(s, tx, privFrom)
+	//assert.Nil(s.T(), err, "sign asset transfer failed")
+	//if err != nil {
+	//	return nil, err
+	//}
+
+	return tx, nil
+}
+
+func createCrossCommitTx(s suite.Suite) (*types.Transaction, error) {
+	status := &pt.ParacrossNodeStatus{MainBlockHash: []byte("hash"), MainBlockHeight: 0, Title: Title}
+
+	tx, err := pt.CreateRawCommitTx4MainChain(status, Title+pt.ParaX, 0)
 	assert.Nil(s.T(), err, "create asset transfer failed")
 	if err != nil {
 		return nil, err

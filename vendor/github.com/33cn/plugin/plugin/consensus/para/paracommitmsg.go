@@ -18,7 +18,8 @@ import (
 )
 
 var (
-	consensusInterval = 16 //about 1 new block interval
+	consensusInterval = 10 //about 1 new block interval
+	minerInterval     = 10 //5s的主块间隔后分叉概率增加，10s可以消除一些分叉回退
 )
 
 type commitMsgClient struct {
@@ -27,6 +28,7 @@ type commitMsgClient struct {
 	commitMsgNotify    chan int64
 	delMsgNotify       chan int64
 	mainBlockAdd       chan *types.BlockDetail
+	minerSwitch        chan bool
 	currentTx          *types.Transaction
 	checkTxCommitTimes int32
 	privateKey         crypto.PrivKey
@@ -38,17 +40,15 @@ func (client *commitMsgClient) handler() {
 	var isRollback bool
 	var notification []int64 //记录每次系统重启后 min and current height
 	var finishHeight int64
+	var consensHeight int64
 	var sendingHeight int64 //当前发送的最大高度
 	var sendingMsgs []*pt.ParacrossNodeStatus
 	var readTick <-chan time.Time
+	var ticker *time.Ticker
 
 	client.paraClient.wg.Add(1)
 	consensusCh := make(chan *pt.ParacrossStatus, 1)
 	go client.getConsensusHeight(consensusCh)
-
-	client.paraClient.wg.Add(1)
-	priKeyCh := make(chan crypto.PrivKey, 1)
-	go client.fetchPrivacyKey(priKeyCh)
 
 	client.paraClient.wg.Add(1)
 	sendMsgCh := make(chan *types.Transaction, 1)
@@ -131,6 +131,9 @@ out:
 					plog.Error("para commit msg read tick", "err", err.Error())
 					continue
 				}
+				if len(status) == 0 {
+					continue
+				}
 
 				signTx, count, err := client.calcCommitMsgTxs(status)
 				if err != nil || signTx == nil {
@@ -153,9 +156,9 @@ out:
 		//获取正在共识的高度，同步有两层意思，一个是主链跟其他节点完成了同步，另一个是当前平行链节点的高度追赶上了共识高度
 		//一般来说高度增长从小到大： notifiy[0] -- selfConsensusHeight(mainHeight) -- finishHeight -- sendingHeight -- notify[1]
 		case rsp := <-consensusCh:
-			consensHeight := rsp.Height
+			consensHeight = rsp.Height
 			plog.Info("para consensus rcv", "notify", notification, "sending", len(sendingMsgs),
-				"consensHeigt", rsp.Height, "finished", finishHeight, "sync", isSync, "consensBlockHash", common.ToHex(rsp.BlockHash))
+				"consensHeigt", rsp.Height, "finished", finishHeight, "sync", isSync, "miner", readTick != nil, "consensBlockHash", common.ToHex(rsp.BlockHash))
 
 			if notification == nil || isRollback {
 				continue
@@ -191,16 +194,28 @@ out:
 				finishHeight = consensHeight
 				sendingMsgs = nil
 				client.currentTx = nil
-				isSync = true
 			}
 
-		case key, ok := <-priKeyCh:
-			if !ok {
-				priKeyCh = nil
+		case miner := <-client.minerSwitch:
+			plog.Info("para consensus mining", "miner", miner)
+			//停止挖矿
+			if !miner {
+				readTick = nil
+				if ticker != nil {
+					ticker.Stop()
+				}
+				plog.Info("para consensus stop mining")
 				continue
 			}
-			client.privateKey = key
-			readTick = time.Tick(time.Second * 2)
+			//开启挖矿
+			if readTick == nil {
+				ticker = time.NewTicker(time.Second * time.Duration(minerInterval))
+				readTick = ticker.C
+				plog.Info("para consensus start mining")
+
+				//钱包开启后，从共识高度重新开始发送，在需要重发共识时候，不需要重启设备
+				finishHeight = consensHeight
+			}
 
 		case <-client.quit:
 			break out
@@ -417,9 +432,20 @@ func (client *commitMsgClient) getNodeStatus(start, end int64) ([]*pt.ParacrossN
 		nodeList[block.Block.Height].StateHash = block.Block.StateHash
 	}
 
+	var needSentTxs uint32
 	for i := 0; i < int(count); i++ {
 		ret = append(ret, nodeList[req.Start+int64(i)])
+		needSentTxs += nodeList[req.Start+int64(i)].NonCommitTxCounts
 	}
+	//1.如果是只有commit tx的空块，推迟发送，直到等到一个完全没有commit tx的空块或者其他tx的块
+	//2,如果20个块都是 commit tx的空块，20个块打包一次发送，尽量减少commit tx造成的空块
+	//3,如果形如xxoxx的块排列，x代表commit空块，o代表实际的块，即只要不全部是commit块，也要全部打包一起发出去
+	//如果=0 意味着全部是paracross commit tx，延迟发送
+	if needSentTxs == 0 && len(ret) < types.TxGroupMaxCount {
+		plog.Debug("para commitmsg getNodeStatus all self consensus commit tx,send delay", "start", start, "end", end)
+		return nil, nil
+	}
+
 	return ret, nil
 
 }
@@ -575,51 +601,74 @@ func (client *commitMsgClient) getConsensusStatus(block *types.Block) (*pt.Parac
 
 }
 
-func (client *commitMsgClient) fetchPrivacyKey(ch chan crypto.PrivKey) {
-	defer client.paraClient.wg.Done()
-	if client.paraClient.authAccount == "" {
-		close(ch)
+func (client *commitMsgClient) onWalletStatus(status *types.WalletStatus) {
+	if status == nil || client.paraClient.authAccount == "" {
+		return
+	}
+	if !status.IsWalletLock && client.privateKey == nil {
+		client.fetchPriKey()
+		plog.Info("para commit fetchPriKey")
+	}
+
+	if client.privateKey == nil {
+		plog.Info("para commit wallet status prikey null", "status", status.IsWalletLock)
 		return
 	}
 
-	req := &types.ReqString{Data: client.paraClient.authAccount}
-out:
-	for {
-		select {
-		case <-client.quit:
-			break out
-		case <-time.NewTimer(time.Second * 2).C:
-			msg := client.paraClient.GetQueueClient().NewMessage("wallet", types.EventDumpPrivkey, req)
-			err := client.paraClient.GetQueueClient().Send(msg, true)
-			if err != nil {
-				plog.Error("para commit send msg", "err", err.Error())
-				break out
-			}
-			resp, err := client.paraClient.GetQueueClient().Wait(msg)
-			if err != nil {
-				plog.Error("para commit msg sign to wallet", "err", err.Error())
-				continue
-			}
-			str := resp.GetData().(*types.ReplyString).Data
-			pk, err := common.FromHex(str)
-			if err != nil && pk == nil {
-				panic(err)
-			}
+	select {
+	case client.minerSwitch <- !status.IsWalletLock:
+	case <-client.quit:
+	}
+}
 
-			secp, err := crypto.New(types.GetSignName("", types.SECP256K1))
-			if err != nil {
-				panic(err)
-			}
-
-			priKey, err := secp.PrivKeyFromBytes(pk)
-			if err != nil {
-				panic(err)
-			}
-
-			ch <- priKey
-			close(ch)
-			break out
-		}
+func (client *commitMsgClient) onWalletAccount(acc *types.Account) {
+	if acc == nil || client.paraClient.authAccount == "" || client.paraClient.authAccount != acc.Addr || client.privateKey != nil {
+		return
+	}
+	err := client.fetchPriKey()
+	if err != nil {
+		plog.Error("para commit fetchPriKey", "err", err.Error())
+		return
 	}
 
+	select {
+	case client.minerSwitch <- true:
+	case <-client.quit:
+	}
+}
+
+func (client *commitMsgClient) fetchPriKey() error {
+	req := &types.ReqString{Data: client.paraClient.authAccount}
+
+	msg := client.paraClient.GetQueueClient().NewMessage("wallet", types.EventDumpPrivkey, req)
+	err := client.paraClient.GetQueueClient().Send(msg, true)
+	if err != nil {
+		plog.Error("para commit send msg", "err", err.Error())
+		return err
+	}
+	resp, err := client.paraClient.GetQueueClient().Wait(msg)
+	if err != nil {
+		plog.Error("para commit msg sign to wallet", "err", err.Error())
+		return err
+	}
+	str := resp.GetData().(*types.ReplyString).Data
+	pk, err := common.FromHex(str)
+	if err != nil && pk == nil {
+		return err
+	}
+
+	secp, err := crypto.New(types.GetSignName("", types.SECP256K1))
+	if err != nil {
+		return err
+	}
+
+	priKey, err := secp.PrivKeyFromBytes(pk)
+	if err != nil {
+		plog.Error("para commit msg get priKey", "err", err.Error())
+		return err
+	}
+
+	client.privateKey = priKey
+	plog.Info("para commit fetchPriKey success")
+	return nil
 }

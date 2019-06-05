@@ -271,8 +271,12 @@ func Init(t string, cfg *Config) {
 		if cfg.Exec.MaxExecFee < cfg.Mempool.MaxTxFee {
 			panic("config must meet: mempool.maxTxFee <= exec.maxExecFee")
 		}
-		setMinerExecs(cfg.Consensus.MinerExecs)
-		setMinFee(cfg.Exec.MinExecFee)
+		if cfg.Consensus != nil {
+			setMinerExecs(cfg.Consensus.MinerExecs)
+		}
+		if cfg.Exec != nil {
+			setMinFee(cfg.Exec.MinExecFee)
+		}
 		setChainConfig("FixTime", cfg.FixTime)
 		if cfg.Exec.MaxExecFee > 0 {
 			setChainConfig("MaxFee", cfg.Exec.MaxExecFee)
@@ -282,6 +286,12 @@ func Init(t string, cfg *Config) {
 				panic("config CoinSymbol must without '-'")
 			}
 			coinSymbol = cfg.CoinSymbol
+		} else {
+			if isPara() {
+				panic("must config CoinSymbol in para chain")
+			} else {
+				coinSymbol = DefaultCoinsSymbol
+			}
 		}
 	}
 	//local 只用于单元测试
@@ -298,7 +308,9 @@ func Init(t string, cfg *Config) {
 	//如果para 没有配置fork，那么默认所有的fork 为 0（一般只用于测试）
 	if isPara() && (cfg == nil || cfg.Fork == nil || cfg.Fork.System == nil) {
 		//keep superManager same with mainnet
-		setForkForPara(title)
+		if !cfg.EnableParaFork {
+			setForkForParaZero(title)
+		}
 		if mver[title] != nil {
 			mver[title].UpdateFork()
 		}
