@@ -27,11 +27,12 @@ dbPath="datadir"
 dbCache=64
 batchsync=false
 isRecordBlockSequence=false
-enableTxQuickIndex=false
+enableTxQuickIndex=true
 # 升级storedb是否重新执行localdb，bityuan主链升级不需要开启，平行链升级需要开启
 enableReExecLocal=false
 
 [p2p]
+port=13802
 seeds=[]
 isSeed=false
 innerSeedEnable=true
@@ -40,6 +41,8 @@ innerBounds=300
 dbPath="datadir/addrbook"
 dbCache=4
 grpcLogFile="grpc33.log"
+#waitPid 等待seed导入
+waitPid=false
 
 [rpc]
 jrpcBindAddr="localhost:8801"
@@ -47,6 +50,9 @@ grpcBindAddr="localhost:8802"
 whitelist=["127.0.0.1"]
 jrpcFuncWhitelist=["*"]
 grpcFuncWhitelist=["*"]
+enableTLS=false
+certFile="cert.pem"
+keyFile="key.pem"
 
 [mempool]
 maxTxNumPerAccount=100

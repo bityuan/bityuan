@@ -57,7 +57,6 @@ keyFile="key.pem"
 [mempool]
 maxTxNumPerAccount=100
 
-
 [store]
 dbPath="datadir/mavltree"
 dbCache=128
