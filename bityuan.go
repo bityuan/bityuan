@@ -2,7 +2,7 @@ package main
 
 var bityuan = `
 TestNet=false
-version="6.2.0.0605"
+version="6.2.0"
 CoinSymbol="bty"
 
 [blockchain]
