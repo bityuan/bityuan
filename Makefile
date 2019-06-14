@@ -5,6 +5,8 @@ CHAIN33_PATH=vendor/${CHAIN33}
 plugin=github.com/33cn/plugin
 PKG_LIST_VET := `go list ./... | grep -v "vendor" | grep -v plugin/dapp/evm/executor/vm/common/crypto/bn256`
 PKG_LIST_INEFFASSIGN= `go list -f {{.Dir}} ./... | grep -v "vendor"`
+BUILD_FLAGS = -ldflags "-X github.com/bityuan/bityuan/vendor/github.com/33cn/chain33/common/version.GitCommit=`git rev-parse --short=8 HEAD`"
+
 .PHONY: default build
 
 default: build
@@ -12,8 +14,8 @@ default: build
 all: vendor build
 
 build:
-	go build -v -i -o bityuan
-	go build -v -i -o bityuan-cli github.com/bityuan/bityuan/cli
+	go build ${BUILD_FLAGS} -v -i -o bityuan
+	go build ${BUILD_FLAGS} -v -i -o bityuan-cli github.com/bityuan/bityuan/cli
 
 
 vendor:
