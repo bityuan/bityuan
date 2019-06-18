@@ -4,7 +4,6 @@ package main
 
 import (
 	_ "github.com/33cn/chain33/system"
-	_ "github.com/33cn/plugin/plugin"
 	_ "github.com/bityuan/bityuan/plugin"
 
 	"flag"
