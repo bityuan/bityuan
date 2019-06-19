@@ -68,6 +68,8 @@ enableMavlPrune=true
 pruneHeight=10000
 enableMemTree=true
 enableMemVal=true
+# 缓存close ticket数目，该缓存越大同步速度越快，最大设置到1500000
+tkCloseCacheLen=100000
 
 [store.sub.kvmvccmavl]
 enableMVCCIter=true
@@ -77,6 +79,8 @@ enableMavlPrune=false
 pruneHeight=10000
 enableMemTree=true
 enableMemVal=true
+# 缓存close ticket数目，该缓存越大同步速度越快，最大设置到1500000
+tkCloseCacheLen=100000
 
 [wallet]
 dbPath="wallet"
