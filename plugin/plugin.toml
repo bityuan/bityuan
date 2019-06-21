@@ -31,3 +31,7 @@ gitrepo = "github.com/33cn/plugin/plugin/mempool/score"
 
 [mempool-price]
 gitrepo = "github.com/33cn/plugin/plugin/mempool/price"
+
+[store-kvmvccmavl]
+gitrepo = "github.com/33cn/plugin/plugin/store/kvmvccmavl"
+
