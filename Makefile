@@ -1,11 +1,12 @@
-# golang1.9 or latest
-
-CHAIN33=github.com/33cn/chain33
-CHAIN33_PATH=vendor/${CHAIN33}
-plugin=github.com/33cn/plugin
+# golang1.12 or latest
+export GO111MODULE=on
+CHAIN33_VERSION=$(shell nl go.mod |grep "github.com/33cn/chain33" |awk '{print $$3}')
+PLUGIN_VERSION=$(shell nl go.mod |grep "github.com/33cn/plugin" |awk '{print $$3}')
+export CHAIN33_PATH=${GOPATH}/pkg/mod/github.com/33cn/chain33@${CHAIN33_VERSION}
+export PLUGIN_PATH=${GOPATH}/pkg/mod/github.com/33cn/plugin@${PLUGIN_VERSION}
 PKG_LIST_VET := `go list ./... | grep -v "vendor" | grep -v plugin/dapp/evm/executor/vm/common/crypto/bn256`
 PKG_LIST_INEFFASSIGN= `go list -f {{.Dir}} ./... | grep -v "vendor"`
-BUILD_FLAGS = -ldflags "-X github.com/bityuan/bityuan/vendor/github.com/33cn/chain33/common/version.GitCommit=`git rev-parse --short=8 HEAD`"
+BUILD_FLAGS = -ldflags "-X ${CHAIN33_PATH}/common/version.GitCommit=`git rev-parse --short=8 HEAD`"
 
 .PHONY: default build
 
@@ -18,38 +19,18 @@ build:
 	go build ${BUILD_FLAGS} -v -i -o bityuan-cli github.com/bityuan/bityuan/cli
 
 
-vendor:
-	make update
-	#make updatevendor
-
 update:
-	go get -u -v github.com/kardianos/govendor
-	rm -rf vendor/${CHAIN33}
-	rm -rf vendor/${plugin}
-	rm -rf vendor/github.com/apache/thrift/tutorial/erl/
-	git clone --depth 1 -b master https://${plugin}.git vendor/${plugin}
-#	git clone --depth 1 -b update_chain33_191116 https://github.com/vipwzw/plugin.git vendor/${plugin}
-	rm -rf vendor/${plugin}/.git
-	cp -Rf vendor/${plugin}/vendor/* vendor/
-	rm -rf vendor/${plugin}/vendor
+	go mod tidy
 
-	govendor init
-	go build -i -o tool github.com/bityuan/bityuan/vendor/github.com/33cn/chain33/cmd/tools
-	./tool import --path "plugin" --packname "github.com/bityuan/bityuan/plugin" --conf "plugin/plugin.toml"
-
-updatevendor:
-	govendor add +e
-	govendor fetch -v +m
 
 vet:
 	@go vet ${PKG_LIST_VET}
 
 ineffassign:
-	@ineffassign -n ${PKG_LIST_INEFFASSIGN}
+	@golangci-lint  run --no-config --issues-exit-code=1  --deadline=2m --disable-all   --enable=ineffassign -n ${PKG_LIST_INEFFASSIGN}
 
 linter: vet ineffassign ## Use gometalinter check code, ignore some unserious warning
 	@./golinter.sh "filter"
-	#@find . -name '*.sh' -not -path "./vendor/*" | xargs shellcheck
 
 .PHONY: checkgofmt
 checkgofmt: ## get all go files and run go fmt on them
@@ -76,11 +57,10 @@ autotest: ## build autotest binary
 	@if [ -n "$(dapp)" ]; then \
 		rm -rf build/autotest/local \
 		&& cp -r $(CHAIN33_PATH)/build/autotest/local $(CHAIN33_PATH)/build/autotest/*.sh build/autotest/ \
-		&& cd build/autotest && bash ./copy-autotest.sh local && cd local && bash ./local-autotest.sh $(dapp) && cd ../../../; fi
+		&& cd build/autotest && chmod -R 755 local && chmod 755 *.sh && bash ./copy-autotest.sh local && cd local && bash ./local-autotest.sh $(dapp) && cd ../../../; fi
 
 
 clean:
-	@rm -rf vendor
 	@rm -rf datadir
 	@rm -rf logs
 	@rm -rf wallet
@@ -88,8 +68,3 @@ clean:
 	@rm -rf bityuan
 	@rm -rf bityuan-cli
 	@rm -rf tool
-	@rm -rf plugin/init.go
-	@rm -rf plugin/consensus/init
-	@rm -rf plugin/dapp/init
-	@rm -rf plugin/crypto/init
-	@rm -rf plugin/store/init
