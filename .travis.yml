@@ -30,10 +30,8 @@ jobs:
       before_script: make
       script:
         - make autotest dapp=coins
-        - make autotest dapp=ticket
-        - make autotest dapp=hashlock
-        - make autotest dapp=retrieve
-        - make autotest dapp=manage
+        - make autotest dapp=paracross
+        - make autotest dapp=unfreeze
         - make autotest dapp=token
         - make autotest dapp=trade
 

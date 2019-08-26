@@ -14,31 +14,32 @@
 ```
 ## 安装
 
-#### 安装govendor 工具
+#### golang 1.12 or latest
 
-```
-go get -u -v github.com/kardianos/govendor
-```
 
 #### 支持make file的平台
 
 ```
 git clone https://github.com/bityuan/bityuan $GOPATH/src/github.com/bityuan/bityuan
+
+//开启mod功能
+export GO111MODULE=on
+
+//国内用户需要导入阿里云代理，用于下载依赖包
+export GOPROXY=https://mirrors.aliyun.com/goproxy
+
 cd $GOPATH/src/github.com/bityuan/bityuan
+
 make
 ```
 
 就可以完成编译安装
 
-### 更新chain33
+### 更新go.mod
 
 ```
 make update
 ```
 
-### 更新 vendor
 
-```
-make updatevendor
-```
 
