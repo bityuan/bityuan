@@ -10,7 +10,7 @@ if [ "$(uname)" == "Darwin" ]; then
     sedfix=".bak"
 fi
 
-AutoTestMain="../../vendor/github.com/33cn/chain33/cmd/autotest/main.go"
+AutoTestMain="${CHAIN33_PATH}/cmd/autotest/main.go"
 ImportPlugin='"github.com/33cn/plugin/plugin"'
 
 function build_auto_test() {
