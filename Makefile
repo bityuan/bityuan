@@ -1,7 +1,7 @@
 # golang1.12 or latest
 export GO111MODULE=on
 CHAIN33_VERSION=$(shell nl go.mod |grep "github.com/33cn/chain33" |awk '{print $$3}')
-PLUGIN_VERSION=$(shell nl go.mod |grep "github.com/33cn/plugin" |awk '{print $$3}')
+PLUGIN_VERSION=$(shell nl plugin/go.mod |grep "github.com/33cn/plugin" |awk '{print $$4}')
 export CHAIN33_PATH=${GOPATH}/pkg/mod/github.com/33cn/chain33@${CHAIN33_VERSION}
 export PLUGIN_PATH=${GOPATH}/pkg/mod/github.com/33cn/plugin@${PLUGIN_VERSION}
 PKG_LIST_VET := `go list ./... | grep -v "vendor" | grep -v plugin/dapp/evm/executor/vm/common/crypto/bn256`
@@ -12,7 +12,7 @@ BUILD_FLAGS = -ldflags "-X ${CHAIN33_PATH}/common/version.GitCommit=`git rev-par
 
 default: build
 
-all: vendor build
+all:  build
 
 build:
 	go build ${BUILD_FLAGS} -v -i -o bityuan
