@@ -7,6 +7,8 @@
 
 区块链浏览器: https://mainnet.bityuan.com
 
+开发框架：https://chain.33.cn
+
 ```
 注意: master 分支不是 发布版本, 不要用于生产环境
 ```
