@@ -173,6 +173,7 @@ ForkLocalDBAccess=2270000
 ForkBlockCheck=2270000
 ForkBase58AddressCheck=2270000
 ForkEnableParaRegExec=2270000
+ForkCacheDriver=-1 #fork 6.3
 
 [fork.sub.coins]
 Enable=0
@@ -188,6 +189,7 @@ ForkRetrive=0
 
 [fork.sub.hashlock]
 Enable=0
+ForkBadRepeatSecret= -1 #fork 6.3
 
 [fork.sub.manage]
 Enable=0
@@ -206,11 +208,13 @@ Enable=0
 ForkTradeBuyLimit= 0
 ForkTradeAsset= 2270000
 ForkTradeID = 2270000
+ForkTradeFixAssetDB=-1 #fork 6.3
 
 [fork.sub.paracross]
 Enable=1600000
 ForkParacrossWithdrawFromParachain=1600000
 ForkParacrossCommitTx=2270000
+ForkLoopCheckCommitTxDone=-1 #fork 6.3
 
 [fork.sub.multisig]
 Enable=1600000
