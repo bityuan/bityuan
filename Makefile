@@ -17,22 +17,22 @@ all:  build
 build:
 	go build ${BUILD_FLAGS} -v -i -o bityuan
 	go build ${BUILD_FLAGS} -v -i -o bityuan-cli github.com/bityuan/bityuan/cli
-
-
+	
 updateplugin:
-	@if [ -n "$(version)" ]; then \
-	cd plugin  \
-	        && go mod edit -require="github.com/33cn/plugin@$(version)"&& cd ../; fi
-	@if [ -n "$(commithash)" ]; then   \
+	@if [ -n "$(version)" ]; then   \
 	cd plugin \
-	&& sed -i 's/github.com\/33cn\/plugin .*/github.com\/33cn\/plugin ${commithash}/g' go.mod \
-	&& go mod tidy &&cd ../; fi
+	&& sed -i 's/github.com\/33cn\/plugin .*/github.com\/33cn\/plugin ${version}/g' go.mod \
+	&& go mod tidy &&cd ../; \
+	else \
+	cd plugin \
+	&& sed -i 's/github.com\/33cn\/plugin .*/github.com\/33cn\/plugin latest/g' go.mod \
+	&& go mod tidy &&cd ../;  fi
 	@go mod tidy
 updatechain33:
-	@if [ -n "$(version)" ]; then \
-	        go mod edit -require="github.com/33cn/chain33@$(version)"; fi
-	@if [ -n "$(commithash)" ]; then   \
-	sed -i 's/github.com\/33cn\/chain33 .*/github.com\/33cn\/chain33 ${commithash}/g' go.mod ; fi
+	@if [ -n "$(version)" ]; then   \
+	sed -i 's/github.com\/33cn\/chain33 .*/github.com\/33cn\/chain33 ${version}/g' go.mod ; \
+	else \
+	sed -i 's/github.com\/33cn\/chain33 .*/github.com\/33cn\/chain33 latest/g' go.mod ;fi
 	@go mod tidy
 
 vet:
