@@ -1,10 +1,10 @@
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 github.com/33cn/chain33 v0.0.0-20190823170527-b17a0bf285c4 h1:gZoxmpkc4rB7cWxaYWPIGQUT9lmX7ao1QEYgCsc6eAA=
 github.com/33cn/chain33 v0.0.0-20190823170527-b17a0bf285c4/go.mod h1:4I8n+Zyf3t0UKM5jjpqJY627Tub62oXkLsdzIv4r6rQ=
-github.com/33cn/chain33 v0.0.0-20190828033348-dab4d82db112 h1:VgpEqpR6K42p5UzvBFEdi1sPn/UfPw4a/tN45FgDtSU=
-github.com/33cn/chain33 v0.0.0-20190828033348-dab4d82db112/go.mod h1:4I8n+Zyf3t0UKM5jjpqJY627Tub62oXkLsdzIv4r6rQ=
-github.com/33cn/plugin v0.0.0-20190828034143-36fdfd318158 h1:IzpqSrPQ5FaGl8stKJW5p7BZTIsHiJs57c3WYPvsiA4=
-github.com/33cn/plugin v0.0.0-20190828034143-36fdfd318158/go.mod h1:lGKlyqMF2+tyoe++4vg4QbY0eIOWpP0tTE8UxGNL27c=
+github.com/33cn/chain33 v0.0.0-20190829065353-5e7a43bda97e h1:KUoBy94zIlsw96I/Mmb6/vZQnYZETBwWtfKqOgM2PLM=
+github.com/33cn/chain33 v0.0.0-20190829065353-5e7a43bda97e/go.mod h1:4I8n+Zyf3t0UKM5jjpqJY627Tub62oXkLsdzIv4r6rQ=
+github.com/33cn/plugin v0.0.0-20190829090615-b7939a1029f4 h1:jTIEQZfsqHClaqG2cr+fQuYRwV34TVTyNOljAccHWIM=
+github.com/33cn/plugin v0.0.0-20190829090615-b7939a1029f4/go.mod h1:lGKlyqMF2+tyoe++4vg4QbY0eIOWpP0tTE8UxGNL27c=
 github.com/AndreasBriese/bbloom v0.0.0-20180913140656-343706a395b7 h1:PqzgE6kAMi81xWQA2QIVxjWkFHptGgC547vchpUbtFo=
 github.com/AndreasBriese/bbloom v0.0.0-20180913140656-343706a395b7/go.mod h1:bOvUY6CB00SOBii9/FifXqc0awNKxLFCL/+pkDPuyl8=
 github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
