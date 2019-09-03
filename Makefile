@@ -1,9 +1,7 @@
-# golang1.12 or latest
+# golang1.12 or latest)
 export GO111MODULE=on
-CHAIN33_VERSION=$(shell nl go.mod |grep "github.com/33cn/chain33" |awk '{print $$3}')
-PLUGIN_VERSION=$(shell nl plugin/go.mod |grep "github.com/33cn/plugin" |awk '{print $$4}')
-export CHAIN33_PATH=${GOPATH}/pkg/mod/github.com/33cn/chain33@${CHAIN33_VERSION}
-export PLUGIN_PATH=${GOPATH}/pkg/mod/github.com/33cn/plugin@${PLUGIN_VERSION}
+export CHAIN33_PATH=${shell go list -f {{.Dir}} github.com/33cn/chain33}
+export PLUGIN_PATH=$(shell go list -f {{.Dir}} github.com/33cn/plugin)
 PKG_LIST_VET := `go list ./... | grep -v "vendor" | grep -v plugin/dapp/evm/executor/vm/common/crypto/bn256`
 PKG_LIST_INEFFASSIGN= `go list -f {{.Dir}} ./... | grep -v "vendor"`
 BUILD_FLAGS = -ldflags "-X ${CHAIN33_PATH}/common/version.GitCommit=`git rev-parse --short=8 HEAD`"
@@ -17,23 +15,24 @@ all:  build
 build:
 	go build ${BUILD_FLAGS} -v -i -o bityuan
 	go build ${BUILD_FLAGS} -v -i -o bityuan-cli github.com/bityuan/bityuan/cli
-	
+
+
+
+#make updateplugin version=xxx
+#单独更新plugin或chain33, version可以是tag或者commit哈希(tag必须是--vMajor.Minor.Patch--规范格式)
 updateplugin:
 	@if [ -n "$(version)" ]; then   \
-	cd plugin \
-	&& sed -i 's/github.com\/33cn\/plugin .*/github.com\/33cn\/plugin ${version}/g' go.mod \
-	&& go mod tidy &&cd ../; \
-	else \
-	cd plugin \
-	&& sed -i 's/github.com\/33cn\/plugin .*/github.com\/33cn\/plugin latest/g' go.mod \
-	&& go mod tidy &&cd ../;  fi
-	@go mod tidy
+    go get github.com/33cn/plugin@${version}; \
+    else \
+    go get github.com/33cn/plugin;fi
 updatechain33:
 	@if [ -n "$(version)" ]; then   \
-	sed -i 's/github.com\/33cn\/chain33 .*/github.com\/33cn\/chain33 ${version}/g' go.mod ; \
+	go get github.com/33cn/chain33@${version}; \
 	else \
-	sed -i 's/github.com\/33cn\/chain33 .*/github.com\/33cn\/chain33 latest/g' go.mod ;fi
-	@go mod tidy
+	go get github.com/33cn/chain33;fi
+
+#同时更新chain33和plugin, 此时两个项目必须有相同的tag(tag必须是--vMajor.Minor.Patch--规范格式)
+update:updatechain33 updateplugin
 
 vet:
 	@go vet ${PKG_LIST_VET}
