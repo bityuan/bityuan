@@ -1,6 +1,6 @@
 # golang1.12 or latest)
 export GO111MODULE=on
-export CHAIN33_PATH=${shell go list -f {{.Dir}} github.com/33cn/chain33}
+export CHAIN33_PATH=$(shell go list -f {{.Dir}} github.com/33cn/chain33)
 export PLUGIN_PATH=$(shell go list -f {{.Dir}} github.com/33cn/plugin)
 PKG_LIST_VET := `go list ./... | grep -v "vendor" | grep -v plugin/dapp/evm/executor/vm/common/crypto/bn256`
 PKG_LIST_INEFFASSIGN= `go list -f {{.Dir}} ./... | grep -v "vendor"`
@@ -31,7 +31,7 @@ updatechain33:
 	else \
 	go get github.com/33cn/chain33;fi
 
-#同时更新chain33和plugin, 此时两个项目必须有相同的tag(tag必须是--vMajor.Minor.Patch--规范格式)
+#make update version=xxx, 同时更新chain33和plugin, 两个项目必须有相同的tag(tag必须是--vMajor.Minor.Patch--规范格式)
 update:updatechain33 updateplugin
 
 vet:
