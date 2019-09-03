@@ -29,11 +29,7 @@ jobs:
       install: skip
       before_script: make
       script:
-        - make autotest dapp=coins
-        - make autotest dapp=paracross
-        - make autotest dapp=unfreeze
-        - make autotest dapp=token
-        - make autotest dapp=trade
+        - make autotest dapp="coins paracross unfreeze token trade"
 
 
 
