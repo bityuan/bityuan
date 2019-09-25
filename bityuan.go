@@ -2,7 +2,7 @@ package main
 
 var bityuan = `
 TestNet=false
-version="6.2.1"
+version="6.3.0"
 CoinSymbol="bty"
 
 [blockchain]
@@ -44,19 +44,22 @@ name="ticket"
 minerstart=true
 genesisBlockTime=1514533394
 genesis="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
+minerExecs=["ticket", "autonomy"]
 
 [mver.consensus]
 fundKeyAddr = "1JmFaA6unrCFYEWPGRi7uuXY1KthTJxJEP"
+powLimitBits = "0x1f00ffff"
+maxTxNumber = 1500
+
+[mver.consensus.ticket]
 coinReward = 18
 coinDevFund = 12
 ticketPrice = 10000
-powLimitBits = "0x1f00ffff"
 retargetAdjustmentFactor = 4
 futureBlockTime = 15
 ticketFrozenTime = 43200
 ticketWithdrawTime = 172800
 ticketMinerWaitTime = 7200
-maxTxNumber = 1500
 targetTimespan = 2160
 targetTimePerBlock = 15
 
@@ -67,8 +70,12 @@ targetTimespan = 720
 targetTimePerBlock = 5
 ticketPrice = 3000
 
+[mver.consensus.ForkTicketFundAddrV1]
+fundKeyAddr = "1Ji3W12KGScCM7C2p8bg635sNkayDM8MGY"
+
 [consensus.sub.ticket]
 genesisBlockTime=1526486816
+
 [[consensus.sub.ticket.genesis]]
 minerAddr="184wj4nsgVxKyz2NhM3Yb5RK5Ap6AFRFq2"
 returnAddr="1FB8L3DykVF7Y78bRfUrRcMZwesKue7CyR"
@@ -173,7 +180,8 @@ ForkLocalDBAccess=2270000
 ForkBlockCheck=2270000
 ForkBase58AddressCheck=2270000
 ForkEnableParaRegExec=2270000
-ForkCacheDriver=-1 #fork 6.3
+ForkCacheDriver=4320000
+ForkTicketFundAddrV1=4320000
 
 [fork.sub.coins]
 Enable=0
@@ -186,10 +194,11 @@ ForkTicketVrf = 2270000
 [fork.sub.retrieve]
 Enable=0
 ForkRetrive=0
+ForkRetriveAsset=4320000
 
 [fork.sub.hashlock]
 Enable=0
-ForkBadRepeatSecret= -1 #fork 6.3
+ForkBadRepeatSecret=4320000
 
 [fork.sub.manage]
 Enable=0
@@ -208,16 +217,20 @@ Enable=0
 ForkTradeBuyLimit= 0
 ForkTradeAsset= 2270000
 ForkTradeID = 2270000
-ForkTradeFixAssetDB=-1 #fork 6.3
+ForkTradeFixAssetDB=4320000
+ForkTradePrice=4320000
 
 [fork.sub.paracross]
 Enable=1600000
 ForkParacrossWithdrawFromParachain=1600000
 ForkParacrossCommitTx=2270000
-ForkLoopCheckCommitTxDone=-1 #fork 6.3
+ForkLoopCheckCommitTxDone=4320000
 
 [fork.sub.multisig]
 Enable=1600000
+
+[for.sub.autonomy]
+Enable=4320000
 
 [fork.sub.unfreeze]
 Enable=1600000
