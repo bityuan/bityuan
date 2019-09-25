@@ -1,12 +1,16 @@
 cloud.google.com/go v0.26.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMTw=
 github.com/33cn/chain33 v0.0.0-20190829065353-5e7a43bda97e h1:KUoBy94zIlsw96I/Mmb6/vZQnYZETBwWtfKqOgM2PLM=
 github.com/33cn/chain33 v0.0.0-20190829065353-5e7a43bda97e/go.mod h1:4I8n+Zyf3t0UKM5jjpqJY627Tub62oXkLsdzIv4r6rQ=
+github.com/33cn/chain33 v0.0.0-20190925142515-31e357c36c74 h1:8PC5TDbLIV5haxz3uhiSS2zrgDwkAFQKOSa6KgNTn9c=
+github.com/33cn/chain33 v0.0.0-20190925142515-31e357c36c74/go.mod h1:4I8n+Zyf3t0UKM5jjpqJY627Tub62oXkLsdzIv4r6rQ=
 github.com/33cn/plugin v0.0.0-20181113025452-8326e985ef69 h1:t+stUNdXVEz2FbNFYfCryJZ0zlyHlT2L5oWKq8CqjEs=
 github.com/33cn/plugin v0.0.0-20181113025452-8326e985ef69/go.mod h1:Xsn49VOrHa40flpl8NuvoArhpHUPNaiZ+hPajIchE1M=
 github.com/33cn/plugin v0.0.0-20190902090416-9214dcb272e7 h1:nEmWBOo3BDvmQRCsHLVVC6VMQ6khrZlZvIejFMVCQek=
 github.com/33cn/plugin v0.0.0-20190902090416-9214dcb272e7/go.mod h1:+9xmV+MUWOa425UcVs1K3IjwWe8+n/1kv/SyEqKwyjs=
 github.com/33cn/plugin v0.0.0-20190902090416-c62578839c92 h1:WfeHOEEFNULwIzIJQzPPekH8YkChLQzSL0GyJ//XWKI=
 github.com/33cn/plugin v0.0.0-20190902090416-c62578839c92/go.mod h1:+9xmV+MUWOa425UcVs1K3IjwWe8+n/1kv/SyEqKwyjs=
+github.com/33cn/plugin v0.0.0-20190925144039-027995763f3c h1:IRXZYZCcfOnwUuvDadvLLIPV/4cueqtKRKhnXurgm10=
+github.com/33cn/plugin v0.0.0-20190925144039-027995763f3c/go.mod h1:7wj4rxxNUOVkkjtKQnOXHGov1Dps2FgJSf36JtKyATU=
 github.com/33cn/plugin v6.1.0+incompatible h1:d7ny2uwx7RzrgZXdyAmwkBOT5lOGnbsa9vZirAXE6Jc=
 github.com/33cn/plugin v6.1.0+incompatible/go.mod h1:Xsn49VOrHa40flpl8NuvoArhpHUPNaiZ+hPajIchE1M=
 github.com/AndreasBriese/bbloom v0.0.0-20180913140656-343706a395b7 h1:PqzgE6kAMi81xWQA2QIVxjWkFHptGgC547vchpUbtFo=
