@@ -63,7 +63,7 @@ ticketMinerWaitTime = 7200
 targetTimespan = 2160
 targetTimePerBlock = 15
 
-[mver.consensus.ForkChainParamV2]
+[mver.consensus.ticket.ForkChainParamV2]
 coinReward = 5
 coinDevFund = 3
 targetTimespan = 720
@@ -156,6 +156,10 @@ superManager=[
 nodeGroupFrozenCoins=0
 #平行链共识停止后主链等待的高度
 paraConsensusStopBlocks=30000
+
+[exec.sub.autonomy]
+total="16htvcBNSEA7fZhAdLJphDwQRQJaHpyHTp"
+useBalance=false
 
 #系统中所有的fork,默认用chain33的测试网络的
 #但是我们可以替换
