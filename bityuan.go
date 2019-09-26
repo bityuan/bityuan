@@ -187,11 +187,18 @@ ForkEnableParaRegExec=2270000
 ForkCacheDriver=4320000
 ForkTicketFundAddrV1=4320000
 
-[for.sub.autonomy]
-Enable=4320000
-
 [fork.sub.coins]
 Enable=0
+
+[fork.sub.ticket]
+Enable=0
+ForkTicketId = 1600000
+ForkTicketVrf = 2270000
+
+[fork.sub.retrieve]
+Enable=0
+ForkRetrive=0
+ForkRetriveAsset=4320000
 
 [fork.sub.hashlock]
 Enable=0
@@ -200,25 +207,6 @@ ForkBadRepeatSecret=4320000
 [fork.sub.manage]
 Enable=0
 ForkManageExec=100000
-
-[fork.sub.multisig]
-Enable=1600000
-
-[fork.sub.paracross]
-Enable=1600000
-ForkParacrossWithdrawFromParachain=1600000
-ForkParacrossCommitTx=2270000
-ForkLoopCheckCommitTxDone=4320000
-
-[fork.sub.retrieve]
-Enable=0
-ForkRetrive=0
-ForkRetriveAsset=4320000
-
-[fork.sub.ticket]
-Enable=0
-ForkTicketId = 1600000
-ForkTicketVrf = 2270000
 
 [fork.sub.token]
 Enable=0
@@ -235,6 +223,19 @@ ForkTradeAsset= 2270000
 ForkTradeID = 2270000
 ForkTradeFixAssetDB=4320000
 ForkTradePrice=4320000
+
+[fork.sub.paracross]
+Enable=1600000
+ForkParacrossWithdrawFromParachain=1600000
+ForkParacrossCommitTx=2270000
+ForkLoopCheckCommitTxDone=4320000
+
+[fork.sub.multisig]
+Enable=1600000
+
+[for.sub.autonomy]
+Enable=4320000
+
 [fork.sub.unfreeze]
 Enable=1600000
 ForkTerminatePart=1600000
