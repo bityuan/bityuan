@@ -79,8 +79,8 @@ enableMavlPrune=false
 pruneHeight=10000
 enableMemTree=true
 enableMemVal=true
-# 缓存close ticket数目，该缓存越大同步速度越快，最大设置到1500000
-tkCloseCacheLen=100000
+# 缓存close ticket数目，该缓存越大同步速度越快，默认设置到200000
+tkCloseCacheLen=200000
 
 [wallet]
 dbPath="wallet"
