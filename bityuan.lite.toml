@@ -75,8 +75,10 @@ tkCloseCacheLen=200000
 enableMVCCIter=true
 enableMavlPrefix=false
 enableMVCC=false
-enableMavlPrune=false
-pruneHeight=10000
+enableMavlPrune=true
+pruneMavlHeight=10000
+enableMVCCPrune=false
+pruneMVCCHeight=10000
 enableMemTree=true
 enableMemVal=true
 # 缓存close ticket数目，该缓存越大同步速度越快，最大设置到1500000,默认200000
