@@ -3,6 +3,6 @@ module github.com/bityuan/bityuan
 go 1.13
 
 require (
-	github.com/33cn/chain33 v0.0.0-20191023042802-984c8bfed2e1
-	github.com/33cn/plugin v0.0.0-20191023075037-6beb6eaf1b89
+	github.com/33cn/chain33 v0.0.0-20191025150615-4180fe9f0aba
+	github.com/33cn/plugin v0.0.0-20191025151840-6c49e88527a0
 )
