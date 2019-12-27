@@ -64,11 +64,9 @@ fmt: fmt_shell ## go fmt
 	@find . -name '*.go' -not -path "./vendor/*" | xargs goimports -l -w
 
 autotest: ## build autotest binary
-	@cd build/autotest && bash ./build.sh && cd ../../
+	@cd build/autotest && bash ./run.sh build && cd ../../
 	@if [ -n "$(dapp)" ]; then \
-		rm -rf build/autotest/local \
-		&& cp -r $(CHAIN33_PATH)/build/autotest/local $(CHAIN33_PATH)/build/autotest/*.sh build/autotest/ \
-		&& cd build/autotest && chmod -R 755 local && chmod 755 *.sh && bash ./copy-autotest.sh local && cd local && bash ./local-autotest.sh $(dapp) && cd ../../../; fi
+		cd build/autotest && bash ./run.sh local $(dapp) && cd ../../; fi
 
 
 clean:
