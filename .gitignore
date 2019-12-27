@@ -15,4 +15,4 @@ build/chain33
 build/chain33-cli
 build/chain33.toml
 build/autotest/*
-!build/autotest/build.sh
+!build/autotest/run.sh
