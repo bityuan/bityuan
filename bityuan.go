@@ -25,7 +25,8 @@ driver="leveldb"
 [mempool]
 name="price"
 poolCacheSize=102400
-minTxFee=100000
+minTxFeeRate=100000
+maxTxFee=1000000000
 isLevelFee=true
 
 [mempool.sub.score]
@@ -137,8 +138,6 @@ driver="leveldb"
 signType="secp256k1"
 
 [exec]
-isFree=false
-minExecFee=100000
 
 [exec.sub.token]
 #配置一个空值，防止配置文件被覆盖
