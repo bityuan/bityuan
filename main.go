@@ -9,7 +9,6 @@ import (
 	"flag"
 	"runtime/debug"
 
-	"github.com/33cn/chain33/types"
 	"github.com/33cn/chain33/util/cli"
 )
 
@@ -23,6 +22,5 @@ func main() {
 	if *percent > 0 {
 		debug.SetGCPercent(*percent)
 	}
-	types.S("cfg.bityuan", bityuan)
-	cli.RunChain33("bityuan")
+	cli.RunChain33("bityuan", bityuan)
 }
