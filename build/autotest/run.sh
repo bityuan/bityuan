@@ -19,6 +19,9 @@ PlUGIN_PATH=$(go list -f "{{.Dir}}" github.com/33cn/plugin)
 function build_auto_test() {
 
     trap "rm -f ../autotest/main.go" INT TERM EXIT
+    cp ../../bityuan ../chain33
+    cp ../../bityuan-cli ../chain33-cli
+    cp ../../bityuan.toml ../chain33.toml
     local AutoTestMain="${CHAIN33_PATH}/cmd/autotest/main.go"
     cp "${AutoTestMain}" ./
     sed -i $sedfix '/^package/a import _ \"github.com\/33cn\/plugin\/plugin\"' main.go
