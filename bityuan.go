@@ -185,6 +185,7 @@ ForkBase58AddressCheck=2270000
 ForkEnableParaRegExec=2270000
 ForkCacheDriver=4320000
 ForkTicketFundAddrV1=4320000
+ForkRootHash=-1             #暂时设为-1, 6.4根据需要重新设定
 
 [fork.sub.coins]
 Enable=0
@@ -228,6 +229,10 @@ Enable=1600000
 ForkParacrossWithdrawFromParachain=1600000
 ForkParacrossCommitTx=2270000
 ForkLoopCheckCommitTxDone=4320000
+
+#暂时设为-1, 6.4根据需要重新设定
+ForkParaAssetTransferRbk=-1
+ForkParaSelfConsStages=-1
 
 [fork.sub.multisig]
 Enable=1600000
