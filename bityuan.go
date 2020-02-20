@@ -2,7 +2,7 @@ package main
 
 var bityuan = `
 TestNet=false
-version="6.3.2"
+version="6.4.0"
 CoinSymbol="bty"
 
 [blockchain]
@@ -186,7 +186,7 @@ ForkEnableParaRegExec=2270000
 ForkCacheDriver=4320000
 ForkTicketFundAddrV1=4320000
 #fork for 6.4
-ForkRootHash=-1             
+ForkRootHash=7000000           
 
 [fork.sub.coins]
 Enable=0
@@ -231,14 +231,14 @@ ForkParacrossWithdrawFromParachain=1600000
 ForkParacrossCommitTx=2270000
 ForkLoopCheckCommitTxDone=4320000
 #fork for 6.4
-ForkParaAssetTransferRbk=-1      
-ForkParaSelfConsStages=-1
+ForkParaAssetTransferRbk=7000000    
+ForkParaSelfConsStages=7000000
 
 [fork.sub.multisig]
 Enable=1600000
 
-[for.sub.autonomy]
-Enable=4320000
+[fork.sub.autonomy]
+Enable=7000000
 
 [fork.sub.unfreeze]
 Enable=1600000
