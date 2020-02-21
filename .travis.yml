@@ -20,16 +20,7 @@ jobs:
       script:
         - make checkgofmt && make fmt
         - make linter
-
-
-    - stage: auto-test
-      go: "1.12.x"
-      env:
-        - GO111MODULE=on
-      install: skip
-      before_script: make
-      script:
-#        - make autotest dapp="coins paracross unfreeze token trade"
+        - make
 
 
 
