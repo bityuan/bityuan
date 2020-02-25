@@ -100,3 +100,18 @@ enableMVCC=false
 
 [exec.sub.token]
 saveTokenTxList=false
+
+[metrics]
+#是否使能发送metrics数据的发送
+enableMetrics=false
+#数据保存模式
+dataEmitMode="influxdb"
+
+[metrics.sub.influxdb]
+#以纳秒为单位的发送间隔
+duration=1000000000
+url="http://influxdb:8086"
+database="chain33metrics"
+username=""
+password=""
+namespace=""
