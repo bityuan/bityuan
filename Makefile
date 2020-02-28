@@ -24,12 +24,12 @@ updateplugin:
 	@if [ -n "$(version)" ]; then   \
     go get github.com/33cn/plugin@${version}; \
     else \
-    go get github.com/33cn/plugin;fi
+    go get github.com/33cn/plugin@master;fi
 updatechain33:
 	@if [ -n "$(version)" ]; then   \
 	go get github.com/33cn/chain33@${version}; \
 	else \
-	go get github.com/33cn/chain33;fi
+	go get github.com/33cn/chain33@master;fi
 
 #make update version=xxx, 同时更新chain33和plugin, 两个项目必须有相同的tag(tag必须是--vMajor.Minor.Patch--规范格式)
 update:updatechain33 updateplugin

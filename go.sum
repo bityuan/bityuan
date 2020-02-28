@@ -8,6 +8,8 @@ github.com/33cn/chain33 v0.0.0-20191230031247-b56730d527a0/go.mod h1:4I8n+Zyf3t0
 github.com/33cn/chain33 v0.0.0-20200205062829-bb33acc5e2e8/go.mod h1:lhZbNbCnCGsiiapxGZcSxfxKdIAdCK0UzHgpp65XMlM=
 github.com/33cn/chain33 v0.0.0-20200220033413-418ac6dd5fcf h1:Nyjp4/0ilQnp35tDk5VsWjlg/4k13MfTV3Y7ujmIRsI=
 github.com/33cn/chain33 v0.0.0-20200220033413-418ac6dd5fcf/go.mod h1:lhZbNbCnCGsiiapxGZcSxfxKdIAdCK0UzHgpp65XMlM=
+github.com/33cn/chain33 v0.0.0-20200227043756-fe86a40df2e9 h1:jgczckyGGqHy6wKPGWsmVFe7/uj1CjVkHPGXYcnP850=
+github.com/33cn/chain33 v0.0.0-20200227043756-fe86a40df2e9/go.mod h1:lhZbNbCnCGsiiapxGZcSxfxKdIAdCK0UzHgpp65XMlM=
 github.com/33cn/plugin v0.0.0-20191023075037-6beb6eaf1b89 h1:DuhlIz76DwmlymaGY5xajmqgEhyAn9h43z5ZCwKouQs=
 github.com/33cn/plugin v0.0.0-20191023075037-6beb6eaf1b89/go.mod h1:tu3aZh0LN0lDnjSOAN+TXfPK5A2N+QcZBWIfEP10u1Y=
 github.com/33cn/plugin v0.0.0-20191025151840-6c49e88527a0 h1:4LOW3pTA+D3qPXA4Pe6yjn5ccdO4ef1UOIL/VcrMe8E=
@@ -16,6 +18,8 @@ github.com/33cn/plugin v0.0.0-20191231083709-e4160511d3d3 h1:+zv/o7O3UWC11V3Hj+h
 github.com/33cn/plugin v0.0.0-20191231083709-e4160511d3d3/go.mod h1:nQgTAw3j6V5eBzQdZHNCQgTPuoSiSYVb9LiaaiLGpAs=
 github.com/33cn/plugin v0.0.0-20200218090331-47d7017f7315 h1:FVgei1MWbnAhLSGGdZGPvN2lvvUyJ6jNmCOUi4nLRwo=
 github.com/33cn/plugin v0.0.0-20200218090331-47d7017f7315/go.mod h1:EmE78LUZRxuiN90Z2IRueqUv7mJ286+7m5aikNUtsH0=
+github.com/33cn/plugin v0.0.0-20200228041120-bbb107d5d232 h1:X85z5f4tT+RRcXNfgaw5Q0sJrjVsb2dLNIcnpJRBR3A=
+github.com/33cn/plugin v0.0.0-20200228041120-bbb107d5d232/go.mod h1:EmE78LUZRxuiN90Z2IRueqUv7mJ286+7m5aikNUtsH0=
 github.com/33cn/plugin v6.1.0+incompatible h1:d7ny2uwx7RzrgZXdyAmwkBOT5lOGnbsa9vZirAXE6Jc=
 github.com/33cn/plugin v6.1.0+incompatible/go.mod h1:Xsn49VOrHa40flpl8NuvoArhpHUPNaiZ+hPajIchE1M=
 github.com/AndreasBriese/bbloom v0.0.0-20180913140656-343706a395b7 h1:PqzgE6kAMi81xWQA2QIVxjWkFHptGgC547vchpUbtFo=
