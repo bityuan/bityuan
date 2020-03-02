@@ -64,9 +64,9 @@ dbPath="datadir/mavltree"
 dbCache=128
 
 [store.sub.mavl]
-enableMavlPrefix=false
+enableMavlPrefix=true
 enableMVCC=false
-enableMavlPrune=false
+enableMavlPrune=true
 pruneHeight=10000
 enableMemTree=true
 enableMemVal=true
@@ -75,9 +75,9 @@ tkCloseCacheLen=200000
 
 [store.sub.kvmvccmavl]
 enableMVCCIter=true
-enableMavlPrefix=false
+enableMavlPrefix=true
 enableMVCC=false
-enableMavlPrune=false
+enableMavlPrune=true
 pruneMavlHeight=10000
 enableMVCCPrune=false
 pruneMVCCHeight=10000
