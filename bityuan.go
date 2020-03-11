@@ -45,6 +45,7 @@ minerstart=true
 genesisBlockTime=1514533394
 genesis="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
 minerExecs=["ticket", "autonomy"]
+enableBestBlockCmp=true
 
 [mver.consensus]
 fundKeyAddr = "1JmFaA6unrCFYEWPGRi7uuXY1KthTJxJEP"
