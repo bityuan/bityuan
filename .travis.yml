@@ -22,7 +22,7 @@ jobs:
         - make linter
 
 
-    - stage: auto-test
+    - stage: build
       go: "1.12.x"
       env:
         - GO111MODULE=on
