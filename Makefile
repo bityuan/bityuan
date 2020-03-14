@@ -5,7 +5,7 @@ export PLUGIN_PATH=$(shell go list -f {{.Dir}} github.com/33cn/plugin)
 PKG_LIST_VET := `go list ./... | grep -v "vendor" | grep -v plugin/dapp/evm/executor/vm/common/crypto/bn256`
 PKG_LIST_INEFFASSIGN= `go list -f {{.Dir}} ./... | grep -v "vendor"`
 BUILD_FLAGS = -ldflags "-X github.com/33cn/chain33/common/version.GitCommit=`git rev-parse --short=8 HEAD`"
-THIS_FILE := $(lastword $(MAKEFILE_LIST))
+
 .PHONY: default build
 
 default: build
