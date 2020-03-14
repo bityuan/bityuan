@@ -5,14 +5,14 @@ export PLUGIN_PATH=$(shell go list -f {{.Dir}} github.com/33cn/plugin)
 PKG_LIST_VET := `go list ./... | grep -v "vendor" | grep -v plugin/dapp/evm/executor/vm/common/crypto/bn256`
 PKG_LIST_INEFFASSIGN= `go list -f {{.Dir}} ./... | grep -v "vendor"`
 BUILD_FLAGS = -ldflags "-X github.com/33cn/chain33/common/version.GitCommit=`git rev-parse --short=8 HEAD`"
-
+THIS_FILE := $(lastword $(MAKEFILE_LIST))
 .PHONY: default build
 
 default: build
 
 all:  build
 
-build:
+build: toolimport
 	go build ${BUILD_FLAGS} -v -i -o bityuan
 	go build ${BUILD_FLAGS} -v -i -o bityuan-cli github.com/bityuan/bityuan/cli
 
@@ -68,6 +68,11 @@ autotest: ## build autotest binary
 	@if [ -n "$(dapp)" ]; then \
 		cd build/autotest && bash ./run.sh local $(dapp) && cd ../../; fi
 
+buildtool: ## chain33 tool
+	@go build -i -o tool `go list -f {{.Dir}} github.com/33cn/chain33`/cmd/tools
+
+toolimport: buildtool ## update plugin import
+	@./tool import --path "plugin" --packname "github.com/bityuan/bityuan/plugin" --conf "plugin/plugin.toml"
 
 clean:
 	@rm -rf datadir

@@ -16,9 +16,11 @@ singleMode=false
 
 [p2p]
 enable=true
-serverStart=true
 msgCacheSize=10240
 driver="leveldb"
+
+[p2p.sub.gossip]
+serverStart=true
 
 #下一个版本改成: price 模式
 [mempool]
