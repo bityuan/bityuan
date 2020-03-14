@@ -34,17 +34,24 @@ enableReExecLocal=false
 enableReduceLocaldb=true
 
 [p2p]
+types=["gossip", "dht"]
+dbPath="datadir/addrbook"
+dbCache=4
+grpcLogFile="grpc33.log"
+#waitPid 等待seed导入
+waitPid=false
+
+[p2p.sub.gossip]
 port=13802
 seeds=[]
 isSeed=false
 innerSeedEnable=true
 useGithub=true
 innerBounds=300
-dbPath="datadir/addrbook"
-dbCache=4
-grpcLogFile="grpc33.log"
-#waitPid 等待seed导入
-waitPid=false
+
+[p2p.sug.dht]
+port=13803
+
 
 [rpc]
 jrpcBindAddr="localhost:8801"
