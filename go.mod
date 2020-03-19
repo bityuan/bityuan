@@ -3,10 +3,8 @@ module github.com/bityuan/bityuan
 go 1.13
 
 require (
-	github.com/33cn/chain33 v0.0.0-20200314025239-68ef1b429d3b
-	github.com/33cn/plugin v0.0.0-20200314035509-34a3ec00e224
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/modern-go/reflect2 v1.0.1 // indirect
+	github.com/33cn/chain33 v0.0.0-20200319055655-88ff1f889cc6
+	github.com/33cn/plugin v0.0.0-20200318064421-25622437cca9
 	github.com/prometheus/client_golang v1.1.0 // indirect
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/vektra/mockery v0.0.0-20181123154057-e78b021dcbb5 // indirect
