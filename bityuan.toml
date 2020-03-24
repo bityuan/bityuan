@@ -49,7 +49,7 @@ innerSeedEnable=true
 useGithub=true
 innerBounds=300
 
-[p2p.sug.dht]
+[p2p.sub.dht]
 port=13803
 
 
