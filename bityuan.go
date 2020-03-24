@@ -188,7 +188,7 @@ ForkEnableParaRegExec=2270000
 ForkCacheDriver=4320000
 ForkTicketFundAddrV1=4320000
 #fork for 6.4
-ForkRootHash=7000000           
+ForkRootHash=7200000           
 
 [fork.sub.coins]
 Enable=0
@@ -233,14 +233,14 @@ ForkParacrossWithdrawFromParachain=1600000
 ForkParacrossCommitTx=2270000
 ForkLoopCheckCommitTxDone=4320000
 #fork for 6.4
-ForkParaAssetTransferRbk=7000000    
-ForkParaSelfConsStages=7000000
+ForkParaAssetTransferRbk=7200000    
+ForkParaSelfConsStages=7200000
 
 [fork.sub.multisig]
 Enable=1600000
 
 [fork.sub.autonomy]
-Enable=7000000
+Enable=7200000
 
 [fork.sub.unfreeze]
 Enable=1600000
