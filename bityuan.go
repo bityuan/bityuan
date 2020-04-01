@@ -2,7 +2,7 @@ package main
 
 var bityuan = `
 TestNet=false
-version="6.4.1"
+version="6.4.2"
 CoinSymbol="bty"
 
 [blockchain]
@@ -23,7 +23,8 @@ driver="leveldb"
 serverStart=true
 
 [p2p.sub.dht]
-seeds=["/ip4/116.62.14.25/tcp/13803/p2p/16Uiu2HAmTLe2UuhiEiXkMBzbMsEUSJSqRCrc2rDJou855amo1JGD",
+#bootstraps是内置不能修改的引导节点
+bootstraps=["/ip4/116.62.14.25/tcp/13803/p2p/16Uiu2HAmTLe2UuhiEiXkMBzbMsEUSJSqRCrc2rDJou855amo1JGD",
 "/ip4/39.106.166.159/tcp/13803/p2p/16Uiu2HAmM7iiHwerHR63CpG71sd2Y3jmC6QrPuAT1hRPWL9wx4eB",
 "/ip4/47.106.114.93/tcp/13803/p2p/16Uiu2HAmAvHCoV1i9U3MHorQGZNRUhms1FXpd57g12fpovg3owRS",
 "/ip4/120.76.100.165/tcp/13803/p2p/16Uiu2HAmGoQ8Sp9Tk42ftV6TjrMaSjSNuYJ6xNKVoAw18AcNJ6dy",
