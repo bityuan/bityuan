@@ -64,6 +64,10 @@ fmt: fmt_shell ## go fmt
 	@go fmt ./...
 	@find . -name '*.go' -not -path "./vendor/*" | xargs goimports -l -w
 
+largefile-check:
+	git gc
+	./findlargefile.sh
+
 autotest: ## build autotest binary
 	@cd build/autotest && bash ./run.sh build && cd ../../
 	@if [ -n "$(dapp)" ]; then \
