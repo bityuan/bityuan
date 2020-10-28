@@ -32,6 +32,12 @@ enableTxQuickIndex=true
 enableReExecLocal=false
 # 使能精简localdb
 enableReduceLocaldb=true
+# 是否禁止分片功能，默认开启分片功能
+disableShard=false
+# 分片存储中每个大块包含的区块数
+chunkblockNum=1000
+# 使能从P2pStore中获取数据
+enableFetchP2pstore=true
 
 [p2p]
 types=["gossip", "dht"]
@@ -54,9 +60,12 @@ innerBounds=300
 seeds=[]
 port=13803
 #dht 版本还不稳定，暂时限定较小的连接数
-maxConnectNum=50
+maxConnectNum=200
 #区块轻广播最低区块大小，1k
 minLtBlockSize=1
+# 是否配置为全节点模式，全节点保存所有分片数据，种子节点应配置为true
+# 全节点可以切换为分片节点，暂不支持分片节点切换为全节点
+isFullNode=false
 
 
 [rpc]
