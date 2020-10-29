@@ -9,7 +9,7 @@ clone_folder: c:\gopath\src\github.com\bityuan\bityuan
 environment:
   GOPATH: c:\gopath
   DEPTESTBYPASS501: 1
-  GOVERSION: 1.12.9
+  GOVERSION: 1.13.1
   GO111MODULE: on
 
 #init:

@@ -13,6 +13,7 @@ default: build
 all:  build
 
 build: toolimport
+	go env -w CGO_ENABLED=0
 	go build ${BUILD_FLAGS} -v -i -o bityuan
 	go build ${BUILD_FLAGS} -v -i -o bityuan-cli github.com/bityuan/bityuan/cli
 
@@ -62,6 +63,10 @@ fmt_shell: ## check shell file
 fmt: fmt_shell ## go fmt
 	@go fmt ./...
 	@find . -name '*.go' -not -path "./vendor/*" | xargs goimports -l -w
+
+largefile-check:
+	git gc
+	./findlargefile.sh
 
 autotest: ## build autotest binary
 	@cd build/autotest && bash ./run.sh build && cd ../../
