@@ -3,8 +3,8 @@ module github.com/bityuan/bityuan
 go 1.13
 
 require (
-	github.com/33cn/chain33 v1.65.1-0.20201028014647-12d4d4fb0301
-	github.com/33cn/plugin v1.65.1
+	github.com/33cn/chain33 v1.65.1-0.20201120054034-b5c7280cb7b3
+	github.com/33cn/plugin v1.65.2-0.20201117080339-c14f2edbe461
 	github.com/NebulousLabs/entropy-mnemonics v0.0.0-20170316012907-7b01a644a636 // indirect
 	github.com/boltdb/bolt v1.3.1 // indirect
 	github.com/coreos/bbolt v1.3.0 // indirect

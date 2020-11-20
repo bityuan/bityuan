@@ -28,6 +28,9 @@ github.com/33cn/chain33 v1.65.0 h1:YWOGdpY6XV2NAo2CqkbiDcPx3d9dwh432X7RdFxjL9g=
 github.com/33cn/chain33 v1.65.1-0.20201022110501-fde367b8c955/go.mod h1:wHcOzFsfp0f0Zio+RHAUgUYyJhyVQyPbvmL0MYFBTng=
 github.com/33cn/chain33 v1.65.1-0.20201028014647-12d4d4fb0301 h1:2TK3v7+K3xQ2G1mLFvlXrQ7JWjFtBYsbwYcwIsPMTao=
 github.com/33cn/chain33 v1.65.1-0.20201028014647-12d4d4fb0301/go.mod h1:wHcOzFsfp0f0Zio+RHAUgUYyJhyVQyPbvmL0MYFBTng=
+github.com/33cn/chain33 v1.65.1-0.20201111090506-e2d7705ea453/go.mod h1:wHcOzFsfp0f0Zio+RHAUgUYyJhyVQyPbvmL0MYFBTng=
+github.com/33cn/chain33 v1.65.1-0.20201120054034-b5c7280cb7b3 h1:Ewk2LGnpuWMXFnSDdriVErvffy9gBzBan9bI6Fv1EMo=
+github.com/33cn/chain33 v1.65.1-0.20201120054034-b5c7280cb7b3/go.mod h1:wHcOzFsfp0f0Zio+RHAUgUYyJhyVQyPbvmL0MYFBTng=
 github.com/33cn/plugin v0.0.0-20191023075037-6beb6eaf1b89 h1:DuhlIz76DwmlymaGY5xajmqgEhyAn9h43z5ZCwKouQs=
 github.com/33cn/plugin v0.0.0-20191023075037-6beb6eaf1b89/go.mod h1:tu3aZh0LN0lDnjSOAN+TXfPK5A2N+QcZBWIfEP10u1Y=
 github.com/33cn/plugin v0.0.0-20191025151840-6c49e88527a0 h1:4LOW3pTA+D3qPXA4Pe6yjn5ccdO4ef1UOIL/VcrMe8E=
@@ -50,6 +53,8 @@ github.com/33cn/plugin v0.0.0-20200427032237-8703305a89cc h1:ajH70KL74Nt+8u5HWmA
 github.com/33cn/plugin v0.0.0-20200427032237-8703305a89cc/go.mod h1:k7FQDTWwhIbILP67sWygs5vTyqod2/l62ODcQfF9ypk=
 github.com/33cn/plugin v1.65.1 h1:0IuoKQyYG0RUeVoCWi8ZVDK5uD54FnAAzaPPInZThh8=
 github.com/33cn/plugin v1.65.1/go.mod h1:fvYg+x0oC6l3lUF0xNq/PknHXztMnitRy4gTw926FZc=
+github.com/33cn/plugin v1.65.2-0.20201117080339-c14f2edbe461 h1:YHM0keAATz715e4OI5IEqDm+FA2cy1BbQiB6uz2Qdzw=
+github.com/33cn/plugin v1.65.2-0.20201117080339-c14f2edbe461/go.mod h1:3jOzvkJUcW1uhQ6ILdgrSDoiSOzJ2xyZpqTAFCuFZDc=
 github.com/33cn/plugin v6.1.0+incompatible h1:d7ny2uwx7RzrgZXdyAmwkBOT5lOGnbsa9vZirAXE6Jc=
 github.com/33cn/plugin v6.1.0+incompatible/go.mod h1:Xsn49VOrHa40flpl8NuvoArhpHUPNaiZ+hPajIchE1M=
 github.com/AndreasBriese/bbloom v0.0.0-20180913140656-343706a395b7 h1:PqzgE6kAMi81xWQA2QIVxjWkFHptGgC547vchpUbtFo=
@@ -816,6 +821,8 @@ github.com/tjfoc/gmsm v0.0.0-20171124023159-98aa888b79d8 h1:6CNSDqI1wiE+JqyOy5Qt
 github.com/tjfoc/gmsm v0.0.0-20171124023159-98aa888b79d8/go.mod h1:XxO4hdhhrzAd+G4CjDqaOkd0hUzmtPR/d3EiBBMn/wc=
 github.com/tjfoc/gmsm v1.3.1 h1:+k3IAlF81c31/TllJmIfuCYnjl8ziMdTWGWJcP9J1uo=
 github.com/tjfoc/gmsm v1.3.1/go.mod h1:HaUcFuY0auTiaHB9MHFGCPx5IaLhTUd2atbCFBQXn9w=
+github.com/tjfoc/gmsm v1.3.2 h1:7JVkAn5bvUJ7HtU08iW6UiD+UTmJTIToHCfeFzkcCxM=
+github.com/tjfoc/gmsm v1.3.2/go.mod h1:HaUcFuY0auTiaHB9MHFGCPx5IaLhTUd2atbCFBQXn9w=
 github.com/tyler-smith/go-bip39 v1.0.1-0.20181017060643-dbb3b84ba2ef/go.mod h1:sJ5fKU0s6JVwZjjcUEX2zFOnvq0ASQ2K9Zr6cf67kNs=
 github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8/go.mod h1:VFNgLljTbGfSG7qAOspJ7OScBnGdDN/yBr0sguwnwf0=
 github.com/urfave/cli v1.20.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijbERA=
