@@ -45,7 +45,7 @@ dbPath="datadir/addrbook"
 dbCache=4
 grpcLogFile="grpc33.log"
 #waitPid 等待seed导入
-waitPid=true
+waitPid=false
 
 [p2p.sub.gossip]
 port=13802
