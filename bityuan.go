@@ -13,6 +13,7 @@ batchBlockNum=128
 driver="leveldb"
 isStrongConsistency=false
 singleMode=false
+chunkblockNum=1000
 
 [p2p]
 enable=true
