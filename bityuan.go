@@ -13,6 +13,8 @@ batchBlockNum=128
 driver="leveldb"
 isStrongConsistency=false
 singleMode=false
+# 分片存储中每个大块包含的区块数，固定参数
+chunkblockNum=1000
 
 [p2p]
 enable=true
