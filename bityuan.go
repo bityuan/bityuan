@@ -2,8 +2,10 @@ package main
 
 var bityuan = `
 TestNet=false
-version="6.5.1"
+version="6.5.2"
 CoinSymbol="bty"
+
+[crypto]
 
 [blockchain]
 defCacheSize=128
