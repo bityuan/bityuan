@@ -263,6 +263,8 @@ ForkLoopCheckCommitTxDone=4320000
 #fork for 6.4
 ForkParaAssetTransferRbk=7200000    
 ForkParaSelfConsStages=7200000
+#仅平行链适用
+ForkParaFullMinerHeight=0
 
 [fork.sub.multisig]
 Enable=1600000
