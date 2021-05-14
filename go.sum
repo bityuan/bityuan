@@ -15,6 +15,8 @@ github.com/33cn/chain33 v1.65.3-0.20210421055314-0fd68ec597e6/go.mod h1:52miTcQY
 github.com/33cn/chain33 v1.65.3-0.20210427041813-e3de8b475554/go.mod h1:52miTcQYwY/ChrmFm7Lh07z8GHPTQBlZQyYrB5cnLyw=
 github.com/33cn/chain33 v1.65.3-0.20210507015028-a837b4794f67 h1:IN/oPs0JrNIG9qfTLBEXhW1M9aSlsXFM0lry+LJ9g34=
 github.com/33cn/chain33 v1.65.3-0.20210507015028-a837b4794f67/go.mod h1:52miTcQYwY/ChrmFm7Lh07z8GHPTQBlZQyYrB5cnLyw=
+github.com/33cn/chain33 v1.65.3-0.20210513081037-0c6bb9982852 h1:iR1Z1RWZFTwZNz0Jbeffcsx9Zzi2dQi5f0ZuofiigbU=
+github.com/33cn/chain33 v1.65.3-0.20210513081037-0c6bb9982852/go.mod h1:52miTcQYwY/ChrmFm7Lh07z8GHPTQBlZQyYrB5cnLyw=
 github.com/33cn/plugin v1.65.2-0.20210107032755-f5a4bfa296f7 h1:OOOjrghCmTPJRjz6z9lZ5jYKnJtgiV77LyNJO1FmLio=
 github.com/33cn/plugin v1.65.2-0.20210107032755-f5a4bfa296f7/go.mod h1:DNxN8ssV+WGmwr3w+dmBt8wY35VcPUxhI+9PBQ8S/AY=
 github.com/33cn/plugin v1.65.2-0.20210126074238-f9e2f57a4d77 h1:WqidSYqEd/9dBy7hneA9IXiO3q2TiBgNQMKr+c5KTnQ=
@@ -29,6 +31,8 @@ github.com/33cn/plugin v1.65.3-0.20210421140516-8e44a43c5477/go.mod h1:Lgwe3awa1
 github.com/33cn/plugin v1.65.3-0.20210427070441-e87e1e928df5/go.mod h1:EmK5nax3arOD52OkUsFPCyA5BOtfdLrQt0UUOR7VxyY=
 github.com/33cn/plugin v1.65.3-0.20210507102923-2deb92758faf h1:eWH2iRGFxuZauVXMEc6zvYtUDdKQh57NxUG3KzCkK4c=
 github.com/33cn/plugin v1.65.3-0.20210507102923-2deb92758faf/go.mod h1:Y+sYacoRSKqkRZmVLJwrbltguxUf2MJU9+S7j8xj/v8=
+github.com/33cn/plugin v1.65.3-0.20210514012203-3103e457ba19 h1:ZIYAeUxhUzL/o6CHxjiLJvhr//jhlaWF/K8fu5ncQ6Q=
+github.com/33cn/plugin v1.65.3-0.20210514012203-3103e457ba19/go.mod h1:FwPPgmDQcuSmI/vswSKQVzu7XiBxAplx0ADlntMlqcc=
 github.com/AndreasBriese/bbloom v0.0.0-20180913140656-343706a395b7 h1:PqzgE6kAMi81xWQA2QIVxjWkFHptGgC547vchpUbtFo=
 github.com/AndreasBriese/bbloom v0.0.0-20180913140656-343706a395b7/go.mod h1:bOvUY6CB00SOBii9/FifXqc0awNKxLFCL/+pkDPuyl8=
 github.com/AndreasBriese/bbloom v0.0.0-20190306092124-e2d15f34fcf9 h1:HD8gA2tkByhMAwYaFAX9w2l7vxvBQ5NMoxDrkhqhtn4=
