@@ -57,15 +57,21 @@ innerBounds=300
 #可以自定义设置连接节点
 seeds=[]
 port=13803
-#dht 版本还不稳定，暂时限定较小的连接数
-maxConnectNum=200
+maxConnectNum=40
 #区块轻广播最低区块大小，1k
 minLtBlockSize=100
 # 是否配置为全节点模式，全节点保存所有分片数据，种子节点应配置为true
 # 全节点可以切换为分片节点，暂不支持分片节点切换为全节点
 isFullNode=false
-# 兼容老版本广播最大节点数
-maxBroadcastPeers=25
+maxBroadcastPeers=1
+
+[p2p.sub.dht.pubsub]
+gossipSubDlo=7
+gossipSubD=10
+gossipSubDhi=20
+gossipSubHeartbeatInterval=900
+gossipSubHistoryGossip=2
+gossipSubHistoryLength=7
 
 
 [rpc]
