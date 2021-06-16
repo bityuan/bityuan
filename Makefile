@@ -14,8 +14,8 @@ all:  build
 
 build: toolimport
 	go env -w CGO_ENABLED=0
-	go build ${BUILD_FLAGS} -v -i -o bityuan
-	go build ${BUILD_FLAGS} -v -i -o bityuan-cli github.com/bityuan/bityuan/cli
+	go build ${BUILD_FLAGS} -v  -o bityuan
+	go build ${BUILD_FLAGS} -v  -o bityuan-cli github.com/bityuan/bityuan/cli
 
 
 
@@ -74,7 +74,7 @@ autotest: ## build autotest binary
 		cd build/autotest && bash ./run.sh local $(dapp) && cd ../../; fi
 
 buildtool: ## chain33 tool
-	@go build -i -o tool `go list -f {{.Dir}} github.com/33cn/chain33`/cmd/tools
+	@go build  -o tool `go list -f {{.Dir}} github.com/33cn/chain33`/cmd/tools
 
 toolimport: buildtool ## update plugin import
 	@./tool import --path "plugin" --packname "github.com/bityuan/bityuan/plugin" --conf "plugin/plugin.toml"
