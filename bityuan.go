@@ -55,6 +55,7 @@ bootstraps=["/ip4/139.159.161.108/tcp/13803/p2p/16Uiu2HAm5g1j1VZTaFKBHkV2c4FYwXL
 "/ip4/120.76.100.165/tcp/13803/p2p/16Uiu2HAm2HenToxaxfxFoTkX9kZMJ4pRUQK8BNWPCgQF7AvuHs2o",
 "/ip4/120.24.85.66/tcp/13803/p2p/16Uiu2HAm4HXqxecPk8YTUyFCfvxPHpYNVUroDKRNrRSz9KGsdoM7",
 "/ip4/120.24.92.123/tcp/13803/p2p/16Uiu2HAm8ePgmmj59sB9EXu2bKUwNi1YWhUcqYak3SM1CDJR3DjD"]
+
 #下一个版本改成: price 模式
 [mempool]
 name="price"
