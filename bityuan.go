@@ -183,6 +183,26 @@ superManager=[
 nodeGroupFrozenCoins=0
 #平行链共识停止后主链等待的高度
 paraConsensusStopBlocks=30000
+#配置平行链资产跨链交易的高度列表，title省略user.p,不同title使用,分割，不同hit高度使用"."分割，
+#不同ignore范围高度使用"-"分割，hit高度在ignore范围内，为平行链自身的高度，不是主链高度
+## para.hit.10.50.250, para.ignore.1-100.200-300
+paraCrossAssetTxHeightList=[
+"fzmtest.hit.74485",
+"fzmtest.ignore.1-67335.67850-72473.73667-77630.77920-79495.79936-79939",
+"game.hit.4203.4226.17725.18195.18403.18405.18859.18951.19393.28966.61168",
+"game.ignore.1-8797.16808-20365.25637-33828.43399-44595.58333-150460",
+"testuwallet.hit.35556.35564.36505.36511.53386",
+"testuwallet.ignore.1-3121.4496-7422.33032-37596.37928-40556.44599-46879.52600-72584",
+"mall.hit.80276.80295.81260.81271",
+"mall.ignore.1-196397",
+"uwallet.hit.9954.39357",
+"uwallet.ignore.1-2896.7518-90568",
+"HonorDecentchain.ignore.1-90000000",
+"HonorDecent.ignore.1-198279",
+"bontav1.ignore.1-109068",
+"bonta.ignore.1-89729",
+"mc.ignore.1-90000000",
+]
 
 [exec.sub.autonomy]
 total="16htvcBNSEA7fZhAdLJphDwQRQJaHpyHTp"
