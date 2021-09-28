@@ -17,6 +17,8 @@ isStrongConsistency=false
 singleMode=false
 # 分片存储中每个大块包含的区块数，固定参数
 chunkblockNum=1000
+# blockchain模块保留的区块数，指定最新的reservedBlockNum个区块不参与分片
+reservedBlockNum=300000
 
 [p2p]
 enable=true
@@ -298,6 +300,7 @@ Enable=1600000
 
 [fork.sub.autonomy]
 Enable=7200000
+ForkAutonomyDelRule=16000000
 
 [fork.sub.unfreeze]
 Enable=1600000
