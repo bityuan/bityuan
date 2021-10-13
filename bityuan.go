@@ -294,6 +294,8 @@ ForkParaAssetTransferRbk=7200000
 ForkParaSelfConsStages=7200000
 #仅平行链适用
 ForkParaFullMinerHeight=-1
+ForkParaRootHash=-1
+ForkParaSupervision=18000000
 
 [fork.sub.multisig]
 Enable=1600000
