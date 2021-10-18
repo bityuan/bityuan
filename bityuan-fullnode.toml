@@ -31,7 +31,7 @@ enableTxQuickIndex=true
 # 升级storedb是否重新执行localdb，bityuan主链升级不需要开启，平行链升级需要开启
 enableReExecLocal=false
 # 使能精简localdb
-enableReduceLocaldb=true
+enableReduceLocaldb=false
 # 是否禁止分片功能，默认开启分片功能
 disableShard=false
 # 使能从P2pStore中获取数据
