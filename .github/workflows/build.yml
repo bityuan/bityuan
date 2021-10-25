@@ -81,9 +81,10 @@ jobs:
         id: go
       - name: set go env
         run: |
-          set PATH=c:\go\bin;c:\gopath\bin;%Path%
+          set Path=c:\go\bin;%Path%
           gcc --version
           go version
+          go env GOPATH
           go env
       - name: checkout
         uses: actions/checkout@v2
