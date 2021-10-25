@@ -13,7 +13,7 @@ default: build
 all:  build
 
 build: toolimport
-	go env -w CGO_ENABLED=0
+	go env -w CGO_ENABLED=1
 	go build ${BUILD_FLAGS} -v  -o bityuan
 	go build ${BUILD_FLAGS} -v  -o bityuan-cli github.com/bityuan/bityuan/cli
 
