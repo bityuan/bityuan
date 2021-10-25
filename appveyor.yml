@@ -21,6 +21,8 @@ install:
   - appveyor DownloadFile https://storage.googleapis.com/golang/go%GOVERSION%.windows-amd64.msi
   - msiexec /i go%GOVERSION%.windows-amd64.msi /q
   - dir C:\
+  - dir C:\mingw-w64\
+  - dir C:\mingw-w64\x86_64-6.3.0-posix-seh-rt_v5-rev1\
   - dir C:\mingw-w64\x86_64-6.3.0-posix-seh-rt_v5-rev1\mingw64
 #  - choco install bzr
   - set Path=c:\go\bin;c:\gopath\bin;C:\mingw-w64\x86_64-6.3.0-posix-seh-rt_v5-rev1\mingw64\bin;C:\Program Files (x86)\Bazaar\;C:\Program Files\Mercurial\;%Path%
