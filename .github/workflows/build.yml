@@ -81,7 +81,7 @@ jobs:
         id: go
       - name: set go env
         run: |
-          set PATH=${PATH}:`go env GOPATH`/bin
+          set PATH=c:\go\bin;c:\gopath\bin;%Path%
           gcc --version
           go version
           go env
