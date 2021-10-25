@@ -84,10 +84,6 @@ jobs:
           gcc --version
           go version
           go env GOPATH
-          echo “##[add-path]c:\go\bin;c:\gopath\bin”
-          gcc --version
-          go version
-          go env GOPATH
           go env
       - name: checkout
         uses: actions/checkout@v2
