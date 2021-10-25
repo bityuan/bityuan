@@ -1,6 +1,8 @@
 [![pipeline status](https://api.travis-ci.org/bityuan/bityuan.svg?branch=master)](https://travis-ci.org/bityuan/bityuan/)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bityuan/bityuan)](https://goreportcard.com/report/github.com/bityuan/bityuan)
- [![Windows Build Status](https://ci.appveyor.com/api/projects/status/github/bityuan/bityuan?svg=true&branch=master&passingText=Windows%20-%20OK&failingText=Windows%20-%20failed&pendingText=Windows%20-%20pending)](https://ci.appveyor.com/project/bityuan/bityuan)
+[![Windows Build Status](https://ci.appveyor.com/api/projects/status/github/bityuan/bityuan?svg=true&branch=master&passingText=Windows%20-%20OK&failingText=Windows%20-%20failed&pendingText=Windows%20-%20pending)](https://ci.appveyor.com/project/bityuan/bityuan)
+[![Macos Build Status](https://github.com/bityuan/bityuan/actions/workflows/MacOS.yml/badge.svg)](https://github.com/bityuan/bityuan/actions/workflows/MacOS.yml)
+
 # 基于 chain33 区块链开发 框架 开发的 bityuan 系统（v6.5.1）
 
 官方网站: https://www.bityuan.com

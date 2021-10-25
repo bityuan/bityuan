@@ -1,0 +1,27 @@
+name: windows_build
+on: [push,pull_request]
+
+jobs:
+  build_windows:
+    name: build_windows
+    runs-on: windows-latest
+    steps:
+      - name: Set up MinGW
+        uses: egor-tensin/setup-mingw@v2
+        with:
+          platform: x64
+      - name: Set up Golang
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15
+        id: go
+      - name: set go env
+        run: |
+          gcc --version
+          go version
+          go env GOPATH
+          go env
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: deploy
+        run: make
