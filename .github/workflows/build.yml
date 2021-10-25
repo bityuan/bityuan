@@ -81,7 +81,10 @@ jobs:
         id: go
       - name: set go env
         run: |
-          set Path=c:\go\bin;%Path%
+          gcc --version
+          go version
+          go env GOPATH
+          echo “##[add-path]c:\go\bin;c:\gopath\bin”
           gcc --version
           go version
           go env GOPATH
