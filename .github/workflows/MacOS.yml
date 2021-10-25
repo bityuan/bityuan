@@ -1,0 +1,19 @@
+name: macro_build
+on: [push,pull_request]
+
+jobs:
+  build_macos:
+    name: build_macos
+    runs-on: macos-latest
+    steps:
+      - name: Set up Golang
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.15
+        id: go
+      - name: set go env
+        run: export PATH=${PATH}:`go env GOPATH`/bin
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: deploy
+        run: make
