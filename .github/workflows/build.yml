@@ -80,7 +80,11 @@ jobs:
           go-version: 1.15
         id: go
       - name: set go env
-        run: export PATH=${PATH}:`go env GOPATH`/bin
+        run: |
+          set PATH=${PATH}:`go env GOPATH`/bin
+          gcc --version
+          go version
+          go env
       - name: checkout
         uses: actions/checkout@v2
       - name: deploy
