@@ -4,7 +4,13 @@ export CHAIN33_PATH=$(shell go list -f {{.Dir}} github.com/33cn/chain33)
 export PLUGIN_PATH=$(shell go list -f {{.Dir}} github.com/33cn/plugin)
 PKG_LIST_VET := `go list ./... | grep -v "vendor" | grep -v plugin/dapp/evm/executor/vm/common/crypto/bn256`
 PKG_LIST_INEFFASSIGN= `go list -f {{.Dir}} ./... | grep -v "vendor"`
-BUILD_FLAGS = -ldflags "-X github.com/33cn/chain33/common/version.GitCommit=`git rev-parse --short=8 HEAD`"
+LDFLAGS := ' -w -s'
+BUILDTIME:=$(shell date +"%Y-%m-%d %H:%M:%S %A")
+VERSION=$(shell git describe --tags || git rev-parse --short=8 HEAD)
+GitCommit=$(shell git rev-parse --short=8 HEAD)
+BUILD_FLAGS := -ldflags '-X "github.com/bityuan/bityuan/version.GitCommit=$(GitCommit)" \
+                         -X "github.com/bityuan/bityuan/version.Version=$(VERSION)" \
+                         -X "github.com/bityuan/bityuan/version.BuildTime=$(BUILDTIME)"'
 
 .PHONY: default build
 
@@ -16,6 +22,37 @@ build: toolimport
 	go build ${BUILD_FLAGS} -v  -o bityuan
 	go build ${BUILD_FLAGS} -v  -o bityuan-cli github.com/bityuan/bityuan/cli
 
+
+PLATFORM_LIST = \
+	darwin-amd64 \
+	linux-amd64
+
+WINDOWS_ARCH_LIST = \
+	windows-amd64
+
+GOBUILD=CGO_ENABLED=0 go build $(BUILD_FLAGS)" -w -s"
+SRC_CLI := ./cli
+APP := bityuan
+CLI := bityuan-cli
+
+darwin-amd64:
+	GOARCH=amd64 GOOS=darwin $(GOBUILD) -o $(APP)-$@ $(SRC)
+	GOARCH=amd64 GOOS=darwin $(GOBUILD) -o $(CLI)-$@ $(SRC_CLI)
+	chmod +x $(APP)-$@ $(CLI)-$@
+	tar -zcvf build/$(APP)-$@.tar.gz $(APP)-$@  $(CLI)-$@ CHANGELOG.md bityuan-fullnode.toml bityuan.toml
+
+linux-amd64:
+	GOARCH=amd64 GOOS=linux $(GOBUILD) -o $(APP)-$@ $(SRC)
+	GOARCH=amd64 GOOS=linux $(GOBUILD) -o $(CLI)-$@ $(SRC_CLI)
+	chmod +x $(APP)-$@ $(CLI)-$@
+	tar -zcvf build/$(APP)-$@.tar.gz $(APP)-$@  $(CLI)-$@ CHANGELOG.md bityuan-fullnode.toml bityuan.toml
+
+windows-amd64:
+	GOARCH=amd64 GOOS=windows $(GOBUILD) -o $(APP)-$@.exe $(SRC)
+	GOARCH=amd64 GOOS=windows $(GOBUILD) -o $(CLI)-$@.exe $(SRC_CLI)
+	zip -j build/$(APP)-$@.zip $(APP)-$@.exe  $(CLI)-$@.exe CHANGELOG.md bityuan-fullnode.toml bityuan.toml
+
+all-arch: $(PLATFORM_LIST) $(WINDOWS_ARCH_LIST)
 
 
 #make updateplugin version=xxx
