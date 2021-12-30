@@ -2,7 +2,7 @@ package main
 
 var bityuan = `
 TestNet=false
-version="6.5.3"
+version="6.6.0"
 CoinSymbol="bty"
 
 [crypto]
@@ -270,6 +270,7 @@ ForkBadRepeatSecret=4320000
 [fork.sub.manage]
 Enable=0
 ForkManageExec=100000
+ForkManageAutonomyEnable=18620000
 
 [fork.sub.token]
 Enable=0
@@ -299,6 +300,7 @@ ForkParaSelfConsStages=7200000
 ForkParaFullMinerHeight=-1
 ForkParaRootHash=-1
 ForkParaSupervision=18000000
+ForkParaAutonomySuperGroup=18620000
 
 [fork.sub.multisig]
 Enable=1600000
@@ -306,6 +308,7 @@ Enable=1600000
 [fork.sub.autonomy]
 Enable=7200000
 ForkAutonomyDelRule=16000000
+ForkAutonomyEnableItem=18620000
 
 [fork.sub.unfreeze]
 Enable=1600000
