@@ -6,6 +6,9 @@ version="6.6.0"
 CoinSymbol="bty"
 
 [crypto]
+enableTypes=[]    #设置启用的加密插件名称，不配置启用所有
+[crypto.enableHeight]  #配置已启用插件的启用高度，不配置采用默认高度0， 负数表示不启用
+bls=-1
 
 [blockchain]
 defCacheSize=128
