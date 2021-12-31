@@ -65,7 +65,7 @@
     ],
     [
       "@semantic-release/exec", {
-      "prepareCmd": "make linux-amd64 VERSION=${nextRelease.version}"
+      "prepareCmd": "make linux-action-amd64 VERSION=${nextRelease.version}"
     }
     ]
   ]

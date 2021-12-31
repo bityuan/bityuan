@@ -1,4 +1,4 @@
-name: windows_build
+name: build windows-amd64
 on: [push,pull_request]
 
 jobs:
@@ -10,18 +10,34 @@ jobs:
         uses: egor-tensin/setup-mingw@v2
         with:
           platform: x64
+
       - name: Set up Golang
         uses: actions/setup-go@v2
         with:
           go-version: 1.15
         id: go
+
       - name: set go env
         run: |
           gcc --version
           go version
           go env GOPATH
           go env
+
       - name: checkout
         uses: actions/checkout@v2
       - name: deploy
-        run: make
+        run: make windows-amd64
+
+      - name: Archive Release
+        uses: papeloto/action-zip@v1
+        with:
+          files: CHANGELOG.md bityuan-fullnode.toml bityuan.toml bityuan-cli-windows-amd64.exe bityuan-windows-amd64.exe
+          dest: bityuan-windows-amd64.zip
+
+      - name : Upload artifact bin
+        uses: actions/upload-artifact@v2
+        with:
+          name: bityuan-windows-amd64.zip
+          path: |
+            bityuan-windows-amd64.zip
