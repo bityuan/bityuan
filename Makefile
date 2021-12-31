@@ -30,7 +30,7 @@ PLATFORM_LIST = \
 WINDOWS_ARCH_LIST = \
 	windows-amd64
 
-GOBUILD=CGO_ENABLED=0 go build $(BUILD_FLAGS)" -w -s"
+GOBUILD=CGO_ENABLED=1 go build $(BUILD_FLAGS)" -w -s"
 SRC_CLI := ./cli
 APP := bityuan
 CLI := bityuan-cli
