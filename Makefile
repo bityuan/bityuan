@@ -35,25 +35,32 @@ SRC_CLI := ./cli
 APP := bityuan
 CLI := bityuan-cli
 
-darwin-amd64:
-	GOARCH=amd64 GOOS=darwin $(GOBUILD) -o $(APP)-$@ $(SRC)
-	GOARCH=amd64 GOOS=darwin $(GOBUILD) -o $(CLI)-$@ $(SRC_CLI)
-	chmod +x $(APP)-$@ $(CLI)-$@
-	tar -zcvf build/$(APP)-$@.tar.gz $(APP)-$@  $(CLI)-$@ CHANGELOG.md bityuan-fullnode.toml bityuan.toml
 
-linux-amd64:
+
+linux-action-amd64:
 	GOARCH=amd64 GOOS=linux $(GOBUILD) -o $(APP)-$@ $(SRC)
 	GOARCH=amd64 GOOS=linux $(GOBUILD) -o $(CLI)-$@ $(SRC_CLI)
 	chmod +x $(APP)-$@ $(CLI)-$@
 	tar -zcvf build/$(APP)-$@.tar.gz $(APP)-$@  $(CLI)-$@ CHANGELOG.md bityuan-fullnode.toml bityuan.toml
 
+_GOBUILD := CGO_ENABLED=1 go build -ldflags '-X "github.com/bityuan/bityuan/version.GitCommit=$(GitCommit)" \
+                                             -X "github.com/bityuan/bityuan/version.BuildTime=$(BUILDTIME)" -w -s '
+linux-amd64:
+	GOARCH=amd64 GOOS=linux $(_GOBUILD) -o $(APP)-$@ $(SRC)
+	GOARCH=amd64 GOOS=linux $(_GOBUILD) -o $(CLI)-$@ $(SRC_CLI)
+	chmod +x $(APP)-$@ $(CLI)-$@
+	tar -zcvf build/$(APP)-$@.tar.gz $(APP)-$@  $(CLI)-$@ CHANGELOG.md bityuan-fullnode.toml bityuan.toml
+
+darwin-amd64:
+	GOARCH=amd64 GOOS=darwin $(_GOBUILD) -o $(APP)-$@ $(SRC)
+	GOARCH=amd64 GOOS=darwin $(_GOBUILD) -o $(CLI)-$@ $(SRC_CLI)
+	chmod +x $(APP)-$@ $(CLI)-$@
+	tar -zcvf build/$(APP)-$@.tar.gz $(APP)-$@  $(CLI)-$@ CHANGELOG.md bityuan-fullnode.toml bityuan.toml
+
 windows-amd64:
-	GOARCH=amd64 GOOS=windows $(GOBUILD) -o $(APP)-$@.exe $(SRC)
-	GOARCH=amd64 GOOS=windows $(GOBUILD) -o $(CLI)-$@.exe $(SRC_CLI)
-	zip -j build/$(APP)-$@.zip $(APP)-$@.exe  $(CLI)-$@.exe CHANGELOG.md bityuan-fullnode.toml bityuan.toml
-
-all-arch: $(PLATFORM_LIST) $(WINDOWS_ARCH_LIST)
-
+	GOARCH=amd64 GOOS=windows $(_GOBUILD) -o $(APP)-$@.exe $(SRC)
+	GOARCH=amd64 GOOS=windows $(_GOBUILD) -o $(CLI)-$@.exe $(SRC_CLI)
+	#zip -j build/$(APP)-$@.zip $(APP)-$@.exe  $(CLI)-$@.exe CHANGELOG.md bityuan-fullnode.toml bityuan.toml
 
 #make updateplugin version=xxx
 #单独更新plugin或chain33, version可以是tag或者commit哈希(tag必须是--vMajor.Minor.Patch--规范格式)

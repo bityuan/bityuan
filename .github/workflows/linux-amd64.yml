@@ -1,5 +1,5 @@
 # This is a basic workflow that is manually triggered
-name: manually make bin for all branch
+name: build linux-amd64
 
 # Controls when the action will run. Workflow runs when manually triggered using the UI
 # or API.
@@ -7,8 +7,8 @@ on: [push,pull_request]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  automake:
-    name: automake
+  build_linux:
+    name: build_linux
     runs-on: ubuntu-latest
     steps:
       - name: Set up Golang env
@@ -26,7 +26,6 @@ jobs:
       - name : Upload artifact bin
         uses: actions/upload-artifact@v2
         with:
-          name: chain33-artifact
+          name: bityuan-linux-amd64.tar.gz
           path: |
-            build/*.tar.gz
-            build/*.zip
+            build/bityuan-linux-amd64.tar.gz

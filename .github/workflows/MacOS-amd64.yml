@@ -1,4 +1,4 @@
-name: macro_build
+name: build darwin-amd64
 on: [push,pull_request]
 
 jobs:
@@ -16,4 +16,11 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
       - name: deploy
-        run: make
+        run: make darwin-amd64
+
+      - name : Upload artifact bin
+        uses: actions/upload-artifact@v2
+        with:
+          name: bityuan-darwin-amd64.tar.gz
+          path: |
+            build/bityuan-darwin-amd64.tar.gz
