@@ -61,6 +61,14 @@ bootstraps=["/ip4/139.159.161.108/tcp/13803/p2p/16Uiu2HAm5g1j1VZTaFKBHkV2c4FYwXL
 "/ip4/120.24.85.66/tcp/13803/p2p/16Uiu2HAmN2eH3CNprfAWuVgaRbie4yvh33wK1MPznNVfLuyEeMUv",
 "/ip4/120.24.92.123/tcp/13803/p2p/16Uiu2HAm1TD2HYsc2kmJx1NoUpUacz5h8T9SP811PvpQA9ekBqNf"]
 
+[p2p.sub.dht.broadcast]
+# 区块哈希广播最小大小 100KB
+minLtBlockSize=100
+#关闭交易批量广播功能, 后续全网升级后再开启
+disableBatchTx=true
+#关闭轻广播方案, 后续全网升级后再开启
+disableLtBlock=true
+
 #下一个版本改成: price 模式
 [mempool]
 name="price"
