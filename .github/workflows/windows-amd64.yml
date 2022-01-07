@@ -30,7 +30,7 @@ jobs:
         run: make windows-amd64
 
       - name: Archive Release
-        uses: papeloto/action-zip@v1
+        uses: vimtor/action-zip@v1
         with:
           files: CHANGELOG.md bityuan-fullnode.toml bityuan.toml bityuan-cli-windows-amd64.exe bityuan-windows-amd64.exe
           dest: bityuan-windows-amd64.zip
