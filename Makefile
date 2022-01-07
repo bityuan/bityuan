@@ -19,8 +19,8 @@ default: build
 all:  build
 
 build: toolimport
-	go build ${BUILD_FLAGS} -v  -o bityuan
-	go build ${BUILD_FLAGS} -v  -o bityuan-cli github.com/bityuan/bityuan/cli
+	CGO_ENABLED=1 go build ${BUILD_FLAGS} -v  -o bityuan
+	CGO_ENABLED=1 go build ${BUILD_FLAGS} -v  -o bityuan-cli github.com/bityuan/bityuan/cli
 
 
 PLATFORM_LIST = \
