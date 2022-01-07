@@ -69,14 +69,6 @@ gossipSubHeartbeatInterval=900
 gossipSubHistoryGossip=2
 gossipSubHistoryLength=7
 
-[p2p.sub.dht.broadcast]
-# 区块哈希广播最小大小 100KB
-minLtBlockSize=100
-#关闭交易批量广播功能, 后续全网升级后再开启
-disableBatchTx=true
-#关闭轻广播方案, 后续全网升级后再开启
-disableLtBlock=true
-
 
 [rpc]
 jrpcBindAddr="localhost:8801"

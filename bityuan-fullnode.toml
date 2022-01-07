@@ -58,13 +58,9 @@ innerBounds=300
 seeds=[]
 port=13803
 maxConnectNum=40
-#区块轻广播最低区块大小，1k
-minLtBlockSize=100
 # 是否配置为全节点模式，全节点保存所有分片数据，种子节点应配置为true
 isFullNode=true
-# 兼容老版本广播节点数，目前比特元网络已基本全面升级6.5.3，新版本不再支持广播发送至老版本
-# 设为1为屏蔽默认设置5
-maxBroadcastPeers=1
+
 
 [p2p.sub.dht.pubsub]
 gossipSubDlo=7
