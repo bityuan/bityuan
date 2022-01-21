@@ -50,12 +50,12 @@ dmitri.shuralyov.com/state v0.0.0-20180228185332-28bcc343414c/go.mod h1:0PRwlb0D
 git.apache.org/thrift.git v0.0.0-20180902110319-2566ecd5d999/go.mod h1:fPE2ZNJGynbRyZ4dJvy6G277gSllfV2HJqblrnkyeyg=
 github.com/33cn/chain33 v1.65.3-0.20211013024110-945de0b0c9c1/go.mod h1:GQ7e1DhP6y1H9mslP1Am1DplH2pYaOSlPDjgrloYnJo=
 github.com/33cn/chain33 v1.65.5/go.mod h1:27Z1b54wJ6EhE1IGA3S5AxSQ/t8dktFVgPnkLNbMFoE=
-github.com/33cn/chain33 v1.66.2-0.20211229030529-aa88f85c957a h1:F29UQW5UcSc+E2KtJUdJhdEe6h6W1981rZUS9J7nRQ0=
-github.com/33cn/chain33 v1.66.2-0.20211229030529-aa88f85c957a/go.mod h1:27Z1b54wJ6EhE1IGA3S5AxSQ/t8dktFVgPnkLNbMFoE=
+github.com/33cn/chain33 v1.66.4 h1:gHcde8fwc2X0xDujDD9UvGJu7PkW9YbzEoSWEY6soMw=
+github.com/33cn/chain33 v1.66.4/go.mod h1:27Z1b54wJ6EhE1IGA3S5AxSQ/t8dktFVgPnkLNbMFoE=
 github.com/33cn/libbyz-go v0.0.0-20200629120358-93000acb7a54/go.mod h1:0Tjt29Io4xc5jXAtTyOk3FQ7A06BALOoU0VcQpdl8aw=
 github.com/33cn/plugin v1.65.3/go.mod h1:2V/Xij3wvyTjwwzOsYf3kFwwjpm4EchnfHLv6suEIPU=
-github.com/33cn/plugin v1.66.0 h1:Invjmk+8hZ9yTn18hgIvXrjp9OC+MTiY1sPKFquZnWo=
-github.com/33cn/plugin v1.66.0/go.mod h1:j11tlmTwDwEHF78NWADN8jFAMULVVE2tgnrRSXnbkGs=
+github.com/33cn/plugin v1.66.2 h1:MBwNl7ZFSnpgS8LNR7K3/9gzSBfbK9Kuq7FhU1HSiMg=
+github.com/33cn/plugin v1.66.2/go.mod h1:UHsNLGBjluKc29kOqOZzJhM01t3UrvpaceXArdRHh5s=
 github.com/33cn/plugincgo v0.0.0-20211215080841-658b153127c0 h1:Wcabe72QgPGgwn6T0PGowpPMxogL0DvQs45IBeghOhE=
 github.com/33cn/plugincgo v0.0.0-20211215080841-658b153127c0/go.mod h1:lsgCIsNrX58OdfeKjvW6xZAyWfvvzp4/Go8z/FyvKC0=
 github.com/AndreasBriese/bbloom v0.0.0-20180913140656-343706a395b7/go.mod h1:bOvUY6CB00SOBii9/FifXqc0awNKxLFCL/+pkDPuyl8=
