@@ -1,8 +1,14 @@
 package main
 
-var bityuan = `
+import (
+	"fmt"
+
+	"github.com/bityuan/bityuan/version"
+)
+
+var bityuan = fmt.Sprintf(`
 TestNet=false
-version="6.6.0"
+version="%s"
 CoinSymbol="bty"
 
 [crypto]
@@ -307,4 +313,4 @@ ForkUnfreezeIDX= 2270000
 
 [fork.sub.store-kvmvccmavl]
 ForkKvmvccmavl=2270000
-`
+`, version.Version)

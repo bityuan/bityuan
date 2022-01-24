@@ -24,7 +24,7 @@ var (
 func main() {
 	flag.Parse()
 	if *versionCmd {
-		fmt.Println(fmt.Sprintf("build time: %s", version.BuildTime))
+		fmt.Println(fmt.Sprintf("Build time: %s", version.BuildTime))
 		fmt.Println(fmt.Sprintf("System version: %s", version.Platform))
 		fmt.Println(fmt.Sprintf("Golang version: %s", version.GoVersion))
 		fmt.Println(fmt.Sprintf("Bityuan version: %s", version.GetVersion()))

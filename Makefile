@@ -9,6 +9,7 @@ BUILDTIME:=$(shell date +"%Y-%m-%d %H:%M:%S %A")
 VERSION=$(shell git describe --tags || git rev-parse --short=8 HEAD)
 GitCommit=$(shell git rev-parse --short=8 HEAD)
 BUILD_FLAGS := -ldflags '-X "github.com/bityuan/bityuan/version.GitCommit=$(GitCommit)" \
+                         -X "github.com/33cn/chain33/common/version.GitCommit=$(GitCommit)" \
                          -X "github.com/bityuan/bityuan/version.Version=$(VERSION)" \
                          -X "github.com/bityuan/bityuan/version.BuildTime=$(BUILDTIME)"'
 
@@ -44,6 +45,7 @@ linux-action-amd64:
 	tar -zcvf build/$(APP)-$@.tar.gz $(APP)-$@  $(CLI)-$@ CHANGELOG.md bityuan-fullnode.toml bityuan.toml
 
 _GOBUILD := CGO_ENABLED=1 go build -ldflags '-X "github.com/bityuan/bityuan/version.GitCommit=$(GitCommit)" \
+											 -X "github.com/33cn/chain33/common/version.GitCommit=$(GitCommit)" \
                                              -X "github.com/bityuan/bityuan/version.BuildTime=$(BUILDTIME)" -w -s '
 linux-amd64:
 	GOARCH=amd64 GOOS=linux $(_GOBUILD) -o $(APP)-$@ $(SRC)
