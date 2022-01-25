@@ -1,5 +1,13 @@
 changelog
 
+<a name="6.6.2"></a>
+## [6.6.2](https://github.com/bityuan/bityuan/compare/v6.6.1...v6.6.2) (2022-01-25)
+
+
+### Bug Fixes
+
+* fixed version value ([7aa99f2](https://github.com/bityuan/bityuan/commit/7aa99f2))
+
 <a name="6.6.1"></a>
 ## [6.6.1](https://github.com/bityuan/bityuan/compare/v6.6.0...v6.6.1) (2022-01-21)
 
