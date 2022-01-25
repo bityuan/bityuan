@@ -1,5 +1,13 @@
 changelog
 
+<a name="6.6.3"></a>
+## [6.6.3](https://github.com/bityuan/bityuan/compare/v6.6.2...v6.6.3) (2022-01-25)
+
+
+### Bug Fixes
+
+* add autonomy exec to manager ([d0640e8](https://github.com/bityuan/bityuan/commit/d0640e8))
+
 <a name="6.6.2"></a>
 ## [6.6.2](https://github.com/bityuan/bityuan/compare/v6.6.1...v6.6.2) (2022-01-25)
 
