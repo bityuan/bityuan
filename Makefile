@@ -10,7 +10,6 @@ VERSION=$(shell git describe --tags || git rev-parse --short=8 HEAD)
 GitCommit=$(shell git rev-parse --short=8 HEAD)
 BUILD_FLAGS := -ldflags '-X "github.com/bityuan/bityuan/version.GitCommit=$(GitCommit)" \
                          -X "github.com/33cn/chain33/common/version.GitCommit=$(GitCommit)" \
-                         -X "github.com/bityuan/bityuan/version.Version=$(VERSION)" \
                          -X "github.com/bityuan/bityuan/version.BuildTime=$(BUILDTIME)"'
 
 .PHONY: default build
@@ -31,22 +30,19 @@ PLATFORM_LIST = \
 WINDOWS_ARCH_LIST = \
 	windows-amd64
 
-GOBUILD=CGO_ENABLED=1 go build $(BUILD_FLAGS)" -w -s"
+GOBUILD=CGO_ENABLED=1 go build $(BUILD_FLAGS)' -X "github.com/bityuan/bityuan/version.Version=$(VERSION)"  -w -s'
 SRC_CLI := ./cli
+SRC := ./
 APP := bityuan
 CLI := bityuan-cli
 
-
-
 linux-action-amd64:
-	GOARCH=amd64 GOOS=linux $(GOBUILD) -o $(APP)-$@ $(SRC)
-	GOARCH=amd64 GOOS=linux $(GOBUILD) -o $(CLI)-$@ $(SRC_CLI)
-	chmod +x $(APP)-$@ $(CLI)-$@
-	tar -zcvf build/$(APP)-$@.tar.gz $(APP)-$@  $(CLI)-$@ CHANGELOG.md bityuan-fullnode.toml bityuan.toml
+	GOARCH=amd64 GOOS=linux $(GOBUILD) -o $(APP)-linux-amd64 $(SRC)
+	GOARCH=amd64 GOOS=linux $(GOBUILD) -o $(CLI)-linux-amd64 $(SRC_CLI)
+	chmod +x $(APP)-linux-amd64 $(CLI)-linux-amd64
+	tar -zcvf build/$(APP)-linux-amd64.tar.gz $(APP)-linux-amd64  $(CLI)-linux-amd64 CHANGELOG.md bityuan-fullnode.toml bityuan.toml
 
-_GOBUILD := CGO_ENABLED=1 go build -ldflags '-X "github.com/bityuan/bityuan/version.GitCommit=$(GitCommit)" \
-											 -X "github.com/33cn/chain33/common/version.GitCommit=$(GitCommit)" \
-                                             -X "github.com/bityuan/bityuan/version.BuildTime=$(BUILDTIME)" -w -s '
+_GOBUILD := CGO_ENABLED=1 go build $(BUILD_FLAGS)' -w -s'
 linux-amd64:
 	GOARCH=amd64 GOOS=linux $(_GOBUILD) -o $(APP)-$@ $(SRC)
 	GOARCH=amd64 GOOS=linux $(_GOBUILD) -o $(CLI)-$@ $(SRC_CLI)
