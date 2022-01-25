@@ -187,6 +187,8 @@ genesis="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
 superManager=[
     "1JmFaA6unrCFYEWPGRi7uuXY1KthTJxJEP", 
 ]
+#自治合约执行器名字
+autonomyExec="autonomy"
 
 [exec.sub.paracross]
 nodeGroupFrozenCoins=0
@@ -292,11 +294,11 @@ ForkLoopCheckCommitTxDone=4320000
 #fork for 6.4
 ForkParaAssetTransferRbk=7200000    
 ForkParaSelfConsStages=7200000
+ForkParaSupervision=18000000
+ForkParaAutonomySuperGroup=19030000
 #仅平行链适用
 ForkParaFullMinerHeight=-1
 ForkParaRootHash=-1
-ForkParaSupervision=18000000
-ForkParaAutonomySuperGroup=19030000
 
 [fork.sub.multisig]
 Enable=1600000
