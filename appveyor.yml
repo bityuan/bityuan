@@ -36,4 +36,6 @@ build: false
 deploy: false
 
 test_script:
-  - build.bat
+  - go env -w CGO_ENABLED=1
+  - go build -buildmode=exe -o bityuan.exe
+  - go build -buildmode=exe -o bityuan-cli.exe github.com/bityuan/bityuan/cli
