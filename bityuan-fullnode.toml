@@ -57,7 +57,7 @@ innerBounds=300
 #可以自定义设置连接节点
 seeds=[]
 port=13803
-maxConnectNum=40
+maxConnectNum=300
 # 是否配置为全节点模式，全节点保存所有分片数据，种子节点应配置为true
 isFullNode=true
 
