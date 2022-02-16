@@ -1,5 +1,13 @@
 changelog
 
+<a name="6.6.4"></a>
+## [6.6.4](https://github.com/bityuan/bityuan/compare/v6.6.3...v6.6.4) (2022-02-16)
+
+
+### Bug Fixes
+
+* add user.p.game ignore height ([5498357](https://github.com/bityuan/bityuan/commit/5498357))
+
 <a name="6.6.3"></a>
 ## [6.6.3](https://github.com/bityuan/bityuan/compare/v6.6.2...v6.6.3) (2022-01-25)
 
