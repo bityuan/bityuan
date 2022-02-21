@@ -213,6 +213,7 @@ paraCrossAssetTxHeightList=[
 "bontav1.ignore.1-109068",
 "bonta.ignore.1-89729",
 "mc.ignore.1-90000000",
+"proof.ignore.1-38810"
 ]
 
 
