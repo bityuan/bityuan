@@ -1,5 +1,13 @@
 changelog
 
+<a name="6.6.5"></a>
+## [6.6.5](https://github.com/bityuan/bityuan/compare/v6.6.4...v6.6.5) (2022-02-21)
+
+
+### Bug Fixes
+
+* add user.p.proof ignore height list ([44d78d5](https://github.com/bityuan/bityuan/commit/44d78d5))
+
 <a name="6.6.4"></a>
 ## [6.6.4](https://github.com/bityuan/bityuan/compare/v6.6.3...v6.6.4) (2022-02-16)
 
