@@ -257,6 +257,12 @@ ForkRootHash=7200000
 
 [fork.sub.evm]
 Enable=19900000
+ForkEVMABI=19900000
+ForkEVMYoloV1=19900000
+ForkEVMState=19900000
+ForkEVMFrozen=19900000
+ForkEVMTxGroup=19900000
+ForkEVMKVHash=19900000
 
 [fork.sub.coins]
 Enable=0
