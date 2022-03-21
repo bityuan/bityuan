@@ -1,5 +1,13 @@
 changelog
 
+<a name="6.7.0"></a>
+# [6.7.0](https://github.com/bityuan/bityuan/compare/v6.6.5...v6.7.0) (2022-03-21)
+
+
+### Features
+
+* sync chain33 v1.67.0 ([91d6b95](https://github.com/bityuan/bityuan/commit/91d6b95))
+
 <a name="6.6.5"></a>
 ## [6.6.5](https://github.com/bityuan/bityuan/compare/v6.6.4...v6.6.5) (2022-02-21)
 
