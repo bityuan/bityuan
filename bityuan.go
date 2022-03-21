@@ -332,4 +332,3 @@ ForkUnfreezeIDX= 2270000
 [fork.sub.store-kvmvccmavl]
 ForkKvmvccmavl=2270000
 `, version.Version)
-
