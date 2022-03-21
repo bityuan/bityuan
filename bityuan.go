@@ -17,6 +17,11 @@ enableTypes=[]    #设置启用的加密插件名称，不配置启用所有
 bls=-1
 btcscript=19900000
 
+[address]
+defaultDriver="btc"
+[address.enableHeight]
+eth=20500000
+
 [blockchain]
 defCacheSize=128
 maxFetchBlockNum=128
