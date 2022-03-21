@@ -41,3 +41,5 @@ gitrepo = "github.com/33cn/plugin/plugin/store/kvmvccmavl"
 [crypto-bls]
 gitrepo = "github.com/33cn/plugincgo/plugin/crypto/bls"
 
+[dapp-evm]
+gitrepo = "github.com/33cn/plugin/plugin/dapp/evm"

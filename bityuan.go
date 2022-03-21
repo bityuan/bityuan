@@ -255,6 +255,9 @@ ForkTicketFundAddrV1=4320000
 #fork for 6.4
 ForkRootHash=7200000           
 
+[fork.sub.evm]
+Enable=19900000
+
 [fork.sub.coins]
 Enable=0
 
@@ -323,3 +326,4 @@ ForkUnfreezeIDX= 2270000
 [fork.sub.store-kvmvccmavl]
 ForkKvmvccmavl=2270000
 `, version.Version)
+
