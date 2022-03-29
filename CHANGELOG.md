@@ -1,5 +1,13 @@
 changelog
 
+<a name="6.7.1"></a>
+## [6.7.1](https://github.com/bityuan/bityuan/compare/v6.7.0...v6.7.1) (2022-03-29)
+
+
+### Bug Fixes
+
+* add btc multisign address fork ([b07883a](https://github.com/bityuan/bityuan/commit/b07883a))
+
 <a name="6.7.0"></a>
 # [6.7.0](https://github.com/bityuan/bityuan/compare/v6.6.5...v6.7.0) (2022-03-21)
 
