@@ -21,6 +21,7 @@ btcscript=19900000
 defaultDriver="btc"
 [address.enableHeight]
 eth=20500000
+btcMultiSign=2270000
 
 [blockchain]
 defCacheSize=128
