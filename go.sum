@@ -50,8 +50,12 @@ dmitri.shuralyov.com/state v0.0.0-20180228185332-28bcc343414c/go.mod h1:0PRwlb0D
 git.apache.org/thrift.git v0.0.0-20180902110319-2566ecd5d999/go.mod h1:fPE2ZNJGynbRyZ4dJvy6G277gSllfV2HJqblrnkyeyg=
 github.com/33cn/chain33 v1.67.1 h1:+nBfTzsiao1iXgnU+wmZiJtOVsXJUaskNV4laQw0HTA=
 github.com/33cn/chain33 v1.67.1/go.mod h1:najDvWQ5w1H2dCD3YrpKDb0xBvIL1AJ/2oGnNTCxfFw=
+github.com/33cn/chain33 v1.67.2 h1:JA6O10B1r9OTrqrGOUIllOnGk7fdZU1oHlTLhkdmeMM=
+github.com/33cn/chain33 v1.67.2/go.mod h1:najDvWQ5w1H2dCD3YrpKDb0xBvIL1AJ/2oGnNTCxfFw=
 github.com/33cn/plugin v1.67.1 h1:mlKv1vbEbdOpt3EcPeawx8Wm8UoqnzJ0/IZxll1/Y2A=
 github.com/33cn/plugin v1.67.1/go.mod h1:JLxon78QjblS5Hrwr5CJ8HIKwUWGniYtY6GKZACk72I=
+github.com/33cn/plugin v1.67.2 h1:XbTv5y4mwTKRTgEmHTB1vFDBXhD+CTu/egceUSW8oSk=
+github.com/33cn/plugin v1.67.2/go.mod h1:jgzbysAWGASpkHD3LA0SbkCWv47Js5/i6L/HYppCkY0=
 github.com/AndreasBriese/bbloom v0.0.0-20180913140656-343706a395b7/go.mod h1:bOvUY6CB00SOBii9/FifXqc0awNKxLFCL/+pkDPuyl8=
 github.com/AndreasBriese/bbloom v0.0.0-20190306092124-e2d15f34fcf9/go.mod h1:bOvUY6CB00SOBii9/FifXqc0awNKxLFCL/+pkDPuyl8=
 github.com/AndreasBriese/bbloom v0.0.0-20190825152654-46b345b51c96 h1:cTp8I5+VIoKjsnZuH8vjyaysT/ses3EvZeaV/1UkF2M=
