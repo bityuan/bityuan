@@ -29,7 +29,7 @@ L3 20000
 
 ## 安装
 
-#### golang 1.13 or latest
+#### golang 1.16+
 
 
 #### 支持make file的平台

@@ -1,4 +1,4 @@
-# golang1.12 or latest)
+
 export GO111MODULE=on
 export CHAIN33_PATH=$(shell go list -f {{.Dir}} github.com/33cn/chain33)
 export PLUGIN_PATH=$(shell go list -f {{.Dir}} github.com/33cn/plugin)

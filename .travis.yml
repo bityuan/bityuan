@@ -9,7 +9,7 @@ jobs:
   include:
     - stage: check_fmt
       sudo: require
-      go: "1.15.x"
+      go: "1.16.x"
       env:
         - GO111MODULE=on
       install:
@@ -23,7 +23,7 @@ jobs:
 
 
     - stage: build
-      go: "1.15.x"
+      go: "1.16.x"
       env:
         - GO111MODULE=on
       install: skip

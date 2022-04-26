@@ -2,6 +2,8 @@ version: "{build}"
 
 # Source Config
 
+os: Visual Studio 2019
+
 clone_folder: c:\gopath\src\github.com\bityuan\bityuan
 
 # Build host
@@ -9,7 +11,6 @@ clone_folder: c:\gopath\src\github.com\bityuan\bityuan
 environment:
   GOPATH: c:\gopath
   DEPTESTBYPASS501: 1
-  GOVERSION: 1.15
 
 #init:
 #  - git config --global core.autocrlf input
@@ -17,20 +18,19 @@ environment:
 
 install:
   # Install the specific Go version.
-  - rmdir c:\go /s /q
-  - appveyor DownloadFile https://storage.googleapis.com/golang/go%GOVERSION%.windows-amd64.msi
-  - msiexec /i go%GOVERSION%.windows-amd64.msi /q
+  - set PATH=C:\go116\bin;%PATH%
+  - set GOROOT=C:\go116
+  - go version
+  - go env
   # to check the where is mingw64 in env
   - dir C:\
   - dir C:\mingw-w64\
   - dir C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\
   - dir C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64
 #  - choco install bzr
-  - set Path=c:\go\bin;c:\gopath\bin;C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin;C:\Program Files (x86)\Bazaar\;C:\Program Files\Mercurial\;%Path%
+  - set Path=C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin;C:\Program Files (x86)\Bazaar\;C:\Program Files\Mercurial\;%Path%
   - gcc --version
   - set path
-  - go version
-  - go env
 
 build: false
 deploy: false
