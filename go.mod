@@ -1,6 +1,7 @@
 module github.com/bityuan/bityuan
 
-go 1.15
+go 1.16
+
 
 require (
 	github.com/33cn/chain33 v1.67.2
