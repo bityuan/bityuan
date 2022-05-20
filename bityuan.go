@@ -20,7 +20,7 @@ btcscript=19900000
 [address]
 defaultDriver="btc"
 [address.enableHeight]
-eth=20500000
+eth=19900000
 btcMultiSign=2270000
 
 [blockchain]
@@ -227,6 +227,9 @@ paraCrossAssetTxHeightList=[
 [exec.sub.autonomy]
 total="16htvcBNSEA7fZhAdLJphDwQRQJaHpyHTp"
 useBalance=false
+
+[exec.sub.evm]
+addressDriver="eth"
 
 #系统中所有的fork,默认用chain33的测试网络的
 #但是我们可以替换
