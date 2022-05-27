@@ -1,5 +1,13 @@
 changelog
 
+<a name="6.8.0"></a>
+# [6.8.0](https://github.com/bityuan/bityuan/compare/v6.7.2...v6.8.0) (2022-05-27)
+
+
+### Features
+
+* multiple address format ([87f955b](https://github.com/bityuan/bityuan/commit/87f955b))
+
 <a name="6.7.2"></a>
 ## [6.7.2](https://github.com/bityuan/bityuan/compare/v6.7.1...v6.7.2) (2022-04-18)
 
