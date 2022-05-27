@@ -319,7 +319,9 @@ ForkEnableParaRegExec=2270000
 ForkCacheDriver=4320000
 ForkTicketFundAddrV1=4320000
 #fork for 6.4
-ForkRootHash=7200000           
+ForkRootHash=7200000 
+#eth address key format fork
+ForkFormatAddressKey=21000000
 
 [fork.sub.evm]
 Enable=19900000
@@ -381,7 +383,7 @@ ForkParaAutonomySuperGroup=19030000
 #仅平行链适用
 ForkParaFullMinerHeight=-1
 ForkParaRootHash=-1
-ForkParaFreeRegister=-1
+ForkParaFreeRegister=21000000
 
 [fork.sub.multisig]
 Enable=1600000
