@@ -296,9 +296,6 @@ itemWaitBlockNumber=40000
 
 [exec.sub.evm]
 addressDriver="eth"
-#免交易费模式联盟链允许的最大gas，该配置只对不收取交易费部署方式有效，其他部署方式下该配置不会产生作用
-##当前最大为200万
-evmGasLimit=8000000
 ethMapFromExecutor="coins"
 #title的币种名称
 ethMapFromSymbol="bty" 
