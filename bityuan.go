@@ -183,6 +183,10 @@ signType="secp256k1"
 
 [exec]
 
+[exec.sub.coins]
+#允许evm执行器操作coins
+friendExecer=["evm"]
+
 [exec.sub.token]
 #配置一个空值，防止配置文件被覆盖
 tokenApprs = []
@@ -292,6 +296,12 @@ itemWaitBlockNumber=40000
 
 [exec.sub.evm]
 addressDriver="eth"
+#免交易费模式联盟链允许的最大gas，该配置只对不收取交易费部署方式有效，其他部署方式下该配置不会产生作用
+##当前最大为200万
+evmGasLimit=8000000
+ethMapFromExecutor="coins"
+#title的币种名称
+ethMapFromSymbol="bty" 
 
 #系统中所有的fork,默认用chain33的测试网络的
 #但是我们可以替换
