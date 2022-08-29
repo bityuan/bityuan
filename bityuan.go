@@ -332,8 +332,13 @@ ForkEVMFrozen=19900000
 ForkEVMTxGroup=19900000
 ForkEVMKVHash=19900000
 
+
+[fork.sub.none]
+ForkUseTimeDelay=22650000
+
 [fork.sub.coins]
 Enable=0
+ForkFriendExecer=22650000
 
 [fork.sub.ticket]
 Enable=0
