@@ -64,14 +64,14 @@ windows-amd64:
 #单独更新plugin或chain33, version可以是tag或者commit哈希(tag必须是--vMajor.Minor.Patch--规范格式)
 updateplugin:
 	@if [ -n "$(version)" ]; then   \
-    go get github.com/33cn/plugin@${version}; \
+    go get -d github.com/33cn/plugin@${version}; \
     else \
-    go get github.com/33cn/plugin@master;fi
+    go get -d github.com/33cn/plugin@master;fi
 updatechain33:
 	@if [ -n "$(version)" ]; then   \
-	go get github.com/33cn/chain33@${version}; \
+	go get -d github.com/33cn/chain33@${version}; \
 	else \
-	go get github.com/33cn/chain33@master;fi
+	go get -d github.com/33cn/chain33@master;fi
 
 #make update version=xxx, 同时更新chain33和plugin, 两个项目必须有相同的tag(tag必须是--vMajor.Minor.Patch--规范格式)
 update:updatechain33 updateplugin
