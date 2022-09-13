@@ -12,12 +12,10 @@ function filterLinter() {
             --enable=gosimple \
             --enable=deadcode \
             --enable=unconvert \
-            --enable=interfacer \
             --enable=varcheck \
             --enable=structcheck \
             --enable=goimports \
             --enable=misspell \
-            --enable=golint \
             --exclude=underscores
     )
     if [[ ${#res} -gt "0" ]]; then
