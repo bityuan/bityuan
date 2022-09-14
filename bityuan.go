@@ -345,11 +345,11 @@ ForkEVMKVHash=19900000
 
 
 [fork.sub.none]
-ForkUseTimeDelay=22650000
+ForkUseTimeDelay=23000000
 
 [fork.sub.coins]
 Enable=0
-ForkFriendExecer=22650000
+ForkFriendExecer=23000000
 
 [fork.sub.ticket]
 Enable=0
