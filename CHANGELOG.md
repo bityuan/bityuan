@@ -1,5 +1,13 @@
 changelog
 
+<a name="6.8.1"></a>
+## [6.8.1](https://github.com/bityuan/bityuan/compare/v6.8.0...v6.8.1) (2022-09-14)
+
+
+### Bug Fixes
+
+* update fork height to 23m ([5a566cc](https://github.com/bityuan/bityuan/commit/5a566cc))
+
 <a name="6.8.0"></a>
 # [6.8.0](https://github.com/bityuan/bityuan/compare/v6.7.2...v6.8.0) (2022-05-27)
 
