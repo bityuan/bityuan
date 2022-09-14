@@ -16,6 +16,8 @@ enableTypes=[]    #设置启用的加密插件名称，不配置启用所有
 [crypto.enableHeight]  #配置已启用插件的启用高度，不配置采用默认高度0， 负数表示不启用
 bls=-1
 btcscript=19900000
+[crypto.sub.secp256k1eth] 
+evmChainID=2999
 
 [address]
 defaultDriver="btc"
@@ -299,6 +301,8 @@ addressDriver="eth"
 ethMapFromExecutor="coins"
 #title的币种名称
 ethMapFromSymbol="bty" 
+#当前最大为200万
+evmGasLimit=2000000
 
 #系统中所有的fork,默认用chain33的测试网络的
 #但是我们可以替换
