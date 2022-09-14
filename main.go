@@ -1,5 +1,3 @@
-// +build go1.8
-
 package main
 
 import (
@@ -24,12 +22,12 @@ var (
 func main() {
 	flag.Parse()
 	if *versionCmd {
-		fmt.Println(fmt.Sprintf("Build time: %s", version.BuildTime))
-		fmt.Println(fmt.Sprintf("System version: %s", version.Platform))
-		fmt.Println(fmt.Sprintf("Golang version: %s", version.GoVersion))
-		fmt.Println(fmt.Sprintf("Bityuan version: %s", version.GetVersion()))
-		fmt.Println(fmt.Sprintf("Chain33 frame version: %s", frameVersion.GetVersion()))
-		fmt.Println(fmt.Sprintf("Chain33 plugin version: %s", pluginVersion.GetVersion()))
+		fmt.Printf("Build time: %s", version.BuildTime)
+		fmt.Printf("System version: %s", version.Platform)
+		fmt.Printf("Golang version: %s", version.GoVersion)
+		fmt.Printf("Bityuan version: %s", version.GetVersion())
+		fmt.Printf("Chain33 frame version: %s", frameVersion.GetVersion())
+		fmt.Printf("Chain33 plugin version: %s", pluginVersion.GetVersion())
 		return
 	}
 	if *percent < 0 || *percent > 100 {
