@@ -22,11 +22,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: false # <--- this
       - uses: actions/setup-go@v3
         with:
           go-version-file: 'go.mod'
-          persist-credentials: false # <--- this
-
 
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v2
