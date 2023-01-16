@@ -342,6 +342,7 @@ ForkEVMState=19900000
 ForkEVMFrozen=19900000
 ForkEVMTxGroup=19900000
 ForkEVMKVHash=19900000
+ForkEVMMixAddress=25000000
 
 
 [fork.sub.none]
