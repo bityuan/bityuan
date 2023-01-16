@@ -17,15 +17,13 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version-file: 'go.mod'
-      - name: set go env
         run: |
           gcc --version
           go version
-          go env GOPATH
           go env
-
+      - uses: actions/checkout@v3
       - name: deploy
-        run: make windows-amd64
+        run: pwd && make windows-amd64
 
       - name: Archive Release
         uses: vimtor/action-zip@v1
