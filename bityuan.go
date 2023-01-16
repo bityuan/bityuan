@@ -401,6 +401,7 @@ ForkParaAutonomySuperGroup=19030000
 ForkParaFullMinerHeight=-1
 ForkParaRootHash=-1
 ForkParaFreeRegister=21000000
+ForkParaCheckTx=25000000
 
 [fork.sub.multisig]
 Enable=1600000
