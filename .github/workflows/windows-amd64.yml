@@ -13,14 +13,15 @@ jobs:
         with:
           platform: x64
           version: '8.1.0'
-      - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
         with:
-          go-version-file: 'go.mod'
+          go-version: '1.16'
+      - name: Show go env
         run: |
           gcc --version
           go version
           go env
+      - name: Checkout
       - uses: actions/checkout@v3
       - name: deploy
         run: pwd && make windows-amd64
