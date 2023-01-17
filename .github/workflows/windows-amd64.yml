@@ -6,8 +6,10 @@ jobs:
     name: build_windows
     runs-on: windows-latest
     steps:
-      - name: Clean up PATH
-        uses: egor-tensin/cleanup-path@v3
+
+
+#      - name: Clean up PATH
+#        uses: egor-tensin/cleanup-path@v3
       - name: Set up MinGW
         uses: egor-tensin/setup-mingw@v2
         with:
@@ -21,11 +23,11 @@ jobs:
           gcc --version
           go version
           go env
-      - name: Checkout
       - uses: actions/checkout@v3
       - name: deploy
-        run: pwd && make windows-amd64
-
+        run: |
+          pwd
+          make windows-amd64
       - name: Archive Release
         uses: vimtor/action-zip@v1
         with:
