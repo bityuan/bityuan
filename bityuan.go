@@ -342,7 +342,7 @@ ForkEVMState=19900000
 ForkEVMFrozen=19900000
 ForkEVMTxGroup=19900000
 ForkEVMKVHash=19900000
-ForkEVMMixAddress=25000000
+ForkEVMMixAddress=25200000
 
 
 [fork.sub.none]
@@ -401,7 +401,7 @@ ForkParaAutonomySuperGroup=19030000
 ForkParaFullMinerHeight=-1
 ForkParaRootHash=-1
 ForkParaFreeRegister=21000000
-ForkParaCheckTx=25000000
+ForkParaCheckTx=25200000
 
 [fork.sub.multisig]
 Enable=1600000
