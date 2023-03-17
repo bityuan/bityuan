@@ -343,6 +343,7 @@ ForkEVMFrozen=19900000
 ForkEVMTxGroup=19900000
 ForkEVMKVHash=19900000
 ForkEVMMixAddress=25200000
+ForkIntrinsicGas=25200000
 ForkEVMAddressInit=25770000
 
 [fork.sub.rollup]
