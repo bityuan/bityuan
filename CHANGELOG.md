@@ -1,5 +1,13 @@
 changelog
 
+<a name="6.8.4"></a>
+## [6.8.4](https://github.com/bityuan/bityuan/compare/v6.8.3...v6.8.4) (2023-03-17)
+
+
+### Bug Fixes
+
+* sync plugin patch (33cn/plugin#1252) ([2f6ca3a](https://github.com/bityuan/bityuan/commit/2f6ca3a)), closes [33cn/plugin#1252](https://github.com/33cn/plugin/issues/1252)
+
 <a name="6.8.3"></a>
 ## [6.8.3](https://github.com/bityuan/bityuan/compare/v6.8.2...v6.8.3) (2023-02-02)
 

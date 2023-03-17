@@ -3,7 +3,7 @@
 [![Windows Build Status](https://ci.appveyor.com/api/projects/status/github/bityuan/bityuan?svg=true&branch=master&passingText=Windows%20-%20OK&failingText=Windows%20-%20failed&pendingText=Windows%20-%20pending)](https://ci.appveyor.com/project/bityuan/bityuan)
 [![Macos Build Status](https://github.com/bityuan/bityuan/actions/workflows/MacOS.yml/badge.svg)](https://github.com/bityuan/bityuan/actions/workflows/MacOS.yml)
 
-# 基于 chain33 区块链开发 框架 开发的 bityuan 系统（v6.8.3）
+# 基于 chain33 区块链开发 框架 开发的 bityuan 系统（v6.8.4）
 
 官方网站: https://www.bityuan.com
 
