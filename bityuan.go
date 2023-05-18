@@ -333,6 +333,7 @@ ForkTicketFundAddrV1=4320000
 ForkRootHash=7200000 
 #eth address key format fork
 ForkFormatAddressKey=21000000
+ForkCheckEthTxSort=26625000
 
 [fork.sub.evm]
 Enable=19900000
@@ -345,6 +346,7 @@ ForkEVMKVHash=19900000
 ForkEVMMixAddress=25200000
 ForkIntrinsicGas=25200000
 ForkEVMAddressInit=25770000
+ForkEvmExecNonce=26625000
 
 [fork.sub.rollup]
 Enable=25770000
@@ -383,7 +385,7 @@ ForkBadTokenSymbol= 0
 ForkTokenPrice= 300000
 ForkTokenSymbolWithNumber=1600000
 ForkTokenCheck= 2270000
-
+ForkTokenEvm=-1
 [fork.sub.trade]
 Enable=0
 ForkTradeBuyLimit= 0
