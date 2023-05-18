@@ -1,5 +1,13 @@
 changelog
 
+<a name="6.8.5"></a>
+## [6.8.5](https://github.com/bityuan/bityuan/compare/v6.8.4...v6.8.5) (2023-05-18)
+
+
+### Bug Fixes
+
+* evm nonce check ([5074304](https://github.com/bityuan/bityuan/commit/5074304))
+
 <a name="6.8.4"></a>
 ## [6.8.4](https://github.com/bityuan/bityuan/compare/v6.8.3...v6.8.4) (2023-03-17)
 
