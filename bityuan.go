@@ -48,14 +48,9 @@ serverStart=true
 
 [p2p.sub.dht]
 #bootstraps是内置不能修改的引导节点
-bootstraps=["/ip4/16.163.129.85/tcp/13803/p2p/16Uiu2HAmRekZPVDEAPnsfaiJfUvpzuwQsNhCPyjrBejMsCHj1b1J",
-"/ip4/13.113.195.69/tcp/13803/p2p/16Uiu2HAmKGwEkd42qbWM8gScH8Cj4Vr5HCnbYfnGCimb4bSvKSpT",
+bootstraps=["/ip4/13.113.195.69/tcp/13803/p2p/16Uiu2HAmKGwEkd42qbWM8gScH8Cj4Vr5HCnbYfnGCimb4bSvKSpT",
 "/ip4/13.115.235.168/tcp/13803/p2p/16Uiu2HAkzNiDx1mN6muuBRgPpDRaUG5NGs8HMHmp1HND968Y6Kho",
-"/ip4/159.138.239.140/tcp/13803/p2p/16Uiu2HAmC9ko1WopBc34fAVho63zKyvmB7pYAW9Zgo5mqBxM3nz7",
-"/ip4/159.138.232.1/tcp/13803/p2p/16Uiu2HAmUetTkT9vY3CZiWyrHstGSSiYEVWJx8zMQhtExj92RXs7",
-"/ip4/159.138.234.29/tcp/13803/p2p/16Uiu2HAm277GGzseNKGTL76LeynECmcK4hkqQLNdSZBcuU2Y91so",
-"/ip4/119.8.172.234/tcp/13803/p2p/16Uiu2HAkwGXhmMgdufdePJKaqsahhVPjaMUbR1SLNdssRM55okUr",
-"/ip4/114.119.188.250/tcp/13803/p2p/16Uiu2HAmL4SmXfMTLq7YUqAgDgDoYkJFquQRnFq6CrDAanRe7zW4"]
+"/ip4/159.138.234.29/tcp/13803/p2p/16Uiu2HAm277GGzseNKGTL76LeynECmcK4hkqQLNdSZBcuU2Y91so"]
 
 
 [p2p.sub.dht.broadcast]
@@ -333,7 +328,7 @@ ForkTicketFundAddrV1=4320000
 ForkRootHash=7200000 
 #eth address key format fork
 ForkFormatAddressKey=21000000
-ForkCheckEthTxSort=26625000
+ForkCheckEthTxSort=26670000
 
 [fork.sub.evm]
 Enable=19900000
@@ -346,7 +341,7 @@ ForkEVMKVHash=19900000
 ForkEVMMixAddress=25200000
 ForkIntrinsicGas=25200000
 ForkEVMAddressInit=25770000
-ForkEvmExecNonce=26625000
+ForkEvmExecNonce=26670000
 
 [fork.sub.rollup]
 Enable=25770000
