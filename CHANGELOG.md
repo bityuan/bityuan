@@ -1,5 +1,14 @@
 changelog
 
+<a name="6.8.7"></a>
+## [6.8.7](https://github.com/bityuan/bityuan/compare/v6.8.6...v6.8.7) (2023-05-26)
+
+
+### Bug Fixes
+
+* evm upgrade ([afc81b8](https://github.com/bityuan/bityuan/commit/afc81b8))
+* evm upgrade ([80f119d](https://github.com/bityuan/bityuan/commit/80f119d))
+
 <a name="6.8.6"></a>
 ## [6.8.6](https://github.com/bityuan/bityuan/compare/v6.8.5...v6.8.6) (2023-05-19)
 
