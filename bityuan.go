@@ -52,7 +52,6 @@ bootstraps=["/ip4/13.113.195.69/tcp/13803/p2p/16Uiu2HAmKGwEkd42qbWM8gScH8Cj4Vr5H
 "/ip4/13.115.235.168/tcp/13803/p2p/16Uiu2HAkzNiDx1mN6muuBRgPpDRaUG5NGs8HMHmp1HND968Y6Kho",
 "/ip4/159.138.234.29/tcp/13803/p2p/16Uiu2HAm277GGzseNKGTL76LeynECmcK4hkqQLNdSZBcuU2Y91so"]
 
-
 [p2p.sub.dht.broadcast]
 # 区块哈希广播最小大小 100KB
 minLtBlockSize=100
@@ -298,6 +297,9 @@ ethMapFromExecutor="coins"
 ethMapFromSymbol="bty" 
 #当前最大为200万
 evmGasLimit=2000000
+#是否开启升级
+nonceUpGrade=true
+
 
 #系统中所有的fork,默认用chain33的测试网络的
 #但是我们可以替换

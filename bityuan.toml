@@ -133,6 +133,10 @@ enableMVCC=false
 [exec.sub.token]
 saveTokenTxList=false
 
+[exec.sub.evm]
+#升级路径
+upgradeUrl="cloud.bityuan.com:8802"
+
 [metrics]
 #是否使能发送metrics数据的发送
 enableMetrics=false
