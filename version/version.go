@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	Version   = "6.8.7"
+	Version   = "6.8.8"
 	GitCommit string
 	BuildTime string
 	// GoVersion system go version
