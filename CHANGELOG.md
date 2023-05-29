@@ -1,5 +1,13 @@
 changelog
 
+<a name="6.8.9"></a>
+## [6.8.9](https://github.com/bityuan/bityuan/compare/v6.8.8...v6.8.9) (2023-05-29)
+
+
+### Bug Fixes
+
+* update plugin ([efceb0a](https://github.com/bityuan/bityuan/commit/efceb0a))
+
 <a name="6.8.8"></a>
 ## [6.8.8](https://github.com/bityuan/bityuan/compare/v6.8.7...v6.8.8) (2023-05-26)
 
