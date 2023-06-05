@@ -3,17 +3,12 @@ on: [push,pull_request]
 
 jobs:
   check_fmt:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
-      - name: Set up Golang
-        uses: actions/setup-go@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
         with:
-          go-version: 1.15
-        id: go
-      - name: checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+          go-version: '1.17'
 
       - name: Intsall Golangci-lint
         run: |
@@ -23,10 +18,10 @@ jobs:
           export PATH=${PATH}:`go env GOPATH`/bin
           echo $GOPATH
           echo $PATH
-          go get -u golang.org/x/tools/cmd/goimports
-          go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.18.0
-          go get -u mvdan.cc/sh/cmd/shfmt
-          go get -u mvdan.cc/sh/cmd/gosh
+          go install golang.org/x/tools/cmd/goimports@latest
+          go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.44.2
+          go install mvdan.cc/sh/cmd/shfmt@latest
+          go install mvdan.cc/sh/cmd/gosh@latest
 
       - name: Lint
         run: |
@@ -36,17 +31,14 @@ jobs:
 
   build:
     name: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
-      - name: Set up Golang
-        uses: actions/setup-go@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
         with:
-          go-version: 1.15
-        id: go
+          go-version-file: 'go.mod'
       - name: set go env
         run: export PATH=${PATH}:`go env GOPATH`/bin
-      - name: checkout
-        uses: actions/checkout@v2
       - name: deploy
         run: make
 

@@ -57,7 +57,7 @@ innerBounds=300
 #可以自定义设置连接节点
 seeds=[]
 port=13803
-maxConnectNum=40
+maxConnectNum=300
 # 是否配置为全节点模式，全节点保存所有分片数据，种子节点应配置为true
 isFullNode=true
 
@@ -80,6 +80,14 @@ grpcFuncBlacklist=["SendToAddress","Lock","UnLock","SetPasswd","NewAccount","Get
 enableTLS=false
 certFile="cert.pem"
 keyFile="key.pem"
+
+[rpc.sub.eth]
+enable=true
+httpAddr="localhost:8546"
+httpApi=["eth","web3","personal","admin","net"]
+# websocket 绑定地址
+wsAddr="localhost:8547"
+wsApi=["eth","web3","personal","admin","net"]
 
 [mempool]
 maxTxNumPerAccount=100

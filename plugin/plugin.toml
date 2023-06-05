@@ -29,6 +29,9 @@ gitrepo = "github.com/33cn/plugin/plugin/dapp/unfreeze"
 [dapp-autonomy]
 gitrepo = "github.com/33cn/plugin/plugin/dapp/autonomy"
 
+[dapp-rollup]
+gitrepo = "github.com/33cn/plugin/plugin/dapp/rollup"
+
 [mempool-score]
 gitrepo = "github.com/33cn/plugin/plugin/mempool/score"
 
@@ -38,6 +41,5 @@ gitrepo = "github.com/33cn/plugin/plugin/mempool/price"
 [store-kvmvccmavl]
 gitrepo = "github.com/33cn/plugin/plugin/store/kvmvccmavl"
 
-[crypto-bls]
-gitrepo = "github.com/33cn/plugincgo/plugin/crypto/bls"
-
+[dapp-evm]
+gitrepo = "github.com/33cn/plugin/plugin/dapp/evm"

@@ -15,6 +15,15 @@ CoinSymbol="bty"
 enableTypes=[]    #设置启用的加密插件名称，不配置启用所有
 [crypto.enableHeight]  #配置已启用插件的启用高度，不配置采用默认高度0， 负数表示不启用
 bls=-1
+btcscript=19900000
+[crypto.sub.secp256k1eth] 
+evmChainID=2999
+
+[address]
+defaultDriver="btc"
+[address.enableHeight]
+eth=19900000
+btcMultiSign=2270000
 
 [blockchain]
 defCacheSize=128
@@ -39,15 +48,9 @@ serverStart=true
 
 [p2p.sub.dht]
 #bootstraps是内置不能修改的引导节点
-bootstraps=["/ip4/16.163.129.85/tcp/13803/p2p/16Uiu2HAmRekZPVDEAPnsfaiJfUvpzuwQsNhCPyjrBejMsCHj1b1J",
-"/ip4/13.113.195.69/tcp/13803/p2p/16Uiu2HAmKGwEkd42qbWM8gScH8Cj4Vr5HCnbYfnGCimb4bSvKSpT",
+bootstraps=["/ip4/13.113.195.69/tcp/13803/p2p/16Uiu2HAmKGwEkd42qbWM8gScH8Cj4Vr5HCnbYfnGCimb4bSvKSpT",
 "/ip4/13.115.235.168/tcp/13803/p2p/16Uiu2HAkzNiDx1mN6muuBRgPpDRaUG5NGs8HMHmp1HND968Y6Kho",
-"/ip4/159.138.239.140/tcp/13803/p2p/16Uiu2HAmC9ko1WopBc34fAVho63zKyvmB7pYAW9Zgo5mqBxM3nz7",
-"/ip4/159.138.232.1/tcp/13803/p2p/16Uiu2HAmUetTkT9vY3CZiWyrHstGSSiYEVWJx8zMQhtExj92RXs7",
-"/ip4/159.138.234.29/tcp/13803/p2p/16Uiu2HAm277GGzseNKGTL76LeynECmcK4hkqQLNdSZBcuU2Y91so",
-"/ip4/119.8.172.234/tcp/13803/p2p/16Uiu2HAkwGXhmMgdufdePJKaqsahhVPjaMUbR1SLNdssRM55okUr",
-"/ip4/114.119.188.250/tcp/13803/p2p/16Uiu2HAmL4SmXfMTLq7YUqAgDgDoYkJFquQRnFq6CrDAanRe7zW4"]
-
+"/ip4/159.138.234.29/tcp/13803/p2p/16Uiu2HAm277GGzseNKGTL76LeynECmcK4hkqQLNdSZBcuU2Y91so"]
 
 [p2p.sub.dht.broadcast]
 # 区块哈希广播最小大小 100KB
@@ -176,6 +179,10 @@ signType="secp256k1"
 
 [exec]
 
+[exec.sub.coins]
+#允许evm执行器操作coins
+friendExecer=["evm"]
+
 [exec.sub.token]
 #配置一个空值，防止配置文件被覆盖
 tokenApprs = []
@@ -187,19 +194,21 @@ genesis="14KEKbYtKKQm4wMthSK9J4La4nAiidGozt"
 superManager=[
     "1JmFaA6unrCFYEWPGRi7uuXY1KthTJxJEP", 
 ]
+#自治合约执行器名字
+autonomyExec="autonomy"
 
 [exec.sub.paracross]
 nodeGroupFrozenCoins=0
 #平行链共识停止后主链等待的高度
 paraConsensusStopBlocks=30000
 #配置平行链资产跨链交易的高度列表，title省略user.p,不同title使用,分割，不同hit高度使用"."分割，
-#不同ignore范围高度使用"-"分割，hit高度在ignore范围内，为平行链自身的高度，不是主链高度
+#不同ignore高度区间用"."分割，区间内部使用"-"分割，hit高度在ignore范围内，为平行链自身的高度，不是主链高度
 ## para.hit.10.50.250, para.ignore.1-100.200-300
 paraCrossAssetTxHeightList=[
 "fzmtest.hit.74485",
 "fzmtest.ignore.1-67335.67850-72473.73667-77630.77920-79495.79936-79939",
 "game.hit.4203.4226.17725.18195.18403.18405.18859.18951.19393.28966.61168",
-"game.ignore.1-8797.16808-20365.25637-33828.43399-44595.58333-150460",
+"game.ignore.1-8797.16808-20365.25637-33828.43399-44595.58333-166131",
 "testuwallet.hit.35556.35564.36505.36511.53386",
 "testuwallet.ignore.1-3121.4496-7422.33032-37596.37928-40556.44599-46879.52600-72584",
 "mall.hit.80276.80295.81260.81271",
@@ -211,12 +220,86 @@ paraCrossAssetTxHeightList=[
 "bontav1.ignore.1-109068",
 "bonta.ignore.1-89729",
 "mc.ignore.1-90000000",
+"proof.ignore.1-38810"
 ]
 
 
 [exec.sub.autonomy]
 total="16htvcBNSEA7fZhAdLJphDwQRQJaHpyHTp"
 useBalance=false
+
+[mver.autonomy]
+#最小委员会数量
+minBoards=20
+#最大委员会数量
+maxBoards=40
+#公示一周时间，以区块高度计算
+publicPeriod=120960
+#单张票价
+ticketPrice=3000
+#重大项目公示金额阈值
+largeProjectAmount=1000000
+#创建者消耗金额bty
+proposalAmount=500
+#董事会成员赞成率，百分比，可修改
+boardApproveRatio=51
+#全体持票人参与率，百分比
+pubAttendRatio=75
+#全体持票人赞成率，百分比
+pubApproveRatio=66
+#全体持票人否决率，百分比
+pubOpposeRatio=33
+#提案开始结束最小周期高度
+startEndBlockPeriod=720
+#提案高度 结束高度最大周期 100W
+propEndBlockPeriod=1000000
+#最小董事会赞成率
+minBoardApproveRatio=50
+#最大董事会赞成率
+maxBoardApproveRatio=66
+#最小全体持票人否决率
+minPubOpposeRatio=33
+#最大全体持票人否决率
+maxPubOpposeRatio=50
+#可以调整，但是可能需要进行范围的限制：参与率最低设置为 50， 最高设置为 80，赞成率，最低 50.1，最高80
+#不能设置太低和太高，太低就容易作弊，太高则有可能很难达到
+#最小全体持票人参与率
+minPubAttendRatio=50
+#最大全体持票人参与率
+maxPubAttendRatio=80
+#最小全体持票人赞成率
+minPubApproveRatio=50
+#最大全体持票人赞成率
+maxPubApproveRatio=80
+#最小公示周期
+minPublicPeriod=120960
+#最大公示周期
+maxPublicPeriod=241920
+#最小重大项目阈值(coin)
+minLargeProjectAmount=1000000
+#最大重大项目阈值(coin)
+maxLargeProjectAmount=3000000
+#最小提案金(coin)
+minProposalAmount=20
+#最大提案金(coin)
+maxProposalAmount=2000	
+#每个时期董事会审批最大额度300万
+maxBoardPeriodAmount =3000000
+#时期为一个月
+boardPeriod=518400
+#4w高度，大概2天 (未生效)
+itemWaitBlockNumber=40000
+
+[exec.sub.evm]
+addressDriver="eth"
+ethMapFromExecutor="coins"
+#title的币种名称
+ethMapFromSymbol="bty" 
+#当前最大为200万
+evmGasLimit=2000000
+#是否开启升级
+nonceUpGrade=true
+
 
 #系统中所有的fork,默认用chain33的测试网络的
 #但是我们可以替换
@@ -244,10 +327,34 @@ ForkEnableParaRegExec=2270000
 ForkCacheDriver=4320000
 ForkTicketFundAddrV1=4320000
 #fork for 6.4
-ForkRootHash=7200000           
+ForkRootHash=7200000 
+#eth address key format fork
+ForkFormatAddressKey=21000000
+ForkCheckEthTxSort=26670000
+
+[fork.sub.evm]
+Enable=19900000
+ForkEVMABI=19900000
+ForkEVMYoloV1=19900000
+ForkEVMState=19900000
+ForkEVMFrozen=19900000
+ForkEVMTxGroup=19900000
+ForkEVMKVHash=19900000
+ForkEVMMixAddress=25200000
+ForkIntrinsicGas=25200000
+ForkEVMAddressInit=25770000
+ForkEvmExecNonce=26670000
+
+[fork.sub.rollup]
+Enable=25770000
+
+
+[fork.sub.none]
+ForkUseTimeDelay=23000000
 
 [fork.sub.coins]
 Enable=0
+ForkFriendExecer=23000000
 
 [fork.sub.ticket]
 Enable=0
@@ -275,7 +382,7 @@ ForkBadTokenSymbol= 0
 ForkTokenPrice= 300000
 ForkTokenSymbolWithNumber=1600000
 ForkTokenCheck= 2270000
-
+ForkTokenEvm=-1
 [fork.sub.trade]
 Enable=0
 ForkTradeBuyLimit= 0
@@ -292,11 +399,13 @@ ForkLoopCheckCommitTxDone=4320000
 #fork for 6.4
 ForkParaAssetTransferRbk=7200000    
 ForkParaSelfConsStages=7200000
+ForkParaSupervision=18000000
+ForkParaAutonomySuperGroup=19030000
 #仅平行链适用
 ForkParaFullMinerHeight=-1
 ForkParaRootHash=-1
-ForkParaSupervision=18000000
-ForkParaAutonomySuperGroup=19030000
+ForkParaFreeRegister=21000000
+ForkParaCheckTx=25200000
 
 [fork.sub.multisig]
 Enable=1600000

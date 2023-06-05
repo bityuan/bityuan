@@ -1,5 +1,135 @@
 changelog
 
+<a name="6.8.9"></a>
+## [6.8.9](https://github.com/bityuan/bityuan/compare/v6.8.8...v6.8.9) (2023-05-29)
+
+
+### Bug Fixes
+
+* update plugin ([efceb0a](https://github.com/bityuan/bityuan/commit/efceb0a))
+
+<a name="6.8.8"></a>
+## [6.8.8](https://github.com/bityuan/bityuan/compare/v6.8.7...v6.8.8) (2023-05-26)
+
+
+### Bug Fixes
+
+* fix bug, obsolete previous version ([a578f23](https://github.com/bityuan/bityuan/commit/a578f23))
+
+<a name="6.8.7"></a>
+## [6.8.7](https://github.com/bityuan/bityuan/compare/v6.8.6...v6.8.7) (2023-05-26)
+
+
+### Bug Fixes
+
+* evm upgrade ([afc81b8](https://github.com/bityuan/bityuan/commit/afc81b8))
+* evm upgrade ([80f119d](https://github.com/bityuan/bityuan/commit/80f119d))
+
+<a name="6.8.6"></a>
+## [6.8.6](https://github.com/bityuan/bityuan/compare/v6.8.5...v6.8.6) (2023-05-19)
+
+
+### Bug Fixes
+
+* Update fork height to 26670000 ([0891b44](https://github.com/bityuan/bityuan/commit/0891b44))
+
+<a name="6.8.5"></a>
+## [6.8.5](https://github.com/bityuan/bityuan/compare/v6.8.4...v6.8.5) (2023-05-18)
+
+
+### Bug Fixes
+
+* evm nonce check ([5074304](https://github.com/bityuan/bityuan/commit/5074304))
+
+<a name="6.8.4"></a>
+## [6.8.4](https://github.com/bityuan/bityuan/compare/v6.8.3...v6.8.4) (2023-03-17)
+
+
+### Bug Fixes
+
+* sync plugin patch (33cn/plugin#1252) ([2f6ca3a](https://github.com/bityuan/bityuan/commit/2f6ca3a)), closes [33cn/plugin#1252](https://github.com/33cn/plugin/issues/1252)
+
+<a name="6.8.3"></a>
+## [6.8.3](https://github.com/bityuan/bityuan/compare/v6.8.2...v6.8.3) (2023-02-02)
+
+
+### Bug Fixes
+
+* sync chain33 & plugin patch version ([8b16f36](https://github.com/bityuan/bityuan/commit/8b16f36))
+
+<a name="6.8.2"></a>
+## [6.8.2](https://github.com/bityuan/bityuan/compare/v6.8.1...v6.8.2) (2023-01-17)
+
+
+### Bug Fixes
+
+* sync plugin patch version v1.67.5 ([118c62d](https://github.com/bityuan/bityuan/commit/118c62d))
+* sync plugin patch version v1.67.5 ([f535920](https://github.com/bityuan/bityuan/commit/f535920))
+
+<a name="6.8.1"></a>
+## [6.8.1](https://github.com/bityuan/bityuan/compare/v6.8.0...v6.8.1) (2022-09-14)
+
+
+### Bug Fixes
+
+* update fork height to 23m ([5a566cc](https://github.com/bityuan/bityuan/commit/5a566cc))
+
+<a name="6.8.0"></a>
+# [6.8.0](https://github.com/bityuan/bityuan/compare/v6.7.2...v6.8.0) (2022-05-27)
+
+
+### Features
+
+* multiple address format ([87f955b](https://github.com/bityuan/bityuan/commit/87f955b))
+
+<a name="6.7.2"></a>
+## [6.7.2](https://github.com/bityuan/bityuan/compare/v6.7.1...v6.7.2) (2022-04-18)
+
+
+### Bug Fixes
+
+* sync chain33 patch version 1.67.2 ([34d6e6b](https://github.com/bityuan/bityuan/commit/34d6e6b))
+
+<a name="6.7.1"></a>
+## [6.7.1](https://github.com/bityuan/bityuan/compare/v6.7.0...v6.7.1) (2022-03-29)
+
+
+### Bug Fixes
+
+* add btc multisign address fork ([b07883a](https://github.com/bityuan/bityuan/commit/b07883a))
+
+<a name="6.7.0"></a>
+# [6.7.0](https://github.com/bityuan/bityuan/compare/v6.6.5...v6.7.0) (2022-03-21)
+
+
+### Features
+
+* sync chain33 v1.67.0 ([91d6b95](https://github.com/bityuan/bityuan/commit/91d6b95))
+
+<a name="6.6.5"></a>
+## [6.6.5](https://github.com/bityuan/bityuan/compare/v6.6.4...v6.6.5) (2022-02-21)
+
+
+### Bug Fixes
+
+* add user.p.proof ignore height list ([44d78d5](https://github.com/bityuan/bityuan/commit/44d78d5))
+
+<a name="6.6.4"></a>
+## [6.6.4](https://github.com/bityuan/bityuan/compare/v6.6.3...v6.6.4) (2022-02-16)
+
+
+### Bug Fixes
+
+* add user.p.game ignore height ([5498357](https://github.com/bityuan/bityuan/commit/5498357))
+
+<a name="6.6.3"></a>
+## [6.6.3](https://github.com/bityuan/bityuan/compare/v6.6.2...v6.6.3) (2022-01-25)
+
+
+### Bug Fixes
+
+* add autonomy exec to manager ([d0640e8](https://github.com/bityuan/bityuan/commit/d0640e8))
+
 <a name="6.6.2"></a>
 ## [6.6.2](https://github.com/bityuan/bityuan/compare/v6.6.1...v6.6.2) (2022-01-25)
 
