@@ -1,5 +1,13 @@
 changelog
 
+<a name="6.8.10"></a>
+## [6.8.10](https://github.com/bityuan/bityuan/compare/v6.8.9...v6.8.10) (2023-06-06)
+
+
+### Bug Fixes
+
+* action bug ([eb17b87](https://github.com/bityuan/bityuan/commit/eb17b87))
+
 <a name="6.8.9"></a>
 ## [6.8.9](https://github.com/bityuan/bityuan/compare/v6.8.8...v6.8.9) (2023-05-29)
 
