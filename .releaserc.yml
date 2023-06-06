@@ -55,12 +55,13 @@
     # "@semantic-release/github", #Default 4
     [
       "@semantic-release/github",
-      {"assets": ["build/*.tar.gz","build/*.zip"], "message": "chore(release): ${nextRelease.version} \n\n${nextRelease.notes}"}
+      {"assets": ["build/*.tar.gz","build/*.zip"]}
     ],
     [
       "@semantic-release/git",
       {
         "assets": ["version/version.go","CHANGELOG.md","README.md"],
+        "message": "chore(release): ${nextRelease.version} \n\n${nextRelease.notes}"
       }
     ],
     [
