@@ -1,5 +1,13 @@
 changelog
 
+<a name="6.8.12"></a>
+## [6.8.12](https://github.com/bityuan/bityuan/compare/v6.8.11...v6.8.12) (2023-06-13)
+
+
+### Bug Fixes
+
+* add add publisher to blacklist and p2p verlimit ([e5c9aa2](https://github.com/bityuan/bityuan/commit/e5c9aa2))
+
 <a name="6.8.11"></a>
 ## [6.8.11](https://github.com/bityuan/bityuan/compare/v6.8.10...v6.8.11) (2023-06-06)
 
