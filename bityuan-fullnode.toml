@@ -60,7 +60,7 @@ port=13803
 maxConnectNum=300
 # 是否配置为全节点模式，全节点保存所有分片数据，种子节点应配置为true
 isFullNode=true
-
+verLimit="6.8.9"
 
 [p2p.sub.dht.pubsub]
 gossipSubDlo=7
