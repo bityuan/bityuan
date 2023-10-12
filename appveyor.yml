@@ -18,8 +18,8 @@ environment:
 
 install:
   # Install the specific Go version.
-  - set PATH=C:\go116\bin;%PATH%
-  - set GOROOT=C:\go116
+  - set PATH=C:\go119\bin;%PATH%
+  - set GOROOT=C:\go119
   - go version
   - go env
   # to check the where is mingw64 in env
