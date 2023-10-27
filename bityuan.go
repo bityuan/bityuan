@@ -331,7 +331,7 @@ ForkRootHash=7200000
 #eth address key format fork
 ForkFormatAddressKey=21000000
 ForkCheckEthTxSort=26670000
-
+ForkProxyExec=29528000
 [fork.sub.evm]
 Enable=19900000
 ForkEVMABI=19900000
@@ -344,7 +344,7 @@ ForkEVMMixAddress=25200000
 ForkIntrinsicGas=25200000
 ForkEVMAddressInit=25770000
 ForkEvmExecNonce=26670000
-
+ForkEvmExecNonceV2=29528000
 [fork.sub.rollup]
 Enable=25770000
 
