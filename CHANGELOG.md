@@ -1,5 +1,13 @@
 changelog
 
+<a name="6.8.14"></a>
+## [6.8.14](https://github.com/bityuan/bityuan/compare/v6.8.13...v6.8.14) (2023-10-27)
+
+
+### Bug Fixes
+
+* add proxyExec,bindminer,update config,fix bug ([ce962fb](https://github.com/bityuan/bityuan/commit/ce962fb))
+
 <a name="6.8.13"></a>
 ## [6.8.13](https://github.com/bityuan/bityuan/compare/v6.8.12...v6.8.13) (2023-10-27)
 
