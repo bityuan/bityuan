@@ -178,7 +178,7 @@ driver="leveldb"
 signType="secp256k1"
 
 [exec]
-
+proxyExecAddress="0x0000000000000000000000000000000000200005"
 [exec.sub.coins]
 #允许evm执行器操作coins
 friendExecer=["evm"]

@@ -134,7 +134,6 @@ minerwhitelist=["*"]
 [exec]
 enableStat=false
 enableMVCC=false
-
 [exec.sub.token]
 saveTokenTxList=false
 
