@@ -1,5 +1,13 @@
 changelog
 
+<a name="6.8.15"></a>
+## [6.8.15](https://github.com/bityuan/bityuan/compare/v6.8.14...v6.8.15) (2023-10-27)
+
+
+### Bug Fixes
+
+* update seeds ([a9381a7](https://github.com/bityuan/bityuan/commit/a9381a7))
+
 <a name="6.8.14"></a>
 ## [6.8.14](https://github.com/bityuan/bityuan/compare/v6.8.13...v6.8.14) (2023-10-27)
 
