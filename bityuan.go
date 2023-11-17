@@ -50,7 +50,7 @@ serverStart=true
 #bootstraps是内置不能修改的引导节点
 bootstraps=["/ip4/13.115.235.168/tcp/13803/p2p/16Uiu2HAkzNiDx1mN6muuBRgPpDRaUG5NGs8HMHmp1HND968Y6Kho",
 "/ip4/174.139.188.98/tcp/13803/p2p/16Uiu2HAm7nyy2yYhHW5VkhbXpTo8vqoZNsgzEH8hMNn98UWWfaK6",
-"/ip4/23.224.75.178/tcp/13803/p2p/16Uiu2HAm6pcKn2wS3Hfqwu3mUPMyezogZgVd41iBPiQRSVct3nkm"]
+"/ip4/23.224.75.178/tcp/13803/p2p/16Uiu2HAmQ9E5dQR1kyQPj1JARsHjNFFVEYZAeQWePM9nysdjPPNC"]
 
 [p2p.sub.dht.broadcast]
 # 区块哈希广播最小大小 100KB
@@ -297,8 +297,6 @@ ethMapFromExecutor="coins"
 ethMapFromSymbol="bty" 
 #当前最大为200万
 evmGasLimit=2000000
-#是否开启升级
-nonceUpGrade=true
 
 
 #系统中所有的fork,默认用chain33的测试网络的

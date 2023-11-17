@@ -138,6 +138,8 @@ enableMVCC=false
 saveTokenTxList=false
 
 [exec.sub.evm]
+#是否开启升级
+nonceUpGrade=false
 #升级路径
 upgradeUrl="cloud.bityuan.com:8802"
 debugEvmTxLog=false

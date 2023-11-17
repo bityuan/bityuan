@@ -3,8 +3,8 @@ module github.com/bityuan/bityuan
 go 1.19
 
 require (
-	github.com/33cn/chain33 v1.68.2-0.20231026110314-eb340f7500d5
-	github.com/33cn/plugin v1.68.5-0.20231027033626-820195f4876c
+	github.com/33cn/chain33 v1.68.2-0.20231115062606-d887f73e3c2d
+	github.com/33cn/plugin v1.68.5-0.20231117032044-004a2d621919
 )
 
 require (
