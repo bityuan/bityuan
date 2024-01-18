@@ -1,5 +1,13 @@
 changelog
 
+<a name="6.8.17"></a>
+## [6.8.17](https://github.com/bityuan/bityuan/compare/v6.8.16...v6.8.17) (2024-01-18)
+
+
+### Bug Fixes
+
+* set block hardfork ([991b0aa](https://github.com/bityuan/bityuan/commit/991b0aa))
+
 <a name="6.8.16"></a>
 ## [6.8.16](https://github.com/bityuan/bityuan/compare/v6.8.15...v6.8.16) (2023-11-17)
 
