@@ -69,7 +69,7 @@ maxTxFee=1000000000
 isLevelFee=true
 
 [mver.mempool.ForkMaxTxFeeV1]
-# 单笔交易最大的手续费, 50 coins
+# 单笔交易最大的手续费,  50 coins
 maxTxFee=5000000000
 
 [mempool.sub.score]
