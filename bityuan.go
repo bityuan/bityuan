@@ -68,6 +68,10 @@ minTxFeeRate=100000
 maxTxFee=1000000000
 isLevelFee=true
 
+[mver.mempool.ForkMaxTxFeeV1]
+# 单笔交易最大的手续费, 50 coins
+maxTxFee=5000000000
+
 [mempool.sub.score]
 poolCacheSize=102400
 minTxFee=100000
@@ -332,6 +336,8 @@ ForkRootHash=7200000
 ForkFormatAddressKey=21000000
 ForkCheckEthTxSort=26670000
 ForkProxyExec=29528000
+ForkMaxTxFeeV1=30839600
+
 [fork.sub.evm]
 Enable=19900000
 ForkEVMABI=19900000
