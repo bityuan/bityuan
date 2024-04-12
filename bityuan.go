@@ -335,6 +335,7 @@ ForkFormatAddressKey=21000000
 ForkCheckEthTxSort=26670000
 ForkProxyExec=29528000
 ForkMaxTxFeeV1=30839600
+ForkEthAddressFormat=32350000
 
 [fork.sub.evm]
 Enable=19900000
