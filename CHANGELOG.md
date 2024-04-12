@@ -1,5 +1,13 @@
 changelog
 
+<a name="6.8.18"></a>
+## [6.8.18](https://github.com/bityuan/bityuan/compare/v6.8.17...v6.8.18) (2024-04-12)
+
+
+### Bug Fixes
+
+* sync chain33&plugin patch version ([8570000](https://github.com/bityuan/bityuan/commit/8570000))
+
 <a name="6.8.17"></a>
 ## [6.8.17](https://github.com/bityuan/bityuan/compare/v6.8.16...v6.8.17) (2024-01-18)
 
