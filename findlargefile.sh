@@ -11,7 +11,7 @@
 IFS=$'\n'
 
 # list all objects including their size, sort by size, take top 10
-objects=$(git verify-pack -v .git/objects/pack/pack-*.idx | grep -v chain | sort -k3nr | head -n 15)
+objects=$(git verify-pack -v .git/objects/pack/pack-*.idx | grep -E "^\S+\s+(blob|tree|commit|tag)\s+" | sort -k3nr | head -n 15)
 
 echo "All sizes are in kB's. The pack column is the size of the object, compressed, inside the pack file."
 

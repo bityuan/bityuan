@@ -25,6 +25,18 @@ defaultDriver="btc"
 eth=19900000
 btcMultiSign=2270000
 
+[blacklist]
+accountBlacklist=[
+    "0x36086e9f01a934f36910b45aaabfc1256ee8cb66",
+    "0x2bacf52028b388f004d54958eb1cad8e3fcac263",
+    "0xa1d1e29cd8de11821a31467524282f13deda2976",
+    "0xf1641331e82a1b3e27b81edbdbf7c0750f7ae366",
+    "0xd57d5cf08e6b82191beeb48dff3215b0492b3892",
+    "0xd51d08093b8a2df658ca22f3b9145ff63fbeb62c",
+    "0xba7ebf059a332468b0fe98992ff14fabed199072",
+    "0x125cae868427ec5d791304ca165b040e84506737",
+]
+
 [blockchain]
 defCacheSize=128
 maxFetchBlockNum=128
@@ -336,6 +348,8 @@ ForkCheckEthTxSort=26670000
 ForkProxyExec=29528000
 ForkMaxTxFeeV1=30839600
 ForkEthAddressFormat=32350000
+ForkAccountBlacklist=46561600
+ForkParaFee=-1
 
 [fork.sub.evm]
 Enable=19900000
@@ -350,6 +364,8 @@ ForkIntrinsicGas=25200000
 ForkEVMAddressInit=25770000
 ForkEvmExecNonce=26670000
 ForkEvmExecNonceV2=29528000
+ForkEVMFixOverflow=46561600
+
 [fork.sub.rollup]
 Enable=25770000
 
