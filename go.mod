@@ -2,6 +2,11 @@ module github.com/bityuan/bityuan
 
 go 1.19
 
+replace (
+	github.com/33cn/chain33 => github.com/bysomeone/chain33 v0.0.0-20260730152513-f4252a735f2d
+	github.com/33cn/plugin => github.com/bysomeone/plugin v0.0.0-20260730152605-1ef9e26f3e85
+)
+
 require (
 	github.com/33cn/chain33 v1.68.2
 	github.com/33cn/plugin v1.68.5-0.20240412061907-cffbf2e789ba
