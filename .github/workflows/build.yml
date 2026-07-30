@@ -3,10 +3,10 @@ on: [push,pull_request]
 
 jobs:
   check_fmt:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
         with:
           go-version-file: 'go.mod'
 
@@ -18,10 +18,11 @@ jobs:
           export PATH=${PATH}:`go env GOPATH`/bin
           echo $GOPATH
           echo $PATH
-          go install golang.org/x/tools/cmd/goimports@latest
+          go install golang.org/x/tools/cmd/goimports@v0.13.0
           go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.44.2
-          go install mvdan.cc/sh/cmd/shfmt@latest
-          go install mvdan.cc/sh/cmd/gosh@latest
+          # install shfmt binary directly to avoid Go version compatibility issues
+          curl -sSfL https://github.com/mvdan/sh/releases/download/v2.6.3/shfmt_v2.6.3_linux_amd64 -o /usr/local/bin/shfmt
+          chmod +x /usr/local/bin/shfmt
 
       - name: Lint
         run: |
@@ -31,10 +32,10 @@ jobs:
 
   build:
     name: build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
         with:
           go-version-file: 'go.mod'
       - name: set go env

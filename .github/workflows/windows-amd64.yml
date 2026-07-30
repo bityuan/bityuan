@@ -6,8 +6,8 @@ jobs:
     name: build_windows
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
         with:
           go-version-file: 'go.mod'
 
@@ -33,7 +33,7 @@ jobs:
           dest: bityuan-windows-amd64.zip
 
       - name : Upload artifact bin
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: bityuan-windows-amd64.zip
           path: |
