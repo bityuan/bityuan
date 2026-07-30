@@ -1,5 +1,12 @@
 changelog
 
+## [6.8.19](https://github.com/bityuan/bityuan/compare/v6.8.18...v6.8.19) (2026-07-30)
+
+
+### Bug Fixes
+
+* evm fund value overflow ([](https://github.com/bityuan/bityuan/commit/2bdd484))
+
 <a name="6.8.18"></a>
 ## [6.8.18](https://github.com/bityuan/bityuan/compare/v6.8.17...v6.8.18) (2024-04-12)
 
