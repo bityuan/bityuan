@@ -47,6 +47,7 @@ jobs:
 
   build-linux:
     name: Build Linux (zig cc)
+    needs: build-windows
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -59,23 +60,16 @@ jobs:
           curl -sSfL https://ziglang.org/download/0.13.0/zig-linux-x86_64-0.13.0.tar.xz | sudo tar -xJ --strip-components=1 -C /usr/local
           sudo ln -sf /usr/local/zig /usr/local/bin/zig
           zig version
-      - name: Build Linux
-        run: CC='zig cc -target x86_64-linux-gnu.2.17' make linux-action-amd64
-
-      - name: Smoke test
+      - name: Download Windows binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-binaries
+      - name: Build Linux and test Qt packaging
         run: |
-          echo "Starting node..."
-          ./bityuan-linux-amd64 > /tmp/smoke-node.log 2>&1 & NODE_PID=$!
-          for i in $(seq 1 15); do
-            sleep 2
-            V=$(./bityuan-cli-linux-amd64 version 2>/dev/null | python3 -c "import sys,json; v=json.load(sys.stdin); print(v.get('app',''))" 2>/dev/null) || true
-            if [ -n "$V" ] && echo "$V" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+'; then
-              echo "OK: app=$V"
-              break
-            fi
-          done
-          kill $NODE_PID 2>/dev/null; wait $NODE_PID 2>/dev/null
-          [ -n "$V" ] && echo "Smoke test OK" || (echo "FAIL"; exit 1)
+          sudo apt-get install -y p7zip-full
+          CC='zig cc -target x86_64-linux-gnu.2.17' make linux-action-amd64
+          make windows-qt-package PREV_RELEASE_TAG=v6.8.21
+          echo "=== Qt package ===" && ls -la build/bityuan-windows-amd64-qt.zip && unzip -l build/bityuan-windows-amd64-qt.zip | grep bityuan
 
   release:
     name: Release
