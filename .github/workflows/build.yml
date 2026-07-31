@@ -1,6 +1,10 @@
 name: build
 on: [push,pull_request]
 
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check_fmt:
     runs-on: ubuntu-22.04
@@ -9,6 +13,7 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version-file: 'go.mod'
+          cache: true
 
       - name: Intsall Golangci-lint
         run: |
@@ -19,10 +24,10 @@ jobs:
           echo $GOPATH
           echo $PATH
           go install golang.org/x/tools/cmd/goimports@v0.13.0
-          go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.44.2
-          # install shfmt binary directly to avoid Go version compatibility issues
+          # install binary tools directly to avoid Go version compatibility issues
+          curl -sSfL https://github.com/golangci/golangci-lint/releases/download/v1.55.2/golangci-lint-1.55.2-linux-amd64.tar.gz | tar -xz --strip-components=1 -C /usr/local/bin
           curl -sSfL https://github.com/mvdan/sh/releases/download/v2.6.3/shfmt_v2.6.3_linux_amd64 -o /usr/local/bin/shfmt
-          chmod +x /usr/local/bin/shfmt
+          chmod +x /usr/local/bin/shfmt /usr/local/bin/golangci-lint
 
       - name: Lint
         run: |
@@ -38,6 +43,7 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version-file: 'go.mod'
+          cache: true
       - name: set go env
         run: export PATH=${PATH}:`go env GOPATH`/bin
       - name: deploy
