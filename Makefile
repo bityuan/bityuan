@@ -64,11 +64,11 @@ windows-qt-package:
 	@echo "Downloading previous release Windows package as template..."
 	@mkdir -p $(QT_PACKAGE_DIR)
 	@gh release download $(PREV_RELEASE_TAG) --pattern "*windows*" -D $(QT_PACKAGE_DIR) --clobber 2>/dev/null \
-		|| curl -sSfL "https://github.com/bityuan/bityuan/releases/download/$(PREV_RELEASE_TAG)/bityuan-windows-amd64-qt.exe" -o $(QT_PACKAGE_DIR)/prev-qt.exe 2>/dev/null \
+		|| curl -sSfL "https://github.com/bityuan/bityuan/releases/download/v6.8.18/bityuan-windows-amd64-qt.exe" -o $(QT_PACKAGE_DIR)/prev-qt.exe 2>/dev/null \
 		|| (echo "WARNING: no previous Windows package found, skipping Qt wrap" && exit 0)
 	@# Extract previous installer
-	@if ls $(QT_PACKAGE_DIR)/*.exe 2>/dev/null | head -1 | grep -q .; then \
-		7z x $(QT_PACKAGE_DIR)/*.exe -o$(QT_PACKAGE_DIR)/extracted -y > /dev/null; \
+	@if ls $(QT_PACKAGE_DIR)/* 2>/dev/null | head -1 | grep -q .; then \
+		7z x $(QT_PACKAGE_DIR)/* -o$(QT_PACKAGE_DIR)/extracted -y > /dev/null; \
 		rm -f $(QT_PACKAGE_DIR)/extracted/bityuan.exe \
 		      $(QT_PACKAGE_DIR)/extracted/bityuan-cli.exe \
 		      $(QT_PACKAGE_DIR)/extracted/bityuan-x86.exe \
@@ -80,15 +80,10 @@ windows-qt-package:
 		cp $(CLI)-windows-amd64.exe $(QT_PACKAGE_DIR)/extracted/bityuan-cli.exe; \
 		cp bityuan-fullnode.toml $(QT_PACKAGE_DIR)/extracted/ 2>/dev/null || true; \
 		cp bityuan.toml $(QT_PACKAGE_DIR)/extracted/ 2>/dev/null || true; \
-		( cd $(QT_PACKAGE_DIR)/extracted && 7z a -mx9 ../bityuan.7z . > /dev/null ); \
-		echo ';!@Install@!UTF-8!' > $(QT_PACKAGE_DIR)/sfx-config.txt; \
-		echo 'Title="BitYuan Wallet"' >> $(QT_PACKAGE_DIR)/sfx-config.txt; \
-		echo 'ExecuteFile="bityuan-qt.exe"' >> $(QT_PACKAGE_DIR)/sfx-config.txt; \
-		echo ';!@InstallEnd@!' >> $(QT_PACKAGE_DIR)/sfx-config.txt; \
-		cat /usr/lib/p7zip/7zS.sfx $(QT_PACKAGE_DIR)/sfx-config.txt $(QT_PACKAGE_DIR)/bityuan.7z > build/$(APP)-windows-amd64-qt.exe; \
-		chmod +x build/$(APP)-windows-amd64-qt.exe; \
+		cd $(QT_PACKAGE_DIR)/extracted && zip -r ../../build/$(APP)-windows-amd64-qt.zip . > /dev/null; \
 	else \
-		echo "No previous Windows package, skipping Qt wrap (raw .zip only)"; \
+		echo "No previous Windows package, creating raw .zip"; \
+		zip -j build/$(APP)-windows-amd64-qt.zip $(APP)-windows-amd64.exe $(CLI)-windows-amd64.exe bityuan.toml bityuan-fullnode.toml; \
 	fi
 
 _GOBUILD := CGO_ENABLED=1 go build $(BUILD_FLAGS)' -w -s'
