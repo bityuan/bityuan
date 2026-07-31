@@ -1,5 +1,8 @@
 name: build darwin-amd64
-on: [push,pull_request]
+on:
+  push:
+    branches: [ master ]
+  pull_request:
 
 jobs:
   build_macos:

@@ -23,10 +23,52 @@ jobs:
           version: '8.1.0'
       - name: Build Windows binaries
         run: make windows-release
+
+      - name: Smoke test
+        run: |
+          echo "Starting node..."
+          Start-Process -FilePath ".\bityuan-windows-amd64.exe" -NoNewWindow -PassThru | ForEach-Object {
+            for ($i=0; $i -lt 10; $i++) {
+              Start-Sleep 2
+              try {
+                $v = & .\bityuan-cli-windows-amd64.exe version 2>$null | ConvertFrom-Json
+                if ($v.title -eq 'bityuan' -and $v.app -match '^\d+\.\d+\.\d+' -and $v.chain33 -match '^\d+\.\d+\.\d+-\w+') {
+                  echo "OK: $($v | ConvertTo-Json -Compress)"
+                  break
+                }
+              } catch {}
+            }
+            Stop-Process -Id $_.Id -Force
+          }
+
+      - name: Package Qt installer
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          choco install 7zip -y 2>$null
+          Write-Host "Downloading Qt shell from v6.8.18..."
+          gh release download v6.8.18 --repo bityuan/bityuan --pattern "*windows*" --dir qt-shell --clobber
+          $shell = (Get-ChildItem qt-shell | Select-Object -First 1).FullName
+          Write-Host "Extracting $shell..."
+          7z x "$shell" -oqt-extracted -y
+          Remove-Item -Force qt-extracted/bityuan.exe,qt-extracted/bityuan-cli.exe,qt-extracted/bityuan-x86.exe,qt-extracted/bityuan-cli-x86.exe,qt-extracted/bityuan.toml,qt-extracted/bityuan-fullnode.toml,qt-extracted/grpc33.log -ErrorAction SilentlyContinue
+          Copy-Item bityuan-windows-amd64.exe qt-extracted/bityuan.exe
+          Copy-Item bityuan-cli-windows-amd64.exe qt-extracted/bityuan-cli.exe
+          Copy-Item bityuan.toml,bityuan-fullnode.toml qt-extracted/ -ErrorAction SilentlyContinue
+          cd qt-extracted; 7z a -sfx ..\bityuan-windows-amd64-qt.exe * -r
+          cd ..; Compress-Archive -Path bityuan-windows-amd64.exe,bityuan-cli-windows-amd64.exe,bityuan.toml,bityuan-fullnode.toml -DestinationPath bityuan-windows-amd64.zip
+
       - uses: actions/upload-artifact@v4
+        if: github.event_name != 'pull_request'
+        with:
+          name: windows-qt-exe
+          path: bityuan-windows-amd64-qt.exe
+      - uses: actions/upload-artifact@v4
+        if: github.event_name != 'pull_request'
         with:
           name: windows-binaries
-          path: "*.exe"
+          path: bityuan-windows-amd64.zip
 
   build-linux:
     name: Build Linux (zig cc)
@@ -45,6 +87,22 @@ jobs:
       - name: Build Linux
         run: CC='zig cc -target x86_64-linux-gnu.2.17' make linux-action-amd64
 
+      - name: Linux smoke test
+        run: |
+          echo "Starting node..."
+          ./bityuan-linux-amd64 > /tmp/smoke-node.log 2>&1 & NODE_PID=$!
+          for i in $(seq 1 25); do
+            sleep 2
+            RAW=$(./bityuan-cli-linux-amd64 version 2>/dev/null) && echo "$RAW" || true
+            V=$(echo "$RAW" | jq -r '.app // empty' 2>/dev/null) || true
+            if [ -n "$V" ]; then
+              echo "OK: $RAW"
+              break
+            fi
+          done
+          kill $NODE_PID 2>/dev/null; wait $NODE_PID 2>/dev/null
+          [ -n "$V" ] && echo "Smoke test OK" || { echo "FAIL"; exit 1; }
+
   release:
     name: Release
     if: github.event_name != 'pull_request'
@@ -60,10 +118,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - name: Download Windows binaries
+      - name: Download Windows Qt exe
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-qt-exe
+          path: build/
+      - name: Download Windows raw zip
         uses: actions/download-artifact@v4
         with:
           name: windows-binaries
+          path: build/
       - name: Install zig
         run: |
           curl -sSfL https://ziglang.org/download/0.13.0/zig-linux-x86_64-0.13.0.tar.xz | sudo tar -xJ --strip-components=1 -C /usr/local
@@ -83,10 +147,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      - name: Do something when a new release published
+      - name: Add footer and show version
         if: steps.semantic.outputs.new_release_published == 'true'
         run: |
-          echo ${{ steps.semantic.outputs.new_release_version }}
-          echo ${{ steps.semantic.outputs.new_release_major_version }}
-          echo ${{ steps.semantic.outputs.new_release_minor_version }}
-          echo ${{ steps.semantic.outputs.new_release_patch_version }}
+          V="${{ steps.semantic.outputs.new_release_version }}"
+          echo "Published: $V"
+          FOOTER="\n\n---\n\n### System Requirements\n\n**Linux**\n$(cat COMPAT.txt)\n\n**Windows**: Windows 10+, Windows Server 2016+"
+          BODY=$(gh release view "$V" --repo bityuan/bityuan --json body -q .body)
+          printf "%b" "$BODY$FOOTER" | gh release edit "$V" --repo bityuan/bityuan -F -
