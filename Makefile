@@ -31,16 +31,65 @@ WINDOWS_ARCH_LIST = \
 	windows-amd64
 
 GOBUILD=CGO_ENABLED=1 go build $(BUILD_FLAGS)' -X "github.com/bityuan/bityuan/version.Version=$(VERSION)"  -w -s'
+GOBUILD_NOCGO=CGO_ENABLED=0 go build $(BUILD_FLAGS)' -X "github.com/bityuan/bityuan/version.Version=$(VERSION)"  -w -s'
 SRC_CLI := ./cli
 SRC := ./
 APP := bityuan
 CLI := bityuan-cli
 
 linux-action-amd64:
+	@echo "Linux x86_64 / glibc >= 2.17" > COMPAT.txt
+	@echo "Supports: Ubuntu 18.04+, Debian 10+, CentOS 7+, RHEL 7+, Rocky 8+, Alma 8+" >> COMPAT.txt
+	@echo "Alpine: use Docker or glibc compat layer" >> COMPAT.txt
 	GOARCH=amd64 GOOS=linux $(GOBUILD) -o $(APP)-linux-amd64 $(SRC)
 	GOARCH=amd64 GOOS=linux $(GOBUILD) -o $(CLI)-linux-amd64 $(SRC_CLI)
 	chmod +x $(APP)-linux-amd64 $(CLI)-linux-amd64
-	tar -zcvf build/$(APP)-linux-amd64.tar.gz $(APP)-linux-amd64  $(CLI)-linux-amd64 CHANGELOG.md bityuan-fullnode.toml bityuan.toml
+	tar -zcvf build/$(APP)-linux-amd64.tar.gz $(APP)-linux-amd64  $(CLI)-linux-amd64 CHANGELOG.md bityuan-fullnode.toml bityuan.toml COMPAT.txt
+
+windows-action-amd64:
+	GOARCH=amd64 GOOS=windows $(GOBUILD_NOCGO) -o $(APP)-windows-amd64.exe $(SRC)
+	GOARCH=amd64 GOOS=windows $(GOBUILD_NOCGO) -o $(CLI)-windows-amd64.exe $(SRC_CLI)
+	zip -j build/$(APP)-windows-amd64.zip $(APP)-windows-amd64.exe $(CLI)-windows-amd64.exe CHANGELOG.md bityuan-fullnode.toml bityuan.toml
+
+# CGO=1 native Windows build (used by release CI on windows runner)
+windows-release:
+	GOARCH=amd64 $(GOBUILD) -o $(APP)-windows-amd64.exe $(SRC)
+	GOARCH=amd64 $(GOBUILD) -o $(CLI)-windows-amd64.exe $(SRC_CLI)
+
+# Download the previous release's Windows package as template
+PREV_RELEASE_TAG ?= $(shell gh release list -L 1 --json tagName --jq '.[0].tagName' 2>/dev/null || echo "v6.8.18")
+QT_PACKAGE_DIR := build/qt-package
+
+windows-qt-package:
+	@echo "Downloading previous release Windows package as template..."
+	@mkdir -p $(QT_PACKAGE_DIR)
+	@gh release download $(PREV_RELEASE_TAG) --pattern "*windows*" -D $(QT_PACKAGE_DIR) --clobber 2>/dev/null \
+		|| curl -sSfL "https://github.com/bityuan/bityuan/releases/download/$(PREV_RELEASE_TAG)/bityuan-windows-amd64-qt.exe" -o $(QT_PACKAGE_DIR)/prev-qt.exe 2>/dev/null \
+		|| (echo "WARNING: no previous Windows package found, skipping Qt wrap" && exit 0)
+	@# Extract previous installer
+	@if ls $(QT_PACKAGE_DIR)/*.exe 2>/dev/null | head -1 | grep -q .; then \
+		7z x $(QT_PACKAGE_DIR)/*.exe -o$(QT_PACKAGE_DIR)/extracted -y > /dev/null; \
+		rm -f $(QT_PACKAGE_DIR)/extracted/bityuan.exe \
+		      $(QT_PACKAGE_DIR)/extracted/bityuan-cli.exe \
+		      $(QT_PACKAGE_DIR)/extracted/bityuan-x86.exe \
+		      $(QT_PACKAGE_DIR)/extracted/bityuan-cli-x86.exe \
+		      $(QT_PACKAGE_DIR)/extracted/bityuan.toml \
+		      $(QT_PACKAGE_DIR)/extracted/bityuan-fullnode.toml \
+		      $(QT_PACKAGE_DIR)/extracted/grpc33.log; \
+		cp $(APP)-windows-amd64.exe $(QT_PACKAGE_DIR)/extracted/bityuan.exe; \
+		cp $(CLI)-windows-amd64.exe $(QT_PACKAGE_DIR)/extracted/bityuan-cli.exe; \
+		cp bityuan-fullnode.toml $(QT_PACKAGE_DIR)/extracted/ 2>/dev/null || true; \
+		cp bityuan.toml $(QT_PACKAGE_DIR)/extracted/ 2>/dev/null || true; \
+		cd $(QT_PACKAGE_DIR)/extracted && 7z a -mx9 ../bityuan.7z . > /dev/null; \
+		echo ';!@Install@!UTF-8!' > $(QT_PACKAGE_DIR)/sfx-config.txt; \
+		echo 'Title="BitYuan Wallet"' >> $(QT_PACKAGE_DIR)/sfx-config.txt; \
+		echo 'ExecuteFile="bityuan-qt.exe"' >> $(QT_PACKAGE_DIR)/sfx-config.txt; \
+		echo ';!@InstallEnd@!' >> $(QT_PACKAGE_DIR)/sfx-config.txt; \
+		cat /usr/lib/p7zip/7zS.sfx $(QT_PACKAGE_DIR)/sfx-config.txt $(QT_PACKAGE_DIR)/bityuan.7z > build/$(APP)-windows-amd64-qt.exe; \
+		chmod +x build/$(APP)-windows-amd64-qt.exe; \
+	else \
+		echo "No previous Windows package, skipping Qt wrap (raw .zip only)"; \
+	fi
 
 _GOBUILD := CGO_ENABLED=1 go build $(BUILD_FLAGS)' -w -s'
 linux-amd64:

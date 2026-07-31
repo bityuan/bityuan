@@ -9,7 +9,10 @@
     [
         "@semantic-release/release-notes-generator",
       {
-        "preset": "jshint"
+        "preset": "jshint",
+        "writerOpts": {
+          "footer": "\n\n---\n\n### 系统要求\n\n**Linux** (glibc >= 2.17): Ubuntu 18.04+, Debian 10+, CentOS 7+, RHEL 7+, Rocky 8+, Alma 8+\n\n**Windows**: Windows 10+, Windows Server 2016+\n"
+        }
       }
     ],
     [
@@ -55,7 +58,7 @@
     # "@semantic-release/github", #Default 4
     [
       "@semantic-release/github",
-      {"assets": ["build/*.tar.gz","build/*.zip"]}
+      {"assets": ["build/*.tar.gz","build/*.exe"]}
     ],
     [
       "@semantic-release/git",
@@ -66,7 +69,7 @@
     ],
     [
       "@semantic-release/exec", {
-      "prepareCmd": "make linux-action-amd64 VERSION=${nextRelease.version}"
+      "prepareCmd": "sudo apt-get install -y p7zip-full && CC='zig cc -target x86_64-linux-gnu.2.17' make linux-action-amd64 VERSION=${nextRelease.version} && make windows-qt-package PREV_RELEASE_TAG=$(gh release list -L 1 --json tagName --jq '.[0].tagName')"
     }
     ]
   ]
