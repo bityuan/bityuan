@@ -7,19 +7,68 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-    name: Build
+  build-windows:
+    name: Build Windows (CGO)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+      - name: Set up MinGW
+        uses: egor-tensin/setup-mingw@v2
+        with:
+          platform: x64
+          version: '8.1.0'
+      - name: Build Windows binaries
+        run: make windows-release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-binaries
+          path: "*.exe"
+
+  build-linux:
+    name: Build Linux (zig cc)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+      - name: Install zig
+        run: |
+          curl -sSfL https://ziglang.org/download/0.13.0/zig-linux-x86_64-0.13.0.tar.xz | sudo tar -xJ --strip-components=1 -C /usr/local
+          sudo ln -sf /usr/local/zig /usr/local/bin/zig
+          zig version
+      - name: Build Linux
+        run: CC='zig cc -target x86_64-linux-gnu.2.17' make linux-action-amd64
+
+  release:
+    name: Release
+    if: github.event_name != 'pull_request'
+    needs: [build-windows, build-linux]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
         with:
-          persist-credentials: false # <--- this
+          persist-credentials: false
       - uses: actions/setup-go@v4
         with:
           go-version-file: 'go.mod'
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+      - name: Download Windows binaries
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-binaries
+      - name: Install zig
+        run: |
+          curl -sSfL https://ziglang.org/download/0.13.0/zig-linux-x86_64-0.13.0.tar.xz | sudo tar -xJ --strip-components=1 -C /usr/local
+          sudo ln -sf /usr/local/zig /usr/local/bin/zig
+          zig version
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v4
         id: semantic
@@ -41,4 +90,3 @@ jobs:
           echo ${{ steps.semantic.outputs.new_release_major_version }}
           echo ${{ steps.semantic.outputs.new_release_minor_version }}
           echo ${{ steps.semantic.outputs.new_release_patch_version }}
-

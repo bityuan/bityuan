@@ -7,13 +7,11 @@ path="${2}"
 
 function filterLinter() {
     res=$(
-        golangci-lint run --no-config --issues-exit-code=1 --deadline=2m --disable-all \
+        golangci-lint run --no-config --issues-exit-code=1 --timeout=5m -j 1 --disable-all \
             --enable=gofmt \
             --enable=gosimple \
-            --enable=deadcode \
+            --enable=unused \
             --enable=unconvert \
-            --enable=varcheck \
-            --enable=structcheck \
             --enable=goimports \
             --enable=misspell \
             --exclude=underscores
@@ -26,17 +24,13 @@ function filterLinter() {
 
 function testLinter() {
     cd "${path}" >/dev/null || exit
-    golangci-lint run --no-config --issues-exit-code=1 --deadline=2m --disable-all \
+    golangci-lint run --no-config --issues-exit-code=1 --timeout=5m -j 1 --disable-all \
         --enable=gofmt \
         --enable=gosimple \
-        --enable=deadcode \
+        --enable=unused \
         --enable=unconvert \
-        --enable=interfacer \
-        --enable=varcheck \
-        --enable=structcheck \
         --enable=goimports \
         --enable=misspell \
-        --enable=golint \
         --exclude=underscores
 
     cd - >/dev/null || exit
