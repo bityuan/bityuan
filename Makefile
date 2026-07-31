@@ -53,8 +53,8 @@ windows-action-amd64:
 
 # CGO=1 native Windows build (used by release CI on windows runner)
 windows-release:
-	GOARCH=amd64 $(GOBUILD) -o $(APP)-windows-amd64.exe $(SRC)
-	GOARCH=amd64 $(GOBUILD) -o $(CLI)-windows-amd64.exe $(SRC_CLI)
+	GOARCH=amd64 $(_GOBUILD) -o $(APP)-windows-amd64.exe $(SRC)
+	GOARCH=amd64 $(_GOBUILD) -o $(CLI)-windows-amd64.exe $(SRC_CLI)
 
 # Download the previous release's Windows package as template
 PREV_RELEASE_TAG ?= $(shell gh release list -L 1 --json tagName --jq '.[0].tagName' 2>/dev/null || echo "v6.8.18")
