@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-windows:
-    name: Build Windows (CGO)
+    name: Build Windows (MinGW)
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
