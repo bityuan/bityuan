@@ -1,5 +1,12 @@
 changelog
 
+## [6.8.20](https://github.com/bityuan/bityuan/compare/v6.8.19...v6.8.20) (2026-07-31)
+
+
+### Bug Fixes
+
+* build and CI improvements only, no functional changes ([](https://github.com/bityuan/bityuan/commit/e51f3b6))
+
 ## [6.8.19](https://github.com/bityuan/bityuan/compare/v6.8.18...v6.8.19) (2026-07-30)
 
 
