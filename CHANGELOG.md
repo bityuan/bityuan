@@ -6,6 +6,14 @@ changelog
 ### Bug Fixes
 
 * trigger patch release for build and CI fixes ([](https://github.com/bityuan/bityuan/commit/3dcaccb))
+* trigger release ([](https://github.com/bityuan/bityuan/commit/cb930bf))
+
+## [6.8.21](https://github.com/bityuan/bityuan/compare/v6.8.20...v6.8.21) (2026-07-31)
+
+
+### Bug Fixes
+
+* trigger patch release for build and CI fixes ([](https://github.com/bityuan/bityuan/commit/3dcaccb))
 
 ## [6.8.20](https://github.com/bityuan/bityuan/compare/v6.8.19...v6.8.20) (2026-07-31)
 
