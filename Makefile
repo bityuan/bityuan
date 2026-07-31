@@ -80,7 +80,7 @@ windows-qt-package:
 		cp $(CLI)-windows-amd64.exe $(QT_PACKAGE_DIR)/extracted/bityuan-cli.exe; \
 		cp bityuan-fullnode.toml $(QT_PACKAGE_DIR)/extracted/ 2>/dev/null || true; \
 		cp bityuan.toml $(QT_PACKAGE_DIR)/extracted/ 2>/dev/null || true; \
-		7z a -mx9 $(QT_PACKAGE_DIR)/bityuan.7z $(QT_PACKAGE_DIR)/extracted/* > /dev/null; \
+		( cd $(QT_PACKAGE_DIR)/extracted && 7z a -mx9 ../bityuan.7z . > /dev/null ); \
 		echo ';!@Install@!UTF-8!' > $(QT_PACKAGE_DIR)/sfx-config.txt; \
 		echo 'Title="BitYuan Wallet"' >> $(QT_PACKAGE_DIR)/sfx-config.txt; \
 		echo 'ExecuteFile="bityuan-qt.exe"' >> $(QT_PACKAGE_DIR)/sfx-config.txt; \

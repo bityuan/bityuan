@@ -9,10 +9,7 @@
     [
         "@semantic-release/release-notes-generator",
       {
-        "preset": "jshint",
-        "writerOpts": {
-          "footer": "\n\n---\n\n### 系统要求\n\n**Linux** (glibc >= 2.17): Ubuntu 18.04+, Debian 10+, CentOS 7+, RHEL 7+, Rocky 8+, Alma 8+\n\n**Windows**: Windows 10+, Windows Server 2016+\n"
-        }
+        "preset": "jshint"
       }
     ],
     [
@@ -51,7 +48,8 @@
     ],
     [
       "@semantic-release/exec", {
-      "prepareCmd": "sudo apt-get install -y p7zip-full && CC='zig cc -target x86_64-linux-gnu.2.17' make linux-action-amd64 VERSION=${nextRelease.version} && make windows-qt-package PREV_RELEASE_TAG=$(gh release list -L 1 --json tagName --jq '.[0].tagName')"
+      "prepareCmd": "sudo apt-get install -y p7zip-full && CC='zig cc -target x86_64-linux-gnu.2.17' make linux-action-amd64 VERSION=${nextRelease.version} && make windows-qt-package PREV_RELEASE_TAG=$(gh release list -L 1 --json tagName --jq '.[0].tagName')",
+      "successCmd": "gh release edit ${nextRelease.tag} --repo bityuan/bityuan --notes \"$(gh release view ${nextRelease.tag} --repo bityuan/bityuan --json body -q .body)\n\n---\n\n### System Requirements\n\n**Linux** (glibc >= 2.17): Ubuntu 18.04+, Debian 10+, CentOS 7+, RHEL 7+, Rocky 8+, Alma 8+\n\n**Windows**: Windows 10+, Windows Server 2016+\""
     }
     ]
   ]
