@@ -210,7 +210,7 @@ jobs:
       - name: Download Windows/macOS artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: "windows-*|darwin-*"
+          pattern: "windows-*,darwin-*"
           path: build/
           merge-multiple: true
       - name: Determine release tag
