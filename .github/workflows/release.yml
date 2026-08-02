@@ -22,16 +22,19 @@ jobs:
           platform: x64
           version: '8.1.0'
       - name: Build Windows binaries
-        run: make windows-release
+        run: |
+          $env:CGO_ENABLED = "1"
+          go build -ldflags "-s -w" -o bityuan.exe .
+          go build -ldflags "-s -w" -o bityuan-cli.exe ./cli
 
       - name: Smoke test
         run: |
           echo "Starting node..."
-          Start-Process -FilePath ".\bityuan-windows-amd64.exe" -NoNewWindow -PassThru | ForEach-Object {
+          Start-Process -FilePath ".\bityuan.exe" -NoNewWindow -PassThru | ForEach-Object {
             for ($i=0; $i -lt 10; $i++) {
               Start-Sleep 2
               try {
-                $v = & .\bityuan-cli-windows-amd64.exe version 2>$null | ConvertFrom-Json
+                $v = & .\bityuan-cli.exe version 2>$null | ConvertFrom-Json
                 if ($v.title -eq 'bityuan' -and $v.app -match '^\d+\.\d+\.\d+' -and $v.chain33 -match '^\d+\.\d+\.\d+-\w+') {
                   echo "OK: $($v | ConvertTo-Json -Compress)"
                   break
@@ -42,7 +45,6 @@ jobs:
           }
 
       - name: Package Qt installer
-        if: github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -53,22 +55,47 @@ jobs:
           Write-Host "Extracting $shell..."
           7z x "$shell" -oqt-extracted -y
           Remove-Item -Force qt-extracted/bityuan.exe,qt-extracted/bityuan-cli.exe,qt-extracted/bityuan-x86.exe,qt-extracted/bityuan-cli-x86.exe,qt-extracted/bityuan.toml,qt-extracted/bityuan-fullnode.toml,qt-extracted/grpc33.log -ErrorAction SilentlyContinue
-          Copy-Item bityuan-windows-amd64.exe qt-extracted/bityuan.exe
-          Copy-Item bityuan-cli-windows-amd64.exe qt-extracted/bityuan-cli.exe
-          Copy-Item bityuan.toml,bityuan-fullnode.toml qt-extracted/ -ErrorAction SilentlyContinue
+          Copy-Item bityuan.exe,bityuan-cli.exe,bityuan.toml,bityuan-fullnode.toml qt-extracted/ -ErrorAction SilentlyContinue
           cd qt-extracted; 7z a -sfx ..\bityuan-windows-amd64-qt.exe * -r
-          cd ..; Compress-Archive -Path bityuan-windows-amd64.exe,bityuan-cli-windows-amd64.exe,bityuan.toml,bityuan-fullnode.toml -DestinationPath bityuan-windows-amd64.zip
+          cd ..
+          Compress-Archive -Path bityuan.exe,bityuan-cli.exe,bityuan.toml,bityuan-fullnode.toml -DestinationPath bityuan-windows-amd64.zip
 
       - uses: actions/upload-artifact@v4
-        if: github.event_name != 'pull_request'
         with:
           name: windows-qt-exe
           path: bityuan-windows-amd64-qt.exe
       - uses: actions/upload-artifact@v4
-        if: github.event_name != 'pull_request'
         with:
           name: windows-binaries
           path: bityuan-windows-amd64.zip
+
+  build-macos:
+    name: Build macOS (${{ matrix.arch }})
+    strategy:
+      matrix:
+        include:
+          - os: macos-13
+            arch: amd64
+          - os: macos-14
+            arch: arm64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+      - name: Build macOS
+        run: |
+          CGO_ENABLED=1 GOOS=darwin GOARCH=${{ matrix.arch }} go build -ldflags '-s -w' -o bityuan .
+          CGO_ENABLED=1 GOOS=darwin GOARCH=${{ matrix.arch }} go build -ldflags '-s -w' -o bityuan-cli ./cli
+          chmod +x bityuan bityuan-cli
+          mkdir -p build
+          tar -zcvf build/bityuan-darwin-${{ matrix.arch }}.tar.gz bityuan bityuan-cli bityuan.toml bityuan-fullnode.toml CHANGELOG.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: darwin-${{ matrix.arch }}
+          path: build/bityuan-darwin-${{ matrix.arch }}.tar.gz
 
   build-linux:
     name: Build Linux (zig cc)
@@ -106,7 +133,7 @@ jobs:
   release:
     name: Release
     if: github.event_name != 'pull_request'
-    needs: [build-windows, build-linux]
+    needs: [build-windows, build-linux, build-macos]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -127,6 +154,16 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: windows-binaries
+          path: build/
+      - name: Download macOS amd64
+        uses: actions/download-artifact@v4
+        with:
+          name: darwin-amd64
+          path: build/
+      - name: Download macOS arm64
+        uses: actions/download-artifact@v4
+        with:
+          name: darwin-arm64
           path: build/
       - name: Install zig
         run: |
