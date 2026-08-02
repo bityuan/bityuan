@@ -1,5 +1,12 @@
 changelog
 
+## [6.8.22](https://github.com/bityuan/bityuan/compare/v6.8.21...v6.8.22) (2026-08-02)
+
+
+### Bug Fixes
+
+* windows Qt exe packaging, linux smoke test, CI improvements ([](https://github.com/bityuan/bityuan/commit/342c2c5))
+
 ## [6.8.21](https://github.com/bityuan/bityuan/compare/v6.8.20...v6.8.21) (2026-07-31)
 
 
