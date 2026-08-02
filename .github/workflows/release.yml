@@ -24,8 +24,9 @@ jobs:
       - name: Build Windows binaries
         run: |
           $env:CGO_ENABLED = "1"
-          go build -ldflags "-s -w" -o bityuan.exe .
-          go build -ldflags "-s -w" -o bityuan-cli.exe ./cli
+          $gc = git rev-parse --short=8 HEAD
+          go build -ldflags "-s -w -X github.com/bityuan/bityuan/version.GitCommit=$gc -X github.com/33cn/chain33/common/version.GitCommit=$gc" -o bityuan.exe .
+          go build -ldflags "-s -w -X github.com/bityuan/bityuan/version.GitCommit=$gc -X github.com/33cn/chain33/common/version.GitCommit=$gc" -o bityuan-cli.exe ./cli
 
       - name: Smoke test
         run: |
@@ -35,8 +36,8 @@ jobs:
               Start-Sleep 2
               try {
                 $v = & .\bityuan-cli.exe version 2>$null | ConvertFrom-Json
-                if ($v.title -eq 'bityuan' -and $v.app -match '^\d+\.\d+\.\d+' -and $v.chain33 -match '^\d+\.\d+\.\d+-\w+') {
-                  echo "OK: $($v | ConvertTo-Json -Compress)"
+                if ($v.title -eq 'bityuan' -and $v.app -match '^\d+\.\d+\.\d+' -and $v.chain33 -match '^\d+\.\d+\.\d+') {
+                  Write-Host "OK: $($v | ConvertTo-Json -Compress)"
                   break
                 }
               } catch {}
@@ -83,8 +84,9 @@ jobs:
           cache: true
       - name: Build macOS
         run: |
-          CGO_ENABLED=1 GOOS=darwin GOARCH=${{ matrix.arch }} go build -ldflags '-s -w' -o bityuan .
-          CGO_ENABLED=1 GOOS=darwin GOARCH=${{ matrix.arch }} go build -ldflags '-s -w' -o bityuan-cli ./cli
+          GC=$(git rev-parse --short=8 HEAD)
+          CGO_ENABLED=1 GOOS=darwin GOARCH=${{ matrix.arch }} go build -ldflags "-s -w -X github.com/bityuan/bityuan/version.GitCommit=$GC -X github.com/33cn/chain33/common/version.GitCommit=$GC" -o bityuan .
+          CGO_ENABLED=1 GOOS=darwin GOARCH=${{ matrix.arch }} go build -ldflags "-s -w -X github.com/bityuan/bityuan/version.GitCommit=$GC -X github.com/33cn/chain33/common/version.GitCommit=$GC" -o bityuan-cli ./cli
           chmod +x bityuan bityuan-cli
           mkdir -p build
           tar -zcvf build/bityuan-darwin-${{ matrix.arch }}.tar.gz bityuan bityuan-cli bityuan.toml bityuan-fullnode.toml CHANGELOG.md
