@@ -1,0 +1,10 @@
+name: 'Install zig'
+description: 'Install zig compiler for CGO cross-compilation'
+runs:
+  using: 'composite'
+  steps:
+    - shell: bash
+      run: |
+        curl -sSfL https://ziglang.org/download/0.13.0/zig-linux-x86_64-0.13.0.tar.xz | sudo tar -xJ --strip-components=1 -C /usr/local
+        sudo ln -sf /usr/local/zig /usr/local/bin/zig
+        zig version

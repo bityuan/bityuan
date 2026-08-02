@@ -5,13 +5,53 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  workflow_dispatch:
+    inputs:
+      manual_upload:
+        description: 'Target release tag to rebuild and upload win/mac packages (e.g. v6.8.21)'
+        required: true
+        default: ''
+        type: string
 
 jobs:
+  check:
+    name: Check release commit
+    runs-on: ubuntu-22.04
+    outputs:
+      is_release: ${{ steps.chk.outputs.is_release }}
+      release_tag: ${{ steps.chk.outputs.release_tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: chk
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -n "${{ inputs.manual_upload }}" ]; then
+            echo "is_release=true" >> $GITHUB_OUTPUT
+            echo "release_tag=${{ inputs.manual_upload }}" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          # 非 chore(release) commit 直接跳过
+          MSG=$(git log -1 --format=%s)
+          if [[ "$MSG" != chore\(release\):* ]]; then
+            echo "is_release=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          # 校验 HEAD == 最新 tag
+          TAG=$(gh api repos/bityuan/bityuan/tags --jq '.[0].name' 2>/dev/null) || TAG=""
+          HEAD_SHA=$(git rev-parse HEAD)
+          TAG_SHA=""
+          [ -n "$TAG" ] && TAG_SHA=$(gh api "repos/bityuan/bityuan/git/ref/tags/$TAG" --jq '.object.sha' 2>/dev/null)
+          [ "$TAG_SHA" == "$HEAD_SHA" ] && echo "is_release=true" || echo "is_release=false" >> $GITHUB_OUTPUT
+          echo "release_tag=$TAG" >> $GITHUB_OUTPUT
+
   build-windows:
     name: Build Windows (MinGW)
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.manual_upload }}
       - uses: actions/setup-go@v4
         with:
           go-version-file: 'go.mod'
@@ -78,6 +118,8 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.manual_upload }}
       - uses: actions/setup-go@v4
         with:
           go-version-file: 'go.mod'
@@ -97,6 +139,7 @@ jobs:
 
   build-linux:
     name: Build Linux (zig cc)
+    if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -105,10 +148,7 @@ jobs:
           go-version-file: 'go.mod'
           cache: true
       - name: Install zig
-        run: |
-          curl -sSfL https://ziglang.org/download/0.13.0/zig-linux-x86_64-0.13.0.tar.xz | sudo tar -xJ --strip-components=1 -C /usr/local
-          sudo ln -sf /usr/local/zig /usr/local/bin/zig
-          zig version
+        uses: ./.github/actions/zig-install
       - name: Build Linux
         run: CC='zig cc -target x86_64-linux-gnu.2.17' make linux-action-amd64
 
@@ -128,10 +168,9 @@ jobs:
           kill $NODE_PID 2>/dev/null; wait $NODE_PID 2>/dev/null
           [ -n "$V" ] && echo "Smoke test OK" || { echo "FAIL"; exit 1; }
 
-  release:
-    name: Release
-    if: github.event_name != 'pull_request'
-    needs: [build-windows, build-linux, build-macos]
+  release-linux:
+    name: Release Linux
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -143,31 +182,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      - name: Download Windows Qt exe
-        uses: actions/download-artifact@v4
-        with:
-          name: windows-qt-exe
-          path: build/
-      - name: Download Windows raw zip
-        uses: actions/download-artifact@v4
-        with:
-          name: windows-binaries
-          path: build/
-      - name: Download macOS amd64
-        uses: actions/download-artifact@v4
-        with:
-          name: darwin-amd64
-          path: build/
-      - name: Download macOS arm64
-        uses: actions/download-artifact@v4
-        with:
-          name: darwin-arm64
-          path: build/
       - name: Install zig
-        run: |
-          curl -sSfL https://ziglang.org/download/0.13.0/zig-linux-x86_64-0.13.0.tar.xz | sudo tar -xJ --strip-components=1 -C /usr/local
-          sudo ln -sf /usr/local/zig /usr/local/bin/zig
-          zig version
+        uses: ./.github/actions/zig-install
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v4
         id: semantic
@@ -182,11 +198,45 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      - name: Add footer and show version
-        if: steps.semantic.outputs.new_release_published == 'true'
+  upload-win-mac:
+    name: Upload Windows/macOS packages
+    if: |
+      (github.event_name == 'workflow_dispatch' && inputs.manual_upload != '') ||
+      (github.event_name != 'pull_request' && needs.check.outputs.is_release == 'true')
+    needs: [check, build-windows, build-macos]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Windows/macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "windows-*|darwin-*"
+          path: build/
+          merge-multiple: true
+      - name: Determine release tag
+        id: tag
         run: |
-          V="${{ steps.semantic.outputs.new_release_version }}"
-          echo "Published: $V"
-          FOOTER="\n\n---\n\n### System Requirements\n\n**Linux**\n$(cat COMPAT.txt)\n\n**Windows**: Windows 10+, Windows Server 2016+"
+          if [ -n "${{ inputs.manual_upload }}" ]; then
+            echo "tag=${{ inputs.manual_upload }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ needs.check.outputs.release_tag }}" >> $GITHUB_OUTPUT
+          fi
+      - name: Upload to release
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          V="${{ steps.tag.outputs.tag }}"
+          echo "Uploading win/mac packages to $V"
+          gh release upload "$V" --repo bityuan/bityuan build/bityuan-windows-amd64-qt.exe build/bityuan-windows-amd64.zip build/bityuan-darwin-amd64.tar.gz build/bityuan-darwin-arm64.tar.gz --clobber
+      - name: Add footer to release
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          V="${{ steps.tag.outputs.tag }}"
           BODY=$(gh release view "$V" --repo bityuan/bityuan --json body -q .body)
+          if echo "$BODY" | grep -q "System Requirements"; then
+            echo "Footer already present, skip"
+            exit 0
+          fi
+          FOOTER="\n\n---\n\n### System Requirements\n\n**Linux** (glibc >= 2.17): Ubuntu 18.04+, Debian 10+, CentOS 7+, RHEL 7+, Rocky 8+, Alma 8+\n\n**Windows**: Windows 10+, Windows Server 2016+"
           printf "%b" "$BODY$FOOTER" | gh release edit "$V" --repo bityuan/bityuan -F -
