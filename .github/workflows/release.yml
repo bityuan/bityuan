@@ -21,7 +21,7 @@ jobs:
       is_release: ${{ steps.chk.outputs.is_release }}
       release_tag: ${{ steps.chk.outputs.release_tag }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - id: chk
         env:
           GH_TOKEN: ${{ github.token }}
@@ -49,10 +49,10 @@ jobs:
     name: Build Windows (MinGW)
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ inputs.manual_upload }}
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
           cache: true
@@ -101,11 +101,11 @@ jobs:
           cd ..
           Compress-Archive -Path bityuan.exe,bityuan-cli.exe,bityuan.toml,bityuan-fullnode.toml -DestinationPath bityuan-windows-amd64.zip
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: windows-qt-exe
           path: bityuan-windows-amd64-qt.exe
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: windows-binaries
           path: bityuan-windows-amd64.zip
@@ -117,10 +117,10 @@ jobs:
         arch: [arm64, amd64]
     runs-on: macos-14
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ inputs.manual_upload }}
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
           cache: true
@@ -132,7 +132,7 @@ jobs:
           chmod +x bityuan bityuan-cli
           mkdir -p build
           tar -zcvf build/bityuan-darwin-${{ matrix.arch }}.tar.gz bityuan bityuan-cli bityuan.toml bityuan-fullnode.toml CHANGELOG.md
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: darwin-${{ matrix.arch }}
           path: build/bityuan-darwin-${{ matrix.arch }}.tar.gz
@@ -142,8 +142,8 @@ jobs:
     if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
           cache: true
@@ -173,13 +173,13 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           persist-credentials: false
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
       - name: Install zig
@@ -207,7 +207,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Download Windows/macOS artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: build/
           pattern: "*"
