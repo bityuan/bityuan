@@ -73,12 +73,8 @@ jobs:
     name: Build macOS (${{ matrix.arch }})
     strategy:
       matrix:
-        include:
-          - os: macos-13
-            arch: amd64
-          - os: macos-14
-            arch: arm64
-    runs-on: ${{ matrix.os }}
+        arch: [arm64, amd64]
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
