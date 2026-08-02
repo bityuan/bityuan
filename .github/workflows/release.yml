@@ -206,12 +206,11 @@ jobs:
     needs: [check, build-windows, build-macos]
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
       - name: Download Windows/macOS artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: "windows-*,darwin-*"
           path: build/
+          pattern: "*"
           merge-multiple: true
       - name: Determine release tag
         id: tag
