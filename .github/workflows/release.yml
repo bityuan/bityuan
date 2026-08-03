@@ -90,15 +90,17 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           choco install 7zip -y 2>$null
+          choco install winrar -y 2>$null
           Write-Host "Downloading Qt shell from v6.8.18..."
           gh release download v6.8.18 --repo bityuan/bityuan --pattern "*windows*" --dir qt-shell --clobber
           $shell = (Get-ChildItem qt-shell | Select-Object -First 1).FullName
-          Write-Host "Extracting $shell..."
-          7z x "$shell" -oqt-extracted -y
-          Remove-Item -Force qt-extracted/bityuan.exe,qt-extracted/bityuan-cli.exe,qt-extracted/bityuan-x86.exe,qt-extracted/bityuan-cli-x86.exe,qt-extracted/bityuan.toml,qt-extracted/bityuan-fullnode.toml,qt-extracted/grpc33.log -ErrorAction SilentlyContinue
-          Copy-Item bityuan.exe,bityuan-cli.exe,bityuan.toml,bityuan-fullnode.toml qt-extracted/ -ErrorAction SilentlyContinue
-          cd qt-extracted; 7z a -sfx ..\bityuan-windows-amd64-qt.exe * -r
-          cd ..
+          # 用 WinRAR 原地更新老包内部文件，保留 WinRAR SFX 壳和 Setup 配置
+          Copy-Item $shell bityuan-windows-amd64-qt.exe
+          & "C:\Program Files\WinRAR\Rar.exe" u bityuan-windows-amd64-qt.exe bityuan.exe bityuan-cli.exe bityuan.toml bityuan-fullnode.toml 2>&1 | Out-String
+          if ($LASTEXITCODE -ne 0) { throw "WinRAR update failed" }
+          # 删除旧 32 位二进制（只保留 64 位）
+          & "C:\Program Files\WinRAR\Rar.exe" d bityuan-windows-amd64-qt.exe bityuan-x86.exe bityuan-cli-x86.exe 2>&1 | Out-String
+          if ($LASTEXITCODE -ne 0) { throw "WinRAR delete x86 failed" }
           Compress-Archive -Path bityuan.exe,bityuan-cli.exe,bityuan.toml,bityuan-fullnode.toml -DestinationPath bityuan-windows-amd64.zip
 
       - uses: actions/upload-artifact@v5
