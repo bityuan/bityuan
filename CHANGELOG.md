@@ -7,6 +7,13 @@ changelog
 
 * release blacklisted accounts from ForkAccountBlacklistV2 ([](https://github.com/bityuan/bityuan/commit/c47bdc0))
 
+# [6.9.0](https://github.com/bityuan/bityuan/compare/v6.8.22...v6.9.0) (2026-09-18)
+
+
+### Features
+
+* release blacklisted accounts from ForkAccountBlacklistV2 ([](https://github.com/bityuan/bityuan/commit/c47bdc0))
+
 ## [6.8.22](https://github.com/bityuan/bityuan/compare/v6.8.21...v6.8.22) (2026-08-02)
 
 
