@@ -25,7 +25,14 @@ defaultDriver="btc"
 eth=19900000
 btcMultiSign=2270000
 
-[blacklist]
+#账户黑名单按高度分版本，每个 [mver.blacklist.<分叉名>] 段是一份【全量】名单而非增量，
+#高度 h 生效的是「高度不大于 h 的最大分叉」那一份。已被链跨过的段不可再改，只能追加新分叉。
+#基线段不受分叉门控，自创世生效，现网必须留空
+[mver.blacklist]
+accountBlacklist=[]
+
+#ForkAccountBlacklist=46561600 起生效，内容与迁移前的静态 [blacklist] 段逐地址一致，禁止改动
+[mver.blacklist.ForkAccountBlacklist]
 accountBlacklist=[
     "0x36086e9f01a934f36910b45aaabfc1256ee8cb66",
     "0x2bacf52028b388f004d54958eb1cad8e3fcac263",
@@ -36,6 +43,11 @@ accountBlacklist=[
     "0xba7ebf059a332468b0fe98992ff14fabed199072",
     "0x125cae868427ec5d791304ca165b040e84506737",
 ]
+
+#ForkAccountBlacklistV2=47467200 起生效：全量名单为空，即把 V1 拦截的 8 个地址全部放行。
+#V1 区间 [46561600, 47467200) 的判定不受影响，历史区块回放结果不变
+[mver.blacklist.ForkAccountBlacklistV2]
+accountBlacklist=[]
 
 [blockchain]
 defCacheSize=128
@@ -349,6 +361,9 @@ ForkProxyExec=29528000
 ForkMaxTxFeeV1=30839600
 ForkEthAddressFormat=32350000
 ForkAccountBlacklist=46561600
+ForkAccountBlacklistV2=47467200
+#chain33 v1.72.0 新增，交易 chainID 严格校验，与 ForkAccountBlacklistV2 同高度一起生效
+ForkTxChainIDStrict=47467200
 ForkParaFee=-1
 
 [fork.sub.evm]
