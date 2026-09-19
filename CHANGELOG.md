@@ -5,43 +5,22 @@ changelog
 
 ### Features
 
-* release blacklisted accounts from ForkAccountBlacklistV2 ([](https://github.com/bityuan/bityuan/commit/c47bdc0))
-
-# [6.9.0](https://github.com/bityuan/bityuan/compare/v6.8.22...v6.9.0) (2026-09-18)
-
-
-### Features
-
-* release blacklisted accounts from ForkAccountBlacklistV2 ([](https://github.com/bityuan/bityuan/commit/c47bdc0))
-
-# [6.9.0](https://github.com/bityuan/bityuan/compare/v6.8.22...v6.9.0) (2026-09-18)
-
-
-### Features
-
-* release blacklisted accounts from ForkAccountBlacklistV2 ([](https://github.com/bityuan/bityuan/commit/c47bdc0))
+* release blacklisted accounts from ForkAccountBlacklistV2 ([c47bdc0](https://github.com/bityuan/bityuan/commit/c47bdc0))
 
 ## [6.8.22](https://github.com/bityuan/bityuan/compare/v6.8.21...v6.8.22) (2026-08-02)
 
 
 ### Bug Fixes
 
-* windows Qt exe packaging, linux smoke test, CI improvements ([](https://github.com/bityuan/bityuan/commit/342c2c5))
+* windows Qt exe packaging, linux smoke test, CI improvements ([342c2c5](https://github.com/bityuan/bityuan/commit/342c2c5))
 
 ## [6.8.21](https://github.com/bityuan/bityuan/compare/v6.8.20...v6.8.21) (2026-07-31)
 
 
 ### Bug Fixes
 
-* trigger patch release for build and CI fixes ([](https://github.com/bityuan/bityuan/commit/3dcaccb))
-* trigger release ([](https://github.com/bityuan/bityuan/commit/cb930bf))
-
-## [6.8.21](https://github.com/bityuan/bityuan/compare/v6.8.20...v6.8.21) (2026-07-31)
-
-
-### Bug Fixes
-
-* trigger patch release for build and CI fixes ([](https://github.com/bityuan/bityuan/commit/3dcaccb))
+* trigger patch release for build and CI fixes ([3dcaccb](https://github.com/bityuan/bityuan/commit/3dcaccb))
+* trigger release ([cb930bf](https://github.com/bityuan/bityuan/commit/cb930bf))
 
 ## [6.8.20](https://github.com/bityuan/bityuan/compare/v6.8.19...v6.8.20) (2026-07-31)
 
@@ -55,7 +34,7 @@ changelog
 
 ### Bug Fixes
 
-* evm fund value overflow ([](https://github.com/bityuan/bityuan/commit/2bdd484))
+* evm fund value overflow ([2bdd484](https://github.com/bityuan/bityuan/commit/2bdd484))
 
 <a name="6.8.18"></a>
 ## [6.8.18](https://github.com/bityuan/bityuan/compare/v6.8.17...v6.8.18) (2024-04-12)
