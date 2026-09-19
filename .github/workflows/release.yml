@@ -1,3 +1,4 @@
+# 发布流程、失败时怎么手动补包：见 .github/RELEASE.md
 name: release
 
 on:
@@ -8,7 +9,8 @@ on:
   workflow_dispatch:
     inputs:
       manual_upload:
-        description: 'Target release tag to rebuild and upload win/mac packages (e.g. v6.8.21)'
+        # 这段说明会显示在 Actions 页面 "Run workflow" 的弹窗里
+        description: '要重新打包并上传的 release tag（如 v6.9.0）；用法见 .github/RELEASE.md'
         required: true
         default: ''
         type: string
