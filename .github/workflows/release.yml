@@ -88,8 +88,10 @@ jobs:
           choco install 7zip -y 2>$null
           choco install winrar -y 2>$null
           Write-Host "Downloading Qt shell from v6.8.18..."
-          gh release download v6.8.18 --repo bityuan/bityuan --pattern "*windows*" --dir qt-shell --clobber
-          $shell = (Get-ChildItem qt-shell | Select-Object -First 1).FullName
+          # v6.8.18 的这个资产是安装包的"壳"，被写死依赖，不能删（见 .github/RELEASE.md）
+          gh release download v6.8.18 --repo bityuan/bityuan --pattern "bityuan-windows-amd64-qt.exe" --dir qt-shell --clobber
+          $shell = Join-Path qt-shell "bityuan-windows-amd64-qt.exe"
+          if (-not (Test-Path $shell)) { throw "Qt 壳不存在：$shell —— v6.8.18 的这个 release 资产不能删" }
           # 用 WinRAR 原地更新老包内部文件，保留 WinRAR SFX 壳和 Setup 配置
           Copy-Item $shell bityuan-windows-amd64-qt.exe
           & "C:\Program Files\WinRAR\Rar.exe" u bityuan-windows-amd64-qt.exe bityuan.exe bityuan-cli.exe bityuan.toml bityuan-fullnode.toml 2>&1 | Out-String
@@ -188,10 +190,11 @@ jobs:
 
   build-linux:
     name: Build Linux (zig cc)
-    if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.manual_upload }}
       - uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
@@ -199,7 +202,33 @@ jobs:
       - name: Install zig
         uses: ./.github/actions/zig-install
       - name: Build Linux
-        run: CC='zig cc -target x86_64-linux-gnu.2.17' make linux-action-amd64
+        run: |
+          # 手动补包时按 tag 里的版本号构建，和 semantic-release 那条路径保持一致
+          TAG="${{ inputs.manual_upload }}"
+          if [ -n "$TAG" ]; then
+            CC='zig cc -target x86_64-linux-gnu.2.17' make linux-action-amd64 VERSION="${TAG#v}"
+          else
+            CC='zig cc -target x86_64-linux-gnu.2.17' make linux-action-amd64
+          fi
+
+      # COMPAT.txt 由上面 make 生成（声明支持 glibc >= 2.17）。
+      # 这里断言产物真正需要的 glibc 不超过声明值 —— 声明和产物必须对等：
+      # 以后谁改了 zig 的 -target，要么同步改 Makefile 里的声明，要么被这条拦住。
+      - name: Check glibc requirement matches declaration
+        run: |
+          DECLARED=$(sed -n 's/.*glibc >= \([0-9.]*\).*/\1/p' COMPAT.txt | head -1)
+          ACTUAL=$(objdump -T bityuan-linux-amd64 bityuan-cli-linux-amd64 2>/dev/null \
+                   | grep -oE 'GLIBC_[0-9]+(\.[0-9]+)*' | sed 's/^GLIBC_//' | sort -V | tail -1)
+          if [ -z "$DECLARED" ] || [ -z "$ACTUAL" ]; then
+            echo "解析失败：DECLARED='$DECLARED' ACTUAL='$ACTUAL'" >&2
+            exit 1
+          fi
+          HIGHEST=$(printf '%s\n%s\n' "$DECLARED" "$ACTUAL" | sort -V | tail -1)
+          echo "声明 glibc >= $DECLARED；产物实际最高 GLIBC_$ACTUAL"
+          if [ "$HIGHEST" != "$DECLARED" ]; then
+            echo "产物需要 GLIBC_$ACTUAL，超过 COMPAT.txt 声明的 $DECLARED，请同步更新声明与 zig target" >&2
+            exit 1
+          fi
 
       # 三平台共用同一份校验脚本（见 .github/scripts/smoke_test.py）
       - name: Smoke test
@@ -211,6 +240,13 @@ jobs:
         with:
           name: version-linux
           path: version-linux.json
+      # 手动补包时要连 linux 包一起补，才把 tarball 也传上来
+      # （自动流程里 linux 包由 semantic-release 自己上传，不需要重复下载 44MB）
+      - uses: actions/upload-artifact@v5
+        if: inputs.manual_upload != ''
+        with:
+          name: linux-tarball
+          path: build/bityuan-linux-amd64.tar.gz
 
   release-linux:
     name: Release Linux
@@ -254,7 +290,9 @@ jobs:
     if: |
       (github.event_name == 'workflow_dispatch' && inputs.manual_upload != '') ||
       (github.event_name != 'pull_request' && needs.check.outputs.is_release == 'true')
-    needs: [check, build-windows, build-macos]
+    # build-linux 放进来是为了「三平台冒烟测试都通过才上传」：
+    # 任一构建/冒烟失败，本 job 会被跳过（不会出现只发一半的 release）
+    needs: [check, build-windows, build-macos, build-linux]
     runs-on: ubuntu-22.04
     steps:
       - name: Download Windows/macOS artifacts
@@ -294,57 +332,20 @@ jobs:
             exit 1
           fi
 
-      # build-linux 不在 needs 里（workflow_dispatch 时它会被跳过），
-      # 所以这里等它的冒烟结果出现；它失败则没有产物，直接终止
-      - name: Wait for linux smoke result
-        if: inputs.manual_upload == ''
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          for i in $(seq 1 60); do
-            if gh api "repos/bityuan/bityuan/actions/runs/${{ github.run_id }}/artifacts" \
-                 --jq '.artifacts[].name' 2>/dev/null | grep -qx "version-linux"; then
-              echo "version-linux 冒烟结果已就绪"
-              exit 0
-            fi
-            STATE=$(gh api "repos/bityuan/bityuan/actions/runs/${{ github.run_id }}/jobs" \
-                      --jq '.jobs[] | select(.name | startswith("Build Linux")) | .status + "/" + (.conclusion // "-")' 2>/dev/null | head -1)
-            echo "等待 version-linux 产物 ... ($i/60) build-linux=${STATE:-未知}"
-            case "$STATE" in
-              completed/failure|completed/cancelled|completed/skipped)
-                echo "build-linux 已结束却没有冒烟结果，终止上传" >&2
-                exit 1 ;;
-            esac
-            sleep 10
-          done
-          echo "等不到 version-linux 冒烟结果" >&2
-          exit 1
-
-      # 产物是快照，要重新拉一次才能带上刚就绪的 linux 结果
-      - name: Re-download artifacts
-        if: inputs.manual_upload == ''
-        uses: actions/download-artifact@v5
-        with:
-          path: build/
-          pattern: "*"
-          merge-multiple: true
-
-      # 各平台冒烟测试的结论必须一致，否则不上传（缺哪个平台的 json 就说明那个平台没通过）
+      # 各平台冒烟测试的结论必须一致，否则不上传
       - name: Compare platform versions
-        run: |
-          if [ -n "${{ inputs.manual_upload }}" ]; then
-            python3 .github/scripts/compare_versions.py --allow-partial "build/version-*.json"
-          else
-            python3 .github/scripts/compare_versions.py "build/version-*.json"
-          fi
+        run: python3 .github/scripts/compare_versions.py "build/version-*.json"
 
       - name: Upload to release
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           V="${{ steps.tag.outputs.tag }}"
-          echo "Uploading win/mac packages to $V"
-          gh release upload "$V" --repo bityuan/bityuan build/bityuan-windows-amd64-qt.exe build/bityuan-windows-amd64.zip build/bityuan-darwin-amd64.tar.gz build/bityuan-darwin-arm64.tar.gz --clobber
+          FILES="build/bityuan-windows-amd64-qt.exe build/bityuan-windows-amd64.zip build/bityuan-darwin-amd64.tar.gz build/bityuan-darwin-arm64.tar.gz"
+          # 手动补包时 linux 包也一起传（自动流程里它由 semantic-release 上传，这里没有这个文件）
+          [ -f build/bityuan-linux-amd64.tar.gz ] && FILES="$FILES build/bityuan-linux-amd64.tar.gz"
+          echo "Uploading to $V: $FILES"
+          gh release upload "$V" --repo bityuan/bityuan $FILES --clobber
       # 产物 sha256 清单（取自 GitHub API 的 digest，无需重新下载几十 MB）
       - name: Write SHA256SUMS
         env:
