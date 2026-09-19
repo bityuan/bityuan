@@ -24,7 +24,9 @@ EXPECTED = {
     "version-darwin-arm64.json",
     "version-darwin-amd64.json",
 }
-FIELDS = ("title", "app", "chain33")
+# 只比对 title 与 chain33：app 是构建时注入的 VERSION，走 make（非 tag 构建时是一段
+# 短 sha）与走 go build 的平台天然不同，拿它做跨平台比对必然误报。
+FIELDS = ("title", "chain33")
 
 
 def main():

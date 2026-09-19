@@ -166,18 +166,19 @@ jobs:
       - name: Smoke test
         run: |
           OUT=version-darwin-${{ matrix.arch }}.json
-          PREFIX=""
+          RUNNER_PREFIX=""
           if [ "${{ matrix.arch }}" = "amd64" ]; then
             if arch -x86_64 /usr/bin/true 2>/dev/null; then
-              PREFIX="--runner-prefix arch -x86_64"
+              RUNNER_PREFIX="arch -x86_64"
             else
               echo "::warning::runner 上没有 Rosetta，amd64 产物本次未做冒烟测试"
               echo '{"_platform":"Darwin-amd64","_skipped":true}' > "$OUT"
               exit 0
             fi
           fi
+          # 注意整个前缀作为一个参数传（脚本内部再 split），否则 argparse 会把 -x86_64 当成未知参数
           python3 .github/scripts/smoke_test.py --node ./bityuan --cli ./bityuan-cli \
-            --commit "$(git rev-parse --short=8 HEAD)" --out "$OUT" $PREFIX
+            --commit "$(git rev-parse --short=8 HEAD)" --out "$OUT" --runner-prefix "$RUNNER_PREFIX"
 
       - uses: actions/upload-artifact@v5
         with:

@@ -22,12 +22,18 @@ import argparse
 import json
 import os
 import platform
-import re
 import subprocess
 import sys
 import time
 
-SEMVER = re.compile(r"^\d+\.\d+\.\d+")
+
+def use_utf8_output():
+    """Windows runner 的控制台默认是 cp1252，直接 print 中文会 UnicodeEncodeError。"""
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
 
 
 def extract_json(raw):
@@ -68,6 +74,7 @@ def stop_node(proc):
 
 
 def main():
+    use_utf8_output()
     parser = argparse.ArgumentParser()
     parser.add_argument("--node", required=True, help="节点二进制路径")
     parser.add_argument("--cli", required=True, help="cli 二进制路径")
@@ -112,9 +119,12 @@ def main():
         problems = []
         if info.get("title") != "bityuan":
             problems.append("title 期望 'bityuan'，实际 %r" % info.get("title"))
-        for field in ("app", "chain33"):
-            if not SEMVER.match(info.get(field) or ""):
-                problems.append("%s 不是 x.y.z 形式: %r" % (field, info.get(field)))
+        # 只断言 chain33 里含本次 commit：这是唯一能证明产物出自该 commit 的字段，
+        # 且所有构建路径都会注入（-X .../chain33/common/version.GitCommit）。
+        # 不断言 app 的格式：它是构建时传进去的 VERSION —— 走 make 时
+        # `git describe --tags || git rev-parse --short=8 HEAD`，非 tag 构建就是
+        # 一段短 sha（实测 "e90d3299"），win/mac 走 go build 又可能是源码里的版本号，
+        # 各平台天然不一致，拿来断言只会误伤。
         if prefix not in (info.get("chain33") or "").lower():
             problems.append("chain33 里没有本次 commit %s: %r" % (prefix, info.get("chain33")))
 
