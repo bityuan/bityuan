@@ -72,22 +72,12 @@ jobs:
           go build -ldflags "-s -w -X github.com/bityuan/bityuan/version.GitCommit=$gc -X github.com/33cn/chain33/common/version.GitCommit=$gc" -o bityuan.exe .
           go build -ldflags "-s -w -X github.com/bityuan/bityuan/version.GitCommit=$gc -X github.com/33cn/chain33/common/version.GitCommit=$gc" -o bityuan-cli.exe ./cli
 
+      # 三平台共用同一份校验脚本（见 .github/scripts/smoke_test.py）
       - name: Smoke test
         run: |
-          echo "Starting node..."
-          Start-Process -FilePath ".\bityuan.exe" -NoNewWindow -PassThru | ForEach-Object {
-            for ($i=0; $i -lt 10; $i++) {
-              Start-Sleep 2
-              try {
-                $v = & .\bityuan-cli.exe version 2>$null | ConvertFrom-Json
-                if ($v.title -eq 'bityuan' -and $v.app -match '^\d+\.\d+\.\d+' -and $v.chain33 -match '^\d+\.\d+\.\d+') {
-                  Write-Host "OK: $($v | ConvertTo-Json -Compress)"
-                  break
-                }
-              } catch {}
-            }
-            Stop-Process -Id $_.Id -Force
-          }
+          $gc = git rev-parse --short=8 HEAD
+          python .github/scripts/smoke_test.py --node bityuan.exe --cli bityuan-cli.exe --commit $gc --out version-windows.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Package Qt installer
         env:
@@ -107,6 +97,31 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "WinRAR delete x86 failed" }
           Compress-Archive -Path bityuan.exe,bityuan-cli.exe,bityuan.toml,bityuan-fullnode.toml -DestinationPath bityuan-windows-amd64.zip
 
+      # 打包是"拿旧 SFX 壳原地替换文件"，这一步校验替换真的生效了
+      - name: Verify Qt package
+        run: |
+          $ErrorActionPreference = "Stop"
+          $7z = "${env:ProgramFiles}\7-Zip\7z.exe"
+          if (-not (Test-Path $7z)) { $7z = "7z" }
+          $list = & $7z l bityuan-windows-amd64-qt.exe | Out-String
+          # SFX 壳和脚本必须完整保留
+          foreach ($pat in @("Setup=bityuan-qt\.exe", "Shortcut=", "Title=")) {
+            if ($list -notmatch $pat) { throw "Qt 包的 SFX 脚本丢了：$pat" }
+          }
+          # 32 位二进制必须已被删除
+          foreach ($f in @("bityuan-x86.exe", "bityuan-cli-x86.exe")) {
+            if ($list -match [regex]::Escape($f)) { throw "Qt 包里残留 32 位文件 $f" }
+          }
+          # 包里的二进制必须与刚构建（且已冒烟测试过）的那两个字节一致
+          New-Item -ItemType Directory -Force -Path qt-verify | Out-Null
+          & $7z e bityuan-windows-amd64-qt.exe bityuan.exe bityuan-cli.exe -oqt-verify -y | Out-Null
+          foreach ($f in @("bityuan.exe", "bityuan-cli.exe")) {
+            $built = (Get-FileHash $f -Algorithm SHA256).Hash
+            $packed = (Get-FileHash "qt-verify\$f" -Algorithm SHA256).Hash
+            if ($built -ne $packed) { throw "$f 与 Zip 包里的不一致，说明 Rar 替换没生效" }
+          }
+          Write-Host "Qt 包校验通过：脚本完整、无 32 位残留、内部二进制与构建产物 sha256 一致"
+
       - uses: actions/upload-artifact@v5
         with:
           name: windows-qt-exe
@@ -115,6 +130,10 @@ jobs:
         with:
           name: windows-binaries
           path: bityuan-windows-amd64.zip
+      - uses: actions/upload-artifact@v5
+        with:
+          name: version-windows
+          path: version-windows.json
 
   build-macos:
     name: Build macOS (${{ matrix.arch }})
@@ -138,10 +157,32 @@ jobs:
           chmod +x bityuan bityuan-cli
           mkdir -p build
           tar -zcvf build/bityuan-darwin-${{ matrix.arch }}.tar.gz bityuan bityuan-cli bityuan.toml bityuan-fullnode.toml CHANGELOG.md
+
+      # 三平台共用同一份校验脚本；runner 是 arm64，amd64 产物靠 Rosetta 跑
+      - name: Smoke test
+        run: |
+          OUT=version-darwin-${{ matrix.arch }}.json
+          PREFIX=""
+          if [ "${{ matrix.arch }}" = "amd64" ]; then
+            if arch -x86_64 /usr/bin/true 2>/dev/null; then
+              PREFIX="--runner-prefix arch -x86_64"
+            else
+              echo "::warning::runner 上没有 Rosetta，amd64 产物本次未做冒烟测试"
+              echo '{"_platform":"Darwin-amd64","_skipped":true}' > "$OUT"
+              exit 0
+            fi
+          fi
+          python3 .github/scripts/smoke_test.py --node ./bityuan --cli ./bityuan-cli \
+            --commit "$(git rev-parse --short=8 HEAD)" --out "$OUT" $PREFIX
+
       - uses: actions/upload-artifact@v5
         with:
           name: darwin-${{ matrix.arch }}
           path: build/bityuan-darwin-${{ matrix.arch }}.tar.gz
+      - uses: actions/upload-artifact@v5
+        with:
+          name: version-darwin-${{ matrix.arch }}
+          path: version-darwin-${{ matrix.arch }}.json
 
   build-linux:
     name: Build Linux (zig cc)
@@ -158,21 +199,16 @@ jobs:
       - name: Build Linux
         run: CC='zig cc -target x86_64-linux-gnu.2.17' make linux-action-amd64
 
-      - name: Linux smoke test
+      # 三平台共用同一份校验脚本（见 .github/scripts/smoke_test.py）
+      - name: Smoke test
         run: |
-          echo "Starting node..."
-          ./bityuan-linux-amd64 > /tmp/smoke-node.log 2>&1 & NODE_PID=$!
-          for i in $(seq 1 25); do
-            sleep 2
-            RAW=$(./bityuan-cli-linux-amd64 version 2>/dev/null) && echo "$RAW" || true
-            V=$(echo "$RAW" | jq -r '.app // empty' 2>/dev/null) || true
-            if [ -n "$V" ]; then
-              echo "OK: $RAW"
-              break
-            fi
-          done
-          kill $NODE_PID 2>/dev/null; wait $NODE_PID 2>/dev/null
-          [ -n "$V" ] && echo "Smoke test OK" || { echo "FAIL"; exit 1; }
+          python3 .github/scripts/smoke_test.py --node ./bityuan-linux-amd64 --cli ./bityuan-cli-linux-amd64 \
+            --commit "$(git rev-parse --short=8 HEAD)" --out version-linux.json
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: version-linux
+          path: version-linux.json
 
   release-linux:
     name: Release Linux
@@ -256,6 +292,50 @@ jobs:
             exit 1
           fi
 
+      # build-linux 不在 needs 里（workflow_dispatch 时它会被跳过），
+      # 所以这里等它的冒烟结果出现；它失败则没有产物，直接终止
+      - name: Wait for linux smoke result
+        if: inputs.manual_upload == ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for i in $(seq 1 60); do
+            if gh api "repos/bityuan/bityuan/actions/runs/${{ github.run_id }}/artifacts" \
+                 --jq '.artifacts[].name' 2>/dev/null | grep -qx "version-linux"; then
+              echo "version-linux 冒烟结果已就绪"
+              exit 0
+            fi
+            STATE=$(gh api "repos/bityuan/bityuan/actions/runs/${{ github.run_id }}/jobs" \
+                      --jq '.jobs[] | select(.name | startswith("Build Linux")) | .status + "/" + (.conclusion // "-")' 2>/dev/null | head -1)
+            echo "等待 version-linux 产物 ... ($i/60) build-linux=${STATE:-未知}"
+            case "$STATE" in
+              completed/failure|completed/cancelled|completed/skipped)
+                echo "build-linux 已结束却没有冒烟结果，终止上传" >&2
+                exit 1 ;;
+            esac
+            sleep 10
+          done
+          echo "等不到 version-linux 冒烟结果" >&2
+          exit 1
+
+      # 产物是快照，要重新拉一次才能带上刚就绪的 linux 结果
+      - name: Re-download artifacts
+        if: inputs.manual_upload == ''
+        uses: actions/download-artifact@v5
+        with:
+          path: build/
+          pattern: "*"
+          merge-multiple: true
+
+      # 各平台冒烟测试的结论必须一致，否则不上传（缺哪个平台的 json 就说明那个平台没通过）
+      - name: Compare platform versions
+        run: |
+          if [ -n "${{ inputs.manual_upload }}" ]; then
+            python3 .github/scripts/compare_versions.py --allow-partial "build/version-*.json"
+          else
+            python3 .github/scripts/compare_versions.py "build/version-*.json"
+          fi
+
       - name: Upload to release
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -263,6 +343,17 @@ jobs:
           V="${{ steps.tag.outputs.tag }}"
           echo "Uploading win/mac packages to $V"
           gh release upload "$V" --repo bityuan/bityuan build/bityuan-windows-amd64-qt.exe build/bityuan-windows-amd64.zip build/bityuan-darwin-amd64.tar.gz build/bityuan-darwin-arm64.tar.gz --clobber
+      # 产物 sha256 清单（取自 GitHub API 的 digest，无需重新下载几十 MB）
+      - name: Write SHA256SUMS
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          V="${{ steps.tag.outputs.tag }}"
+          gh api "repos/bityuan/bityuan/releases/tags/$V" \
+            --jq '.assets[] | select(.name != "SHA256SUMS") | "\(.digest | sub("sha256:"; ""))  \(.name)"' \
+            | sort -k2 > SHA256SUMS
+          cat SHA256SUMS
+          gh release upload "$V" --repo bityuan/bityuan SHA256SUMS --clobber
       - name: Add footer to release
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
