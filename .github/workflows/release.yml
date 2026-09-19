@@ -37,13 +37,17 @@ jobs:
             echo "is_release=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-          # 校验 HEAD == 最新 tag
-          TAG=$(gh api repos/bityuan/bityuan/tags --jq '.[0].name' 2>/dev/null) || TAG=""
-          HEAD_SHA=$(git rev-parse HEAD)
-          TAG_SHA=""
-          [ -n "$TAG" ] && TAG_SHA=$(gh api "repos/bityuan/bityuan/git/ref/tags/$TAG" --jq '.object.sha' 2>/dev/null)
-          [ "$TAG_SHA" == "$HEAD_SHA" ] && echo "is_release=true" || echo "is_release=false" >> $GITHUB_OUTPUT
-          echo "release_tag=$TAG" >> $GITHUB_OUTPUT
+          # release commit 已把 version/version.go 更新为新版本，tag 名由它推导
+          # 注意：semantic-release 先推 commit 再推 tag，此 job 里 tag 可能还不存在，
+          # 所以这里不查 API，等 tag 的校验放到 upload-win-mac 里做
+          VER=$(sed -n 's/^[[:space:]]*Version[[:space:]]*=[[:space:]]*"\([0-9][0-9.]*\)".*/\1/p' version/version.go | head -1)
+          if [ -z "$VER" ]; then
+            echo "无法从 version/version.go 解析版本号" >&2
+            echo "is_release=false" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "is_release=true" >> $GITHUB_OUTPUT
+          echo "release_tag=v$VER" >> $GITHUB_OUTPUT
 
   build-windows:
     name: Build Windows (MinGW)
@@ -172,7 +176,14 @@ jobs:
 
   release-linux:
     name: Release Linux
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    # release commit 由 semantic-release 自己推送，不能再次触发 semantic-release
+    # （否则会连锁生成重复的 chore(release) commit，并因 tag 已存在而失败）
+    if: |
+      github.event_name == 'push' && github.ref == 'refs/heads/master' &&
+      !startsWith(github.event.head_commit.message, 'chore(release):')
+    concurrency:
+      group: semantic-release
+      cancel-in-progress: false
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v5
@@ -222,6 +233,29 @@ jobs:
           else
             echo "tag=${{ needs.check.outputs.release_tag }}" >> $GITHUB_OUTPUT
           fi
+      # semantic-release 先推 commit、后推 tag（且上传产物耗时数分钟），
+      # 本 job 起跑时 tag/release 可能还没建好，这里等一下（最多 10 分钟）
+      - name: Wait for release tag
+        if: inputs.manual_upload == ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V="${{ steps.tag.outputs.tag }}"
+          SHA=""
+          for i in $(seq 1 60); do
+            SHA=$(gh api "repos/bityuan/bityuan/git/ref/tags/$V" --jq .object.sha 2>/dev/null) || SHA=""
+            if [ -n "$SHA" ]; then
+              echo "tag $V -> $SHA (head ${{ github.sha }})"
+              break
+            fi
+            echo "waiting for tag $V ... ($i/60)"
+            sleep 10
+          done
+          if [ -z "$SHA" ]; then
+            echo "tag $V 未出现，放弃上传" >&2
+            exit 1
+          fi
+
       - name: Upload to release
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
