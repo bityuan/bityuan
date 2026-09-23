@@ -296,6 +296,8 @@ jobs:
     needs: [check, build-windows, build-macos, build-linux]
     runs-on: ubuntu-22.04
     steps:
+      # 下面要用仓库里的脚本（.github/scripts/compare_versions.py），必须 checkout
+      - uses: actions/checkout@v5
       - name: Download Windows/macOS artifacts
         uses: actions/download-artifact@v5
         with:
@@ -370,3 +372,22 @@ jobs:
           fi
           FOOTER="\n\n---\n\n### System Requirements\n\n**Linux** (glibc >= 2.17): Ubuntu 18.04+, Debian 10+, CentOS 7+, RHEL 7+, Rocky 8+, Alma 8+\n\n**Windows**: Windows 10+, Windows Server 2016+"
           printf "%b" "$BODY$FOOTER" | gh release edit "$V" --repo bityuan/bityuan -F -
+      # release 是 semantic-release 发布后才补资产的，中间任何一步失败都会留下
+      # 「已经公开但缺包」的半成品 release（v6.9.1 就这样漏了一次）。这里兜底断言。
+      - name: Assert release is complete
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V="${{ steps.tag.outputs.tag }}"
+          HAVE=$(gh api "repos/bityuan/bityuan/releases/tags/$V" --jq '.assets[].name')
+          MISSING=""
+          for f in bityuan-linux-amd64.tar.gz bityuan-windows-amd64.zip \
+                   bityuan-windows-amd64-qt.exe bityuan-darwin-amd64.tar.gz \
+                   bityuan-darwin-arm64.tar.gz SHA256SUMS; do
+            echo "$HAVE" | grep -qx "$f" || MISSING="$MISSING $f"
+          done
+          if [ -n "$MISSING" ]; then
+            echo "release $V 缺少资产:$MISSING" >&2
+            exit 1
+          fi
+          echo "release $V 资产齐全（$(echo "$HAVE" | wc -l | tr -d ' ') 个）"
