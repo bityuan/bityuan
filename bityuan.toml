@@ -24,6 +24,10 @@ callerFunction = false
 
 [blockchain]
 dbPath="datadir"
+# dbCache sets three leveldb parameters at once (chain33/common/db/go_level_db.go):
+#   handles = dbCache;  block cache = dbCache/2 MiB;  write buffer = min(dbCache/4, 16) MiB
+# The chain DB holds hundreds of thousands of SST files, so handles bind first. Left at the
+# default 64 -- raising it has not been measured to help. 0 = default; a restart is required.
 dbCache=64
 batchsync=false
 isRecordBlockSequence=false
@@ -40,6 +44,7 @@ enableFetchP2pstore=true
 [p2p]
 types=["dht"]
 dbPath="datadir/addrbook"
+# The addrbook DB is small (a few MB); leave at the default. Same semantics as [blockchain] dbCache.
 dbCache=4
 grpcLogFile="grpc33.log"
 #waitPid 等待seed导入
@@ -98,6 +103,7 @@ maxTxNumPerAccount=100
 
 [store]
 dbPath="datadir/mavltree"
+# State DB (mavltree); same semantics as [blockchain] dbCache.
 dbCache=128
 
 [store.sub.mavl]
@@ -125,6 +131,7 @@ tkCloseCacheLen=200000
 
 [wallet]
 dbPath="wallet"
+# The wallet DB is small; leave at the default. Same semantics as [blockchain] dbCache.
 dbCache=16
 
 [wallet.sub.ticket]
