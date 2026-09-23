@@ -72,9 +72,9 @@ serverStart=true
 
 [p2p.sub.dht]
 #bootstraps是内置不能修改的引导节点
-bootstraps=["/ip4/13.115.235.168/tcp/13803/p2p/16Uiu2HAkzNiDx1mN6muuBRgPpDRaUG5NGs8HMHmp1HND968Y6Kho",
-"/ip4/174.139.188.98/tcp/13803/p2p/16Uiu2HAm7nyy2yYhHW5VkhbXpTo8vqoZNsgzEH8hMNn98UWWfaK6",
-"/ip4/23.224.75.178/tcp/13803/p2p/16Uiu2HAmQ9E5dQR1kyQPj1JARsHjNFFVEYZAeQWePM9nysdjPPNC"]
+bootstraps=["/ip4/13.115.235.168/tcp/13803/p2p/16Uiu2HAkz1pQpLAtuyTx1oYzki9tcSW5ACDR4M4TzriEm2tmZbR2",
+"/ip4/3.37.26.153/tcp/13803/p2p/16Uiu2HAmLbtcoQ12oi2jUf3vSXfic5DRuUAcccZqh4cEDiD4hHyF",
+"/ip4/174.139.188.98/tcp/13803/p2p/16Uiu2HAm66G9xAdXq14az4UaW4Ca9yKXqLR9DmaUABHqT8uaZ712"]
 
 [p2p.sub.dht.broadcast]
 # 区块哈希广播最小大小 100KB
