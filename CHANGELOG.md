@@ -1,5 +1,12 @@
 changelog
 
+## [6.9.1](https://github.com/bityuan/bityuan/compare/v6.9.0...v6.9.1) (2026-09-23)
+
+
+### Bug Fixes
+
+* fix the built-in bootstrap nodes and raise the p2p version limit ([](https://github.com/bityuan/bityuan/commit/e2cc907))
+
 # [6.9.0](https://github.com/bityuan/bityuan/compare/v6.8.22...v6.9.0) (2026-09-18)
 
 
