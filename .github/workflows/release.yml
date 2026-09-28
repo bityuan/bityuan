@@ -3,9 +3,9 @@ name: release
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, next ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, next ]
   workflow_dispatch:
     inputs:
       manual_upload:
@@ -42,7 +42,9 @@ jobs:
           # release commit 已把 version/version.go 更新为新版本，tag 名由它推导
           # 注意：semantic-release 先推 commit 再推 tag，此 job 里 tag 可能还不存在，
           # 所以这里不查 API，等 tag 的校验放到 upload-win-mac 里做
-          VER=$(sed -n 's/^[[:space:]]*Version[[:space:]]*=[[:space:]]*"\([0-9][0-9.]*\)".*/\1/p' version/version.go | head -1)
+          # 手动补包时按 tag 里的版本号；自动流程里 next 上的预发布是 6.9.2-next.1
+          # 这种带后缀的号，所以这里只要求引号前非空，不限定"只有数字和点"
+          VER=$(sed -n 's/^[[:space:]]*Version[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' version/version.go | head -1)
           if [ -z "$VER" ]; then
             echo "无法从 version/version.go 解析版本号" >&2
             echo "is_release=false" >> $GITHUB_OUTPUT
@@ -254,7 +256,8 @@ jobs:
     # release commit 由 semantic-release 自己推送，不能再次触发 semantic-release
     # （否则会连锁生成重复的 chore(release) commit，并因 tag 已存在而失败）
     if: |
-      github.event_name == 'push' && github.ref == 'refs/heads/master' &&
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/next') &&
       !startsWith(github.event.head_commit.message, 'chore(release):')
     concurrency:
       group: semantic-release
@@ -276,7 +279,7 @@ jobs:
         uses: cycjimmy/semantic-release-action@v4
         id: semantic
         with:
-          branch: master
+          branch: ${{ github.ref_name }}
           extra_plugins: |
             conventional-changelog-jshint@5.2.0
             semantic-release-replace-plugin@1.2.7
