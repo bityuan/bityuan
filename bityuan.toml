@@ -35,6 +35,8 @@ enableTxQuickIndex=true
 # 升级storedb是否重新执行localdb，bityuan主链升级不需要开启，平行链升级需要开启
 enableReExecLocal=false
 # 使能精简localdb
+# 警告：isRecordBlockSequence/enableReduceLocaldb 是"单向门"，已同步节点改值
+# 不会补回历史数据，一般需要重同步；全节点三件套见 bityuan-fullnode.toml。
 enableReduceLocaldb=true
 # 是否禁止分片功能，默认开启分片功能
 disableShard=false
@@ -59,13 +61,16 @@ useGithub=true
 innerBounds=300
 
 [p2p.sub.dht]
-#可以自定义设置连接节点
+#自定义追加的引导节点。内置引导节点编译在主网配置里（改需发版）；
+#此处只追加自有节点，不要写 bootstraps（与编译键重名会导致启动 panic）。
 seeds=[]
 port=13803
 maxConnectNum=40
 # 是否配置为全节点模式，全节点保存所有分片数据，种子节点应配置为true
+# 全节点模式见 bityuan-fullnode.toml：isFullNode/isRecordBlockSequence/enableReduceLocaldb 三处一起配
 isFullNode=false
-#允许连接的最低版本
+#允许连接的最低版本：是 floor 语义（允许该版本及以上），不是当前版本。
+#6.9.1 发布时亲手抬到 6.9.0；"何时抬 floor"等于决定踢掉旧节点，改前请显式确认。
 verLimit="6.9.0"
 
 [p2p.sub.dht.pubsub]
@@ -78,9 +83,17 @@ gossipSubHistoryLength=7
 
 
 [rpc]
-jrpcBindAddr="localhost:8801"
-grpcBindAddr="localhost:8802"
+# RPC 安全只靠 bind 地址：只监听回环，本机之外 TCP 层连不进来。
+# 注意 Go 监听 "localhost" 只绑定解析出的其中一个地址（v4/v6 二选一，不保证是哪一个），
+# 写死 127.0.0.1 保证行为确定；切勿改成 0.0.0.0（黑名单说明见 bityuan-fullnode.toml）。
+jrpcBindAddr="127.0.0.1:8801"
+grpcBindAddr="127.0.0.1:8802"
+# IP 白名单：回环地址框架无条件放行，本行只对非回环生效；
+# 因上面已绑定回环，此处是纵深防御，不要删除。
 whitelist=["127.0.0.1"]
+# 函数白名单 ["*"] = 全放行。注意 JRPC 对回环调用跳过函数检查（框架行为）。
+# 钱包敏感接口黑名单在 bityuan-fullnode.toml 里，本文件未配：如需对外暴露 RPC，
+# 先补上那两张表，不要只改 bind。
 jrpcFuncWhitelist=["*"]
 grpcFuncWhitelist=["*"]
 enableTLS=false
@@ -88,11 +101,16 @@ certFile="cert.pem"
 keyFile="key.pem"
 
 [rpc.sub.eth]
+# EVM 兼容 RPC：供 MetaMask/ethers.js 等以太坊生态工具使用，
+# 底层仍是本链 EVM 执行器，不是 geth 节点。
 enable=true
-httpAddr="localhost:8546"
+# 同 [rpc]：只绑回环。personal（含账户解锁，敏感）/admin（节点管理，敏感）
+# 默认开启，仅限本机可信进程；对外服务必须经反向代理并裁掉这两个命名空间。
+httpAddr="127.0.0.1:8546"
+# eth: 余额/交易/合约调用；web3: 客户端版本；net: 网络 ID；personal/admin 见上。
 httpApi=["eth","web3","personal","admin","net"]
-# websocket 绑定地址
-wsAddr="localhost:8547"
+# websocket 绑定地址（订阅 logs/新区块头用）
+wsAddr="127.0.0.1:8547"
 wsApi=["eth","web3","personal","admin","net"]
 #兼容交易返回eth 哈希
 enableRlpTxHash=true
@@ -147,7 +165,8 @@ saveTokenTxList=false
 [exec.sub.evm]
 #是否开启升级
 nonceUpGrade=false
-#升级路径
+#升级路径：这是主链 gRPC 地址，不是升级包下载源。nonceUpGrade=false 时不读取；
+#开启后节点会连该地址、按地址查主链历史交易来回算 EVM nonce（中心化依赖点）。
 upgradeUrl="cloud.bityuan.com:8802"
 debugEvmTxLog=false
 [metrics]
