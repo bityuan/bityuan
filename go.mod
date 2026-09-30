@@ -7,7 +7,7 @@ toolchain go1.22.12
 replace github.com/ava-labs/avalanchego => github.com/33cn/avalanchego v1.10.10-0.20240529041529-ada691598153
 
 require (
-	github.com/33cn/chain33 v1.72.2
+	github.com/33cn/chain33 v1.72.3
 	github.com/33cn/plugin v1.74.0
 )
 
