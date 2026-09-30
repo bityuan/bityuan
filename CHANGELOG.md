@@ -1,5 +1,13 @@
 changelog
 
+## [6.9.2](https://github.com/bityuan/bityuan/compare/v6.9.1...v6.9.2) (2026-09-30)
+
+
+### Bug Fixes
+
+* bump chain33 to v1.72.3 ([](https://github.com/bityuan/bityuan/commit/5f45ca3)), closes [#1401](https://github.com/bityuan/bityuan/issues/1401)
+* update the built-in bootstrap nodes ([](https://github.com/bityuan/bityuan/commit/36906cd))
+
 ## [6.9.1](https://github.com/bityuan/bityuan/compare/v6.9.0...v6.9.1) (2026-09-23)
 
 
