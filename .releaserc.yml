@@ -1,55 +1,33 @@
-{ "branches": ["master", "next"],
+{ "branches": ["master"],
   "plugins": [
     [
         "@semantic-release/commit-analyzer",
       {
-        "preset": "jshint"
+        "preset": "angular"
       }
     ],
     [
         "@semantic-release/release-notes-generator",
       {
-        "preset": "jshint"
+        "preset": "angular"
       }
     ],
-    [
-      "semantic-release-replace-plugin",
-      {
-        "replacements": [
-          {
-            "files": ["version/version.go"],
-            "from": 'Version   =.*',
-            "to":   'Version   = "${nextRelease.version}"',
-          },
-          {
-            "files": ["README.md"],
-            "from": "# 基于 chain33 区块链开发 框架 开发的 bityuan 系统（.*）",
-            "to":   "# 基于 chain33 区块链开发 框架 开发的 bityuan 系统（v${nextRelease.version}）"
-          },
-        ]
-      }
-    ],
-    [
-      "@semantic-release/changelog",
-      { "changelogFile": "CHANGELOG.md", "changelogTitle": "changelog" },
-    ],
-    # "@semantic-release/npm", #Default 3
-    # "@semantic-release/github", #Default 4
-    [
-      "@semantic-release/github",
-      {"assets": ["build/bityuan-linux-amd64.tar.gz"]}
-    ],
-    [
-      "@semantic-release/git",
-      {
-        "assets": ["version/version.go","CHANGELOG.md","README.md"],
-        "message": "chore(release): ${nextRelease.version} \n\n${nextRelease.notes}"
-      }
-    ],
-    [
-      "@semantic-release/exec", {
-      "prepareCmd": "CC='zig cc -target x86_64-linux-gnu.2.17' make linux-action-amd64 VERSION=${nextRelease.version}"
-    }
-    ]
+    # Nothing else belongs here. The plugins that used to write are gone on purpose:
+    # the version and the CHANGELOG are written by .github/scripts/release_plan.sh,
+    # the commit and the note by release_pr.sh, and the tag and the release by the
+    # workflow. `@semantic-release/github` went with them -- it implements
+    # verifyConditions, publish, addChannel, success and fail, and no generateNotes,
+    # so in a dry run it contributed nothing to the notes and only verified a token.
+    # Configuration that silently does nothing is how a rule nobody follows starts.
+    #
+    # `angular` and not `jshint`: angular ships inside both plugins above, while jshint
+    # needed `conventional-changelog-jshint` installed by hand -- a package that is
+    # deprecated upstream -- and recognised only `[[FEAT]]` / `[[FIX]]` subjects, so an
+    # ordinary `fix:` released nothing at all, silently. chain33 and plugin are on
+    # angular already, so this is also the convention the rest of the family speaks.
+    #
+    # `branches` names master only: a pre-release channel was proposed and never used,
+    # and a branch listed here that no workflow ever runs on is exactly the kind of
+    # configuration that reads as a promise. Add it back together with the trigger.
   ]
 }

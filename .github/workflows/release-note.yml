@@ -1,0 +1,174 @@
+# Release note check.
+#
+# One rule: a pull request that will cut a release has to say what that release means
+# for an operator -- **one note for the whole pull request**, under a `Release note`
+# heading in its description, not one per commit. Whether the pull request cuts a release
+# is not decided here: .github/scripts/commit_cuts_release.sh reads `.releaserc.yml`, so this
+# check follows exactly the rules semantic-release does.
+#
+# A heading, rather than the fenced ```release-note block Kubernetes uses, because a pull
+# request body is often written without the repository's template and a heading needs no
+# convention to be remembered. Collecting it is automatic: add_release_footer.sh walks the
+# pull requests merged in a release and renders one bullet per note.
+#
+# ---------------------------------------------------------------------------------
+# How to write one
+# ---------------------------------------------------------------------------------
+#
+# .github/pull_request_template.md carries the section; everything under the heading, up
+# to the next heading, is the note:
+#
+#   ## Release note
+#
+#   Nodes older than 6.9.0 are dropped at the p2p layer and blacklisted for 24 hours,
+#   so upgrade every node together.
+#
+#   - what an operator running the previous release must DO or KNOW -- the consequence,
+#     not a restatement of the diff
+#   - one or two sentences (~300 characters); the release page renders it as one bullet,
+#     and 600 characters is a hard ceiling -- detail belongs in the pull request body
+#   - English: it is published on the release page
+#   - NONE under the heading if this release genuinely has nothing an operator has to act on
+#   - replace the template's comment; leaving it in place counts as no note
+#
+# Whether a note is *true* is not a CI question: the second step only warns, and review
+# checks that the note matches the diff.
+#
+name: release note check
+
+on:
+  pull_request:
+    branches: [master]
+    # `edited` is what makes this check answerable: the note lives in the pull request
+    # description, and rewriting it produces no other event -- without it, a red check
+    # would stay red until the branch was pushed to again, which for a one-commit pull
+    # request may be never. The default types are replaced when this is set, so the
+    # three that matter are listed explicitly.
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  release-note:
+    name: release note
+    runs-on: ubuntu-22.04
+    steps:
+      # Walking the pull request's commits needs their history
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      # The release pull request is generated: its description is the CHANGELOG section
+      # and is rewritten every time the branch is rebuilt, so there is nowhere for a
+      # note to live and nothing for an author to answer. Skipping the step rather than
+      # the job keeps the check reported (green) on that pull request, which matters
+      # because this check is required on master.
+      - name: A pull request that cuts a release declares what it means
+        if: github.event.pull_request.head.ref != 'release/pending'
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          triggers=""
+          for sha in $(git rev-list "$BASE..$HEAD"); do
+            msg=$(git log -1 --format=%B "$sha")
+            rc=0
+            printf '%s' "$msg" | ./.github/scripts/commit_cuts_release.sh || rc=$?
+            case "$rc" in
+              0) triggers="$triggers ${sha:0:8}" ;;
+              # 1 = this commit does not trigger a release
+              1) ;;
+              # 3 = written in the format this repository used before it moved to
+              # angular. It releases nothing, and it does so silently, so say which
+              # commit and what to write instead.
+              3)
+                printf '::error::%s does not trigger a release: this repository releases on the angular preset now, so use feat:, fix: or perf: instead of [[FEAT]] / [[FIX]]\n' "$sha" >&2
+                exit 1
+                ;;
+              # 4 = a `!` header, which this preset does not parse at all, so it
+              # releases nothing -- including no breaking release, which is what the
+              # author meant by writing it.
+              4)
+                printf '::error::%s releases nothing: a "!" header does not parse under this preset. Drop the "!" and put a line starting with "BREAKING CHANGE:" in the commit body.\n' "$sha" >&2
+                exit 1
+                ;;
+              # anything else means the classifier is out of step with .releaserc.yml:
+              # fail loudly rather than wave the pull request through
+              *)
+                echo "::error::commit_cuts_release.sh could not classify $sha (exit $rc) -- fix .github/scripts/commit_cuts_release.sh" >&2
+                exit 1
+                ;;
+            esac
+          done
+          if [ -z "$triggers" ]; then
+            echo "no commit in this pull request triggers a release"
+            exit 0
+          fi
+
+          note=$(printf '%s' "$PR_BODY" | ./.github/scripts/extract_release_note.sh)
+          if [ "$(printf '%s' "$note" | tr '[:upper:]' '[:lower:]')" = "none" ]; then
+            echo "release note: NONE -- no operator-visible impact, as declared"
+            exit 0
+          fi
+          if [ -z "$note" ]; then
+            printf '::error::this pull request cuts a release (commits:%s) but declares no release note\n' "$triggers" >&2
+            printf '%s\n' \
+              "" \
+              "Add a section to the pull request description (.github/pull_request_template.md has it):" \
+              "" \
+              '    ## Release note' \
+              "" \
+              '    What an operator running the previous release must DO or KNOW.' \
+              "" \
+              "  - everything under the heading, up to the next heading, is the note" \
+              "  - the consequence, not a restatement of the diff" \
+              "  - one or two sentences; the release page renders it as a single bullet" \
+              "  - English -- it is published on the release page under \"Upgrade Notes\"" \
+              "  - NONE under the heading if this release genuinely has nothing an operator has to act on" \
+              "  - replace the template's comment; leaving it in place counts as no note" >&2
+            exit 1
+          fi
+
+          # A note is rendered as one bullet on the release page, so it has to stay a
+          # note. The ceiling is generous on purpose: it is there to catch a pasted
+          # paragraph or a diff, not to make anyone count characters -- detail belongs
+          # in the pull request body.
+          chars=${#note}
+          if [ "$chars" -gt 600 ]; then
+            printf '::error::the release note is %s characters long -- keep it to a sentence or two and put the detail in the pull request body\n' "$chars" >&2
+            exit 1
+          fi
+          if [ "$chars" -gt 300 ]; then
+            echo "::warning::the release note is $chars characters long -- a sentence or two reads better on the release page"
+          fi
+          echo "release note declared ($chars characters):"
+          printf '%s\n' "$note"
+          exit 0
+
+      # Advisory, never blocking. A path is a hint, not a verdict: bityuan.toml can be
+      # touched without any operator-visible consequence (a comment, a reordering), and
+      # a real impact can sit in a file not listed here. So this only makes sure a human
+      # reads the note before approving.
+      - name: Warning when an operator-visible file changed
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          changed=$(git diff --name-only "$BASE...$HEAD")
+          touched=""
+          for f in bityuan.toml bityuan-fullnode.toml bityuan.go go.mod; do
+            # `if` rather than `grep -qx "$f" && touched=...`, because a non-matching
+            # grep is the normal case and an `if` says so. (The `&&` form would not
+            # actually abort the step: `set -e` exempts everything but the last command
+            # of an `&&` list.)
+            if echo "$changed" | grep -qx "$f"; then
+              touched="$touched $f"
+            fi
+          done
+          if [ -z "$touched" ]; then
+            echo "no operator-visible file touched"
+            exit 0
+          fi
+          echo "::warning::operator-visible files changed:$touched -- check that the release note covers what an operator has to do"

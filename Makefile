@@ -7,6 +7,9 @@ PKG_LIST_INEFFASSIGN= `go list -f {{.Dir}} ./... | grep -v "vendor"`
 LDFLAGS := ' -w -s'
 BUILDTIME:=$(shell date +"%Y-%m-%d %H:%M:%S %A")
 VERSION=$(shell git describe --tags || git rev-parse --short=8 HEAD)
+# VERSION may carry a leading "v" (git describe) while CI passes the bare number;
+# normalize before using it in package file names so both agree.
+PKGVER=$(patsubst v%,%,$(VERSION))
 GitCommit=$(shell git rev-parse --short=8 HEAD)
 BUILD_FLAGS := -ldflags '-X "github.com/bityuan/bityuan/version.GitCommit=$(GitCommit)" \
                          -X "github.com/33cn/chain33/common/version.GitCommit=$(GitCommit)" \
@@ -44,12 +47,12 @@ linux-action-amd64:
 	GOARCH=amd64 GOOS=linux $(GOBUILD) -o $(APP)-linux-amd64 $(SRC)
 	GOARCH=amd64 GOOS=linux $(GOBUILD) -o $(CLI)-linux-amd64 $(SRC_CLI)
 	chmod +x $(APP)-linux-amd64 $(CLI)-linux-amd64
-	tar -zcvf build/$(APP)-linux-amd64.tar.gz $(APP)-linux-amd64  $(CLI)-linux-amd64 CHANGELOG.md bityuan-fullnode.toml bityuan.toml COMPAT.txt
+	tar -zcvf build/$(APP)-linux-amd64-$(PKGVER).tar.gz $(APP)-linux-amd64  $(CLI)-linux-amd64 CHANGELOG.md bityuan-fullnode.toml bityuan.toml COMPAT.txt
 
 windows-action-amd64:
 	GOARCH=amd64 GOOS=windows $(GOBUILD_NOCGO) -o $(APP)-windows-amd64.exe $(SRC)
 	GOARCH=amd64 GOOS=windows $(GOBUILD_NOCGO) -o $(CLI)-windows-amd64.exe $(SRC_CLI)
-	zip -j build/$(APP)-windows-amd64.zip $(APP)-windows-amd64.exe $(CLI)-windows-amd64.exe CHANGELOG.md bityuan-fullnode.toml bityuan.toml
+	zip -j build/$(APP)-windows-amd64-$(PKGVER).zip $(APP)-windows-amd64.exe $(CLI)-windows-amd64.exe CHANGELOG.md bityuan-fullnode.toml bityuan.toml
 
 # CGO=1 native Windows build (used by release CI on windows runner)
 windows-release:
@@ -92,13 +95,13 @@ linux-amd64:
 	GOARCH=amd64 GOOS=linux $(_GOBUILD) -o $(APP)-$@ $(SRC)
 	GOARCH=amd64 GOOS=linux $(_GOBUILD) -o $(CLI)-$@ $(SRC_CLI)
 	chmod +x $(APP)-$@ $(CLI)-$@
-	tar -zcvf build/$(APP)-$@.tar.gz $(APP)-$@  $(CLI)-$@ CHANGELOG.md bityuan-fullnode.toml bityuan.toml
+	tar -zcvf build/$(APP)-$@-$(PKGVER).tar.gz $(APP)-$@  $(CLI)-$@ CHANGELOG.md bityuan-fullnode.toml bityuan.toml
 
 darwin-amd64:
 	GOARCH=amd64 GOOS=darwin $(_GOBUILD) -o $(APP)-$@ $(SRC)
 	GOARCH=amd64 GOOS=darwin $(_GOBUILD) -o $(CLI)-$@ $(SRC_CLI)
 	chmod +x $(APP)-$@ $(CLI)-$@
-	tar -zcvf build/$(APP)-$@.tar.gz $(APP)-$@  $(CLI)-$@ CHANGELOG.md bityuan-fullnode.toml bityuan.toml
+	tar -zcvf build/$(APP)-$@-$(PKGVER).tar.gz $(APP)-$@  $(CLI)-$@ CHANGELOG.md bityuan-fullnode.toml bityuan.toml
 
 windows-amd64:
 	GOARCH=amd64 GOOS=windows $(_GOBUILD) -o $(APP)-$@.exe $(SRC)
