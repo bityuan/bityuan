@@ -95,13 +95,15 @@ and a subject with no type prefix at all.
 > error, just no release. `release-note.yml` classifies every commit of a pull request against
 > `.releaserc.yml` and names the old form, so this does not go unnoticed.
 
-## The release note check (one per pull request)
+## The release note check (one per pull request that cuts a release)
 
 The release page carries the CHANGELOG ("what changed", generated) and **Upgrade Notes** ("what an
 operator has to do", written by the author) -- different questions, so different sources.
 
 The rule: **a pull request that cuts a release must say what it means for an operator, under a
-`## Release note` heading in its description.**
+`## Release note` heading in its description.** A pull request that cuts no release -- `ci:`, `docs:`,
+`chore:` and the rest -- has nothing to answer and needs no section at all: the footer skips those
+commits, so a note written there goes nowhere.
 
 - Everything under that heading, up to the next heading. `.github/pull_request_template.md` has the
   section already.
@@ -111,7 +113,10 @@ The rule: **a pull request that cuts a release must say what it means for an ope
   commit subject was going to carry.
 - One or two sentences (~300 characters); **over 600 fails the check**. Put detail in the body.
 - **English** -- it is published to the release page.
-- `NONE` when there really is nothing.
+- `NONE` when a release-cutting pull request really has nothing an operator needs to act on -- and
+  then write just that word. The footer reads the **opening word**, so "NONE -- CI only, no operator
+  action." is dropped exactly like a bare `NONE`; a sentence that begins "None of the nodes..." would
+  be dropped too, so start such a sentence another way.
 
 It is a **required check on master** (next to `build`, `check_fmt`, the three `Build *`), so it really
 does block the merge. **Rewriting the description is enough** -- it subscribes to `edited`, no new
@@ -122,9 +127,9 @@ request's commits. **It checks that a note is present and well formed, not that 
 half is review, against the diff. A commit pushed straight to master falls back to a `Release-Note:`
 line in its body.
 
-At publish time `.github/scripts/add_release_footer.sh` collects one bullet per pull request merged
-between the previous release and this tag, and appends them with the System Requirements block.
-Idempotent.
+At publish time `.github/scripts/add_release_footer.sh` collects one bullet per **release-cutting**
+pull request merged between the previous release and this tag, and appends them with the System
+Requirements block. Idempotent.
 
 ## Who can operate
 

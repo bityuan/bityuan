@@ -59,6 +59,12 @@ STUB
 chmod +x "$WORK/bin/gh"
 export PATH="$WORK/bin:$PATH"
 
+# The footer classifies each commit before it collects anything, and the classifier reads
+# .releaserc.yml out of the working directory. The cases run from a directory that has
+# one, so they do not depend on where the test was started from.
+cd "$WORK"
+printf '%s\n' '{"branches":["master"],"plugins":[["@semantic-release/commit-analyzer",{"preset":"angular"}]]}' > .releaserc.yml
+
 cases=0
 fail=0
 
@@ -105,6 +111,7 @@ cat > "$FIX/releases.json" <<'EOF'
 EOF
 printf '{"commits":[{"sha":"aaaa1111"}]}\n' > "$FIX/commits.json"
 printf '[{"number":4}]\n' > "$FIX/pulls-aaaa1111.json"
+printf '{"commit":{"message":"fix: a thing\\n"}}\n' > "$FIX/commit-aaaa1111.json"
 printf '## Release note\n\nUpgrade every node together.\n' > "$FIX/pr-4.md"
 run v6.9.3
 assert_has "normal: upgrade notes section" "$FIX/edited.md" "### Upgrade Notes"
@@ -121,6 +128,7 @@ cat > "$FIX/releases.json" <<'EOF'
 EOF
 printf '{"commits":[{"sha":"bbbb2222"}]}\n' > "$FIX/commits.json"
 printf '[{"number":7}]\n' > "$FIX/pulls-bbbb2222.json"
+printf '{"commit":{"message":"fix: another thing\\n"}}\n' > "$FIX/commit-bbbb2222.json"
 printf '## Release note\n\nRepacked for the older tag.\n' > "$FIX/pr-7.md"
 run v6.9.2
 assert_has "repack: compares against the older tag" "$FIX/compared.txt" "compare/v6.9.1...v6.9.2"
@@ -159,6 +167,52 @@ printf '[]\n' > "$FIX/pulls-cccc3333.json"
 printf '{"commit":{"message":"fix: a thing\\n\\nRelease-Note: Restart every node.\\n"}}\n' > "$FIX/commit-cccc3333.json"
 run v6.9.3
 assert_has "nopr: the trailer becomes the note" "$FIX/edited.md" "* Restart every node."
+
+# --- a pull request that cuts no release contributes nothing --------------------------
+# The note answers "what does this release mean for an operator". A `ci:` pull request has
+# nothing to answer, and asking it anyway is how "NONE -- CI only, no operator action."
+# reached a published release page.
+new_case norelease
+cat > "$FIX/releases.json" <<'EOF'
+[{"tag_name": "v6.9.3", "created_at": "2026-10-09T08:00:00Z"},
+ {"tag_name": "v6.9.2", "created_at": "2026-09-01T00:00:00Z"}]
+EOF
+printf '{"commits":[{"sha":"dddd4444"}]}\n' > "$FIX/commits.json"
+printf '[{"number":9}]\n' > "$FIX/pulls-dddd4444.json"
+printf '{"commit":{"message":"ci: tighten the pipeline\\n"}}\n' > "$FIX/commit-dddd4444.json"
+printf '## Release note\n\nNothing an operator would see.\n' > "$FIX/pr-9.md"
+run v6.9.3
+assert_lacks "norelease: nothing collected" "$FIX/edited.md" "### Upgrade Notes"
+assert_lacks "norelease: the note text is absent" "$FIX/edited.md" "Nothing an operator would see."
+
+# --- "NONE" however the author spells it out ------------------------------------------
+new_case noneword
+cat > "$FIX/releases.json" <<'EOF'
+[{"tag_name": "v6.9.3", "created_at": "2026-10-09T08:00:00Z"},
+ {"tag_name": "v6.9.2", "created_at": "2026-09-01T00:00:00Z"}]
+EOF
+printf '{"commits":[{"sha":"eeee5555"}]}\n' > "$FIX/commits.json"
+printf '[{"number":11}]\n' > "$FIX/pulls-eeee5555.json"
+printf '{"commit":{"message":"fix: a thing\\n"}}\n' > "$FIX/commit-eeee5555.json"
+printf '## Release note\n\nNONE — CI only, no operator action.\n' > "$FIX/pr-11.md"
+run v6.9.3
+assert_lacks "noneword: the sentence is not a note" "$FIX/edited.md" "CI only"
+assert_lacks "noneword: no section at all" "$FIX/edited.md" "### Upgrade Notes"
+
+# --- rules the classifier cannot model: keep the note rather than drop it on a guess ---
+new_case unmodelled
+printf '%s\n' '{"branches":["master"],"releaseRules":[{"type":"chore","release":"patch"}]}' > .releaserc.yml
+cat > "$FIX/releases.json" <<'EOF'
+[{"tag_name": "v6.9.3", "created_at": "2026-10-09T08:00:00Z"},
+ {"tag_name": "v6.9.2", "created_at": "2026-09-01T00:00:00Z"}]
+EOF
+printf '{"commits":[{"sha":"ffff6666"}]}\n' > "$FIX/commits.json"
+printf '[{"number":13}]\n' > "$FIX/pulls-ffff6666.json"
+printf '{"commit":{"message":"chore: tidy up\\n"}}\n' > "$FIX/commit-ffff6666.json"
+printf '## Release note\n\nKept when the rules cannot be read.\n' > "$FIX/pr-13.md"
+run v6.9.3
+assert_has "unmodelled: the note is kept" "$FIX/edited.md" "Kept when the rules cannot be read."
+printf '%s\n' '{"branches":["master"],"plugins":[["@semantic-release/commit-analyzer",{"preset":"angular"}]]}' > .releaserc.yml
 
 if [ "$fail" -ne 0 ]; then
   printf '\nrelease footer test: %s of %s cases failed\n' "$fail" "$cases" >&2
