@@ -22,4 +22,4 @@ jobs:
         with:
           name: bityuan-darwin-amd64.tar.gz
           path: |
-            build/bityuan-darwin-amd64.tar.gz
+            build/bityuan-darwin-amd64-*.tar.gz

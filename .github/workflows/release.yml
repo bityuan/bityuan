@@ -15,15 +15,49 @@ on:
         default: ''
         type: string
 
+# Everything on the release path that writes -- the branch push, the pull request,
+# the merge, the tag and the release -- runs with a GitHub App installation token
+# (secrets APP_ID / APP_PRIVATE_KEY), not with the built-in one. Two reasons, both
+# visible to anyone looking at the repository:
+#
+#   * a release or a pull request created with GITHUB_TOKEN belongs to
+#     github-actions[bot], which is nobody's account; the App has a name of its own;
+#   * GitHub starts no workflow run for an event GITHUB_TOKEN caused. A release pull
+#     request opened with it carries no checks at all, and a merge performed with it
+#     would never trigger the run that publishes the release.
+#
+# The built-in token keeps "contents: write" for the steps that stay on it: the tag
+# wait and the asset upload. It also needs "pull-requests: read", because the upgrade
+# notes are collected out of the bodies of the merged pull requests and one caller of
+# add_release_footer.sh (the manual repack, which has no App token step) runs on it.
+# Every scope a token uses has to be listed -- naming any scope sets all the others to
+# "none", and that gap only ever shows on a push or a dispatch, never on a pull request.
+permissions:
+  contents: write
+  pull-requests: read
+
 jobs:
   check:
-    name: Check release commit
+    # Not a required context on master, so the display name is free to say what the
+    # job actually does. The four contexts that *are* required (the three platform
+    # builds and `release note`) must keep their names: renaming one silently blocks
+    # every pull request until branch protection is updated to match.
+    name: Check whether a release is due
     runs-on: ubuntu-22.04
     outputs:
       is_release: ${{ steps.chk.outputs.is_release }}
       release_tag: ${{ steps.chk.outputs.release_tag }}
+      # The version every package file name carries. Read from version/version.go, never
+      # from `git describe`: on the automatic path semantic-release pushes the tag after
+      # the commit, so `git describe` can still resolve to the previous tag and would
+      # name a release after its predecessor.
+      version: ${{ steps.chk.outputs.version }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          # Tags are what tells a version still waiting in the release pull request
+          # from one that has already been published.
+          fetch-depth: 0
       - id: chk
         env:
           GH_TOKEN: ${{ github.token }}
@@ -31,29 +65,269 @@ jobs:
           if [ -n "${{ inputs.manual_upload }}" ]; then
             echo "is_release=true" >> $GITHUB_OUTPUT
             echo "release_tag=${{ inputs.manual_upload }}" >> $GITHUB_OUTPUT
+            # Package file names carry the version without its "v"; on this path the tag
+            # is the one the release already has, so it is what they use.
+            TAG="${{ inputs.manual_upload }}"
+            echo "version=${TAG#v}" >> $GITHUB_OUTPUT
             exit 0
           fi
-          # 非 chore(release) commit 直接跳过
-          MSG=$(git log -1 --format=%s)
-          if [[ "$MSG" != chore\(release\):* ]]; then
+          # The version is read from version/version.go, never from the commit
+          # subject: the release pull request may be merged with a merge commit, a
+          # squash or a rebase, and only the file itself always carries the version
+          # that is due.
+          # Take whatever stands between the quotes rather than matching digits and
+          # dots: a version may carry a `-` suffix (6.9.2-rc.1), which such a pattern
+          # would truncate to 6.9.2 and then tag the wrong thing.
+          VER=$(sed -n 's/^[[:space:]]*Version[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' version/version.go | head -1)
+          echo "version=$VER" >> $GITHUB_OUTPUT
+          if [ -z "$VER" ]; then
+            echo "无法从 version/version.go 解析版本号" >&2
             echo "is_release=false" >> $GITHUB_OUTPUT
             exit 0
           fi
-          # release commit 已把 version/version.go 更新为新版本，tag 名由它推导
-          # 注意：semantic-release 先推 commit 再推 tag，此 job 里 tag 可能还不存在，
-          # 所以这里不查 API，等 tag 的校验放到 upload-win-mac 里做
-          VER=$(sed -n 's/^[[:space:]]*Version[[:space:]]*=[[:space:]]*"\([0-9][0-9.]*\)".*/\1/p' version/version.go | head -1)
-          if [ -z "$VER" ]; then
-            echo "无法从 version/version.go 解析版本号" >&2
+          # A tag that already exists means this version has been published: a version
+          # is never released twice, whatever triggers the workflow.
+          if git rev-parse -q --verify "refs/tags/v$VER" >/dev/null; then
+            echo "v$VER is already tagged, nothing to release"
             echo "is_release=false" >> $GITHUB_OUTPUT
             exit 0
           fi
           echo "is_release=true" >> $GITHUB_OUTPUT
           echo "release_tag=v$VER" >> $GITHUB_OUTPUT
 
+  plan-release:
+    name: Plan the release
+    needs: check
+    # On a push this opens or updates the release pull request. On a pull request it
+    # runs the same dry run plus the fixture checks, so that a release never finds
+    # out at release time that the tooling broke. Nothing that writes runs on a pull
+    # request: the branch push, the tag and the release all sit behind the merge.
+    if: |
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'push' && needs.check.outputs.is_release == 'false')
+    # Serialized per ref. Two pushes landing together must not rebuild the release
+    # branch from under each other, while a pull request has to stay out of that
+    # queue: GitHub cancels the pending run of a group when a newer one arrives, so
+    # a group shared with pull requests would be a real way to lose a release plan.
+    concurrency:
+      group: release-plan-${{ github.ref }}
+      cancel-in-progress: false
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # semantic-release reads the tags to work out the last release.
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - name: Compute the next version and the release notes (dry run)
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          # A dry run skips every phase that writes (commit, tag, changelog files,
+          # release) and only computes the version and the notes. The tag belongs to
+          # publish-release, behind the merge of this pull request, so a non-dry run
+          # here would tag a branch nobody has merged yet.
+          dry_run: true
+          # semantic-release refuses to run unless the branch it is on is one it is
+          # configured to release from. On a push that is master; on a pull request
+          # it is the branch under test, which is what the dry run then reads the
+          # history from -- a merge commit carrying the pull request.
+          branches: ${{ github.head_ref || github.ref_name }}
+          # No `extra_plugins`: the angular preset `.releaserc.yml` asks for is a plain
+          # dependency of the two plugins above. The jshint preset it replaced needed
+          # `conventional-changelog-jshint` installed here by hand, and that package is
+          # deprecated upstream.
+        env:
+          GH_TOKEN: ${{ github.token }}
+      # The fixture checks run on every pull request as well as on a push, and they
+      # are the reason this job is not push-only: they are what the three files the
+      # release rewrites get checked against before a release needs them.
+      - name: Check the release files and the release body round trip
+        run: .github/scripts/check_release_shape.sh
+      # Only on a push: a pull request from a fork has no access to the secrets, and
+      # nothing that writes runs on a pull request anyway.
+      - uses: actions/create-github-app-token@v3
+        id: app
+        if: github.event_name == 'push'
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+      - name: Open or update the release pull request
+        if: github.event_name == 'push' && steps.semantic.outputs.new_release_published == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          VERSION: ${{ steps.semantic.outputs.new_release_version }}
+          NOTES: ${{ steps.semantic.outputs.new_release_notes }}
+        run: |
+          # The checkout left the built-in token in the git config; a branch pushed
+          # with it would start no workflow run, and the release pull request would
+          # come up with no checks. Replace it with the App token.
+          #
+          # The `tr -d '\n'` is not decoration. GNU base64, which is what the runner
+          # has, wraps its output at 76 columns -- and this token encodes to more than
+          # that. The newlines would end up inside the config value, and an
+          # Authorization header with a newline in it is rejected by libcurl before a
+          # single byte is sent. `-w0` would also work; `tr` works on both GNU and BSD.
+          git config --local --unset-all http.https://github.com/.extraheader || true
+          git config --local http.https://github.com/.extraheader \
+            "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
+          # The notes are multi-line and travel through an environment variable so
+          # that they reach the script unharmed.
+          printf '%s\n' "$NOTES" > "$RUNNER_TEMP/release-notes.md"
+          .github/scripts/release_pr.sh "$VERSION" "${{ github.repository }}" "$RUNNER_TEMP/release-notes.md"
+
+  publish-release:
+    name: Create the tag and the release
+    needs: check
+    if: github.event_name == 'push' && needs.check.outputs.is_release == 'true'
+    # Serialized, because `is_release` stays true until the tag exists: a second push
+    # landing in the minutes this job takes would otherwise run it again and could
+    # create the tag on *its* commit. The tag would then sit above the release commit
+    # and above whatever that second push carried, and semantic-release would never
+    # count those commits again -- they would reach no CHANGELOG and no release page.
+    # With the group, the first push creates the tag and the second finds the release
+    # and stops.
+    concurrency:
+      group: release-publish
+      cancel-in-progress: false
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v5
+      # The release page is created with the App token so that its author is the bot
+      # account `bityuan-release-bot[bot]` and not github-actions[bot]: a release is
+      # the one thing on this flow a person reads as a signature.
+      - uses: actions/create-github-app-token@v3
+        id: app
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+      - name: Take the release body from CHANGELOG.md
+        env:
+          RELEASE_TAG: ${{ needs.check.outputs.release_tag }}
+        run: |
+          # The release pull request wrote this section when it was planned, so what
+          # was reviewed on it is exactly what goes on the release page. Refusing an
+          # empty body is the point: a release page with nothing on it is worse than
+          # a failed job.
+          .github/scripts/changelog_section.sh "${RELEASE_TAG#v}" > "$RUNNER_TEMP/release-body.md"
+          echo "release body:"
+          cat "$RUNNER_TEMP/release-body.md"
+      - name: Create the tag and the release
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          RELEASE_TAG: ${{ needs.check.outputs.release_tag }}
+        run: |
+          if gh release view "$RELEASE_TAG" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            echo "release $RELEASE_TAG already exists, nothing to do"
+            exit 0
+          fi
+          # --target lands the tag on the commit this push carries, which is the merge
+          # commit of the release pull request on master.
+          gh release create "$RELEASE_TAG" --repo "${{ github.repository }}" \
+            --title "$RELEASE_TAG" --notes-file "$RUNNER_TEMP/release-body.md" \
+            --target "$GITHUB_SHA"
+          gh release view "$RELEASE_TAG" --repo "${{ github.repository }}" --json url --jq .url
+      # The CHANGELOG section says what changed; this says what an operator has to do
+      # about it. Two different questions, so two different sources: the Upgrade Notes
+      # are what the pull requests themselves declared, and no commit subject would ever
+      # have carried them (see .github/RELEASE.md).
+      #
+      # Here and not in the upload job, for the same reason the release is created here:
+      # an upload that fails would otherwise leave a public page that says nothing about
+      # upgrading. Safe to run twice -- the script skips a release that has the footer.
+      - name: Add the upgrade notes and the system requirements
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          REPO: ${{ github.repository }}
+        run: .github/scripts/add_release_footer.sh "${{ needs.check.outputs.release_tag }}"
+
+  # The merge that releases, and the only job here that is both triggered by and
+  # aimed at the release pull request. It is automatic by design: the release pull
+  # request exists to be reviewed and to carry the version bump in a diff, not to wait
+  # for somebody to click. Nothing else in the repository is merged this way -- see
+  # the script for why GitHub's own auto-merge is not the tool for it.
+  merge-release-pr:
+    name: Merge the release pull request
+    # The head repository test is what keeps a fork out: a fork is free to have a
+    # branch called `release/pending` of its own, and its run would have no secrets
+    # to merge anything with anyway.
+    if: |
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.ref == 'release/pending' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    concurrency:
+      group: release-merge-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    runs-on: ubuntu-22.04
+    # A backstop for the waiting: the platform builds in this same run take a while,
+    # but they are not allowed to hold a runner for an hour.
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/create-github-app-token@v3
+        id: app
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+      - name: Wait for the checks and merge
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: .github/scripts/merge_release_pr.sh
+
+  lint:
+    name: Lint and test the release tooling
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v5
+      # The workflow and the release scripts are only ever exercised while a release
+      # is being cut, which is the worst moment to discover a typo in them. This job
+      # is that check moved onto the pull request. actionlint's own shellcheck
+      # integration is turned off on purpose: the steps this change does not touch
+      # carry SC2086 at info level, and the release scripts are checked directly.
+      - name: Lint the workflow
+        uses: docker://rhysd/actionlint:1.7.12
+        with:
+          args: -shellcheck=
+      - name: Lint the release scripts
+        run: shellcheck .github/scripts/*.sh
+      # The branch push in release_pr.sh cannot run on a pull request, so it is
+      # tested against a local bare repository with a stub `gh` instead: no network,
+      # no GitHub. It covers the first run, a rebuild after master moved, a branch
+      # somebody else moved, the lease refusing a branch that moves between the
+      # fetch and the push, and the same version planned twice.
+      - name: Test the release pull request push
+        run: .github/scripts/test_release_pr.sh
+      # The two scripts that decide whether a pull request owes a release note, and
+      # what that note says. Both are pure functions of their input, so a table of
+      # cases covers them without a network -- and until this existed, dropping the
+      # old-format detection or making the heading match case-sensitive would have
+      # passed every check there is.
+      - name: Test the release note rules
+        run: .github/scripts/test_release_notes.sh
+      # The script that writes the release page's operator-facing half. It only ever
+      # runs on a push to master, and the call that picks the previous release was broken
+      # from the day it was written -- so the Upgrade Notes came out empty on every
+      # release. A stub `gh` answering from fixtures is what makes this reachable here.
+      - name: Test the release page footer
+        run: .github/scripts/test_release_footer.sh
+
   build-windows:
     name: Build Windows (MinGW)
+    needs: check
     runs-on: windows-latest
+    env:
+      PKG_VERSION: ${{ needs.check.outputs.version }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -87,19 +361,23 @@ jobs:
         run: |
           choco install 7zip -y 2>$null
           choco install winrar -y 2>$null
+          # 壳保持无版本号下载（v6.8.18 的这个资产被写死依赖，不能删、不能改名），
+          # 但打出来的包带版本号（见 .github/RELEASE.md）
+          $qt = "bityuan-windows-amd64-qt-$env:PKG_VERSION.exe"
           Write-Host "Downloading Qt shell from v6.8.18..."
-          # v6.8.18 的这个资产是安装包的"壳"，被写死依赖，不能删（见 .github/RELEASE.md）
           gh release download v6.8.18 --repo bityuan/bityuan --pattern "bityuan-windows-amd64-qt.exe" --dir qt-shell --clobber
           $shell = Join-Path qt-shell "bityuan-windows-amd64-qt.exe"
           if (-not (Test-Path $shell)) { throw "Qt 壳不存在：$shell —— v6.8.18 的这个 release 资产不能删" }
           # 用 WinRAR 原地更新老包内部文件，保留 WinRAR SFX 壳和 Setup 配置
-          Copy-Item $shell bityuan-windows-amd64-qt.exe
-          & "C:\Program Files\WinRAR\Rar.exe" u bityuan-windows-amd64-qt.exe bityuan.exe bityuan-cli.exe bityuan.toml bityuan-fullnode.toml 2>&1 | Out-String
+          Copy-Item $shell $qt
+          & "C:\Program Files\WinRAR\Rar.exe" u $qt bityuan.exe bityuan-cli.exe bityuan.toml bityuan-fullnode.toml 2>&1 | Out-String
           if ($LASTEXITCODE -ne 0) { throw "WinRAR update failed" }
           # 删除旧 32 位二进制（只保留 64 位）
-          & "C:\Program Files\WinRAR\Rar.exe" d bityuan-windows-amd64-qt.exe bityuan-x86.exe bityuan-cli-x86.exe 2>&1 | Out-String
+          & "C:\Program Files\WinRAR\Rar.exe" d $qt bityuan-x86.exe bityuan-cli-x86.exe 2>&1 | Out-String
           if ($LASTEXITCODE -ne 0) { throw "WinRAR delete x86 failed" }
-          Compress-Archive -Path bityuan.exe,bityuan-cli.exe,bityuan.toml,bityuan-fullnode.toml -DestinationPath bityuan-windows-amd64.zip
+          # Linux / macOS 的包里都有 CHANGELOG.md，zip 也带上：解压出来的包自己说明是哪个版本
+          Compress-Archive -Path bityuan.exe,bityuan-cli.exe,bityuan.toml,bityuan-fullnode.toml,CHANGELOG.md `
+            -DestinationPath "bityuan-windows-amd64-$env:PKG_VERSION.zip"
 
       # 打包是"拿旧 SFX 壳原地替换文件"，这一步校验替换真的生效了
       - name: Verify Qt package
@@ -107,7 +385,8 @@ jobs:
           $ErrorActionPreference = "Stop"
           $7z = "${env:ProgramFiles}\7-Zip\7z.exe"
           if (-not (Test-Path $7z)) { $7z = "7z" }
-          $list = & $7z l bityuan-windows-amd64-qt.exe | Out-String
+          $qt = "bityuan-windows-amd64-qt-$env:PKG_VERSION.exe"
+          $list = & $7z l $qt | Out-String
           # SFX 壳和脚本必须完整保留
           foreach ($pat in @("Setup=bityuan-qt\.exe", "Shortcut=", "Title=")) {
             if ($list -notmatch $pat) { throw "Qt 包的 SFX 脚本丢了：$pat" }
@@ -118,7 +397,7 @@ jobs:
           }
           # 包里的二进制必须与刚构建（且已冒烟测试过）的那两个字节一致
           New-Item -ItemType Directory -Force -Path qt-verify | Out-Null
-          & $7z e bityuan-windows-amd64-qt.exe bityuan.exe bityuan-cli.exe -oqt-verify -y | Out-Null
+          & $7z e $qt bityuan.exe bityuan-cli.exe -oqt-verify -y | Out-Null
           foreach ($f in @("bityuan.exe", "bityuan-cli.exe")) {
             $built = (Get-FileHash $f -Algorithm SHA256).Hash
             $packed = (Get-FileHash "qt-verify\$f" -Algorithm SHA256).Hash
@@ -129,11 +408,11 @@ jobs:
       - uses: actions/upload-artifact@v5
         with:
           name: windows-qt-exe
-          path: bityuan-windows-amd64-qt.exe
+          path: bityuan-windows-amd64-qt-${{ env.PKG_VERSION }}.exe
       - uses: actions/upload-artifact@v5
         with:
           name: windows-binaries
-          path: bityuan-windows-amd64.zip
+          path: bityuan-windows-amd64-${{ env.PKG_VERSION }}.zip
       - uses: actions/upload-artifact@v5
         with:
           name: version-windows
@@ -144,7 +423,10 @@ jobs:
     strategy:
       matrix:
         arch: [arm64, amd64]
+    needs: check
     runs-on: macos-14
+    env:
+      PKG_VERSION: ${{ needs.check.outputs.version }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -160,7 +442,7 @@ jobs:
           CGO_ENABLED=1 GOOS=darwin GOARCH=${{ matrix.arch }} go build -ldflags "-s -w -X github.com/bityuan/bityuan/version.GitCommit=$GC -X github.com/33cn/chain33/common/version.GitCommit=$GC" -o bityuan-cli ./cli
           chmod +x bityuan bityuan-cli
           mkdir -p build
-          tar -zcvf build/bityuan-darwin-${{ matrix.arch }}.tar.gz bityuan bityuan-cli bityuan.toml bityuan-fullnode.toml CHANGELOG.md
+          tar -zcvf build/bityuan-darwin-${{ matrix.arch }}-$PKG_VERSION.tar.gz bityuan bityuan-cli bityuan.toml bityuan-fullnode.toml CHANGELOG.md
 
       # 三平台共用同一份校验脚本；runner 是 arm64，amd64 产物靠 Rosetta 跑
       - name: Smoke test
@@ -183,7 +465,7 @@ jobs:
       - uses: actions/upload-artifact@v5
         with:
           name: darwin-${{ matrix.arch }}
-          path: build/bityuan-darwin-${{ matrix.arch }}.tar.gz
+          path: build/bityuan-darwin-${{ matrix.arch }}-${{ env.PKG_VERSION }}.tar.gz
       - uses: actions/upload-artifact@v5
         with:
           name: version-darwin-${{ matrix.arch }}
@@ -191,7 +473,10 @@ jobs:
 
   build-linux:
     name: Build Linux (zig cc)
+    needs: check
     runs-on: ubuntu-22.04
+    env:
+      PKG_VERSION: ${{ needs.check.outputs.version }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -204,13 +489,11 @@ jobs:
         uses: ./.github/actions/zig-install
       - name: Build Linux
         run: |
-          # 手动补包时按 tag 里的版本号构建，和 semantic-release 那条路径保持一致
-          TAG="${{ inputs.manual_upload }}"
-          if [ -n "$TAG" ]; then
-            CC='zig cc -target x86_64-linux-gnu.2.17' make linux-action-amd64 VERSION="${TAG#v}"
-          else
-            CC='zig cc -target x86_64-linux-gnu.2.17' make linux-action-amd64
-          fi
+          # Always pin the version. Without it `make` falls back to `git describe`, which
+          # on the automatic path can still resolve to the previous tag, so the package
+          # name would disagree with the version CI reports -- and the binary's `app`
+          # field would differ from the macOS/Windows builds, which read version.go.
+          CC='zig cc -target x86_64-linux-gnu.2.17' make linux-action-amd64 VERSION="${PKG_VERSION}"
 
       # COMPAT.txt 由上面 make 生成（声明支持 glibc >= 2.17）。
       # 这里断言产物真正需要的 glibc 不超过声明值 —— 声明和产物必须对等：
@@ -241,56 +524,23 @@ jobs:
         with:
           name: version-linux
           path: version-linux.json
-      # 手动补包时要连 linux 包一起补，才把 tarball 也传上来
-      # （自动流程里 linux 包由 semantic-release 自己上传，不需要重复下载 44MB）
+      # The Linux package is uploaded by upload-win-mac on both paths now, manual and
+      # automatic, so the tarball is always kept: semantic-release no longer publishes
+      # any asset itself.
       - uses: actions/upload-artifact@v5
-        if: inputs.manual_upload != ''
         with:
           name: linux-tarball
-          path: build/bityuan-linux-amd64.tar.gz
-
-  release-linux:
-    name: Release Linux
-    # release commit 由 semantic-release 自己推送，不能再次触发 semantic-release
-    # （否则会连锁生成重复的 chore(release) commit，并因 tag 已存在而失败）
-    if: |
-      github.event_name == 'push' && github.ref == 'refs/heads/master' &&
-      !startsWith(github.event.head_commit.message, 'chore(release):')
-    concurrency:
-      group: semantic-release
-      cancel-in-progress: false
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          persist-credentials: false
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: 'go.mod'
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 24
-      - name: Install zig
-        uses: ./.github/actions/zig-install
-      - name: Semantic Release
-        uses: cycjimmy/semantic-release-action@v4
-        id: semantic
-        with:
-          branch: master
-          extra_plugins: |
-            conventional-changelog-jshint@5.2.0
-            semantic-release-replace-plugin@1.2.7
-            @semantic-release/exec@6
-            @semantic-release/changelog@6
-            @semantic-release/git@10
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          path: build/bityuan-linux-amd64-${{ env.PKG_VERSION }}.tar.gz
 
   upload-win-mac:
     name: Upload Windows/macOS packages
+    # The second clause is limited to a push on purpose: a dispatch with an empty
+    # manual_upload on a tree whose version is not tagged yet would otherwise run
+    # this job and wait ten minutes for a tag that only publish-release can create,
+    # and publish-release does not run on a dispatch.
     if: |
       (github.event_name == 'workflow_dispatch' && inputs.manual_upload != '') ||
-      (github.event_name != 'pull_request' && needs.check.outputs.is_release == 'true')
+      (github.event_name == 'push' && needs.check.outputs.is_release == 'true')
     # build-linux 放进来是为了「三平台冒烟测试都通过才上传」：
     # 任一构建/冒烟失败，本 job 会被跳过（不会出现只发一半的 release）
     needs: [check, build-windows, build-macos, build-linux]
@@ -312,8 +562,9 @@ jobs:
           else
             echo "tag=${{ needs.check.outputs.release_tag }}" >> $GITHUB_OUTPUT
           fi
-      # semantic-release 先推 commit、后推 tag（且上传产物耗时数分钟），
-      # 本 job 起跑时 tag/release 可能还没建好，这里等一下（最多 10 分钟）
+      # publish-release creates the tag and the release in parallel with the builds,
+      # and the builds take minutes, so the tag may not be there yet when this job
+      # starts: wait for it (10 minutes at most).
       - name: Wait for release tag
         if: inputs.manual_upload == ''
         env:
@@ -322,7 +573,7 @@ jobs:
           V="${{ steps.tag.outputs.tag }}"
           SHA=""
           for i in $(seq 1 60); do
-            SHA=$(gh api "repos/bityuan/bityuan/git/ref/tags/$V" --jq .object.sha 2>/dev/null) || SHA=""
+            SHA=$(gh api "repos/${{ github.repository }}/git/ref/tags/$V" --jq .object.sha 2>/dev/null) || SHA=""
             if [ -n "$SHA" ]; then
               echo "tag $V -> $SHA (head ${{ github.sha }})"
               break
@@ -341,49 +592,57 @@ jobs:
 
       - name: Upload to release
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           V="${{ steps.tag.outputs.tag }}"
-          FILES="build/bityuan-windows-amd64-qt.exe build/bityuan-windows-amd64.zip build/bityuan-darwin-amd64.tar.gz build/bityuan-darwin-arm64.tar.gz"
-          # 手动补包时 linux 包也一起传（自动流程里它由 semantic-release 上传，这里没有这个文件）
-          [ -f build/bityuan-linux-amd64.tar.gz ] && FILES="$FILES build/bityuan-linux-amd64.tar.gz"
+          # Package file names carry the version without its "v".
+          VER="${V#v}"
+          FILES="build/bityuan-windows-amd64-qt-$VER.exe build/bityuan-windows-amd64-$VER.zip"
+          FILES="$FILES build/bityuan-darwin-amd64-$VER.tar.gz build/bityuan-darwin-arm64-$VER.tar.gz"
+          # The Linux package is a build artifact on both paths, manual and automatic,
+          # and an absent file is a normal outcome here, so this says it with an `if`
+          # rather than with `[ -f x ] && ...`. (Not because the `&&` form would abort
+          # the step -- `set -e` exempts everything but the last command of an `&&` list,
+          # so it would not -- but because `if` states the intent, and keeps stating it
+          # if this ever moves to the last line of the step.)
+          if [ -f "build/bityuan-linux-amd64-$VER.tar.gz" ]; then
+            FILES="$FILES build/bityuan-linux-amd64-$VER.tar.gz"
+          fi
           echo "Uploading to $V: $FILES"
-          gh release upload "$V" --repo bityuan/bityuan $FILES --clobber
+          gh release upload "$V" --repo "${{ github.repository }}" $FILES --clobber
       # 产物 sha256 清单（取自 GitHub API 的 digest，无需重新下载几十 MB）
       - name: Write SHA256SUMS
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           V="${{ steps.tag.outputs.tag }}"
-          gh api "repos/bityuan/bityuan/releases/tags/$V" \
+          gh api "repos/${{ github.repository }}/releases/tags/$V" \
             --jq '.assets[] | select(.name != "SHA256SUMS") | "\(.digest | sub("sha256:"; ""))  \(.name)"' \
             | sort -k2 > SHA256SUMS
           cat SHA256SUMS
-          gh release upload "$V" --repo bityuan/bityuan SHA256SUMS --clobber
-      - name: Add footer to release
+          gh release upload "$V" --repo "${{ github.repository }}" SHA256SUMS --clobber
+      # publish-release already did this on the automatic path; it is repeated here for
+      # the manual one, which repackages a release that was cut earlier -- and possibly
+      # before this step existed. The script is idempotent, so the second call is a
+      # no-op, and there is one implementation of what the footer says rather than two.
+      - name: Add the upgrade notes and the system requirements
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          V="${{ steps.tag.outputs.tag }}"
-          BODY=$(gh release view "$V" --repo bityuan/bityuan --json body -q .body)
-          if echo "$BODY" | grep -q "System Requirements"; then
-            echo "Footer already present, skip"
-            exit 0
-          fi
-          FOOTER="\n\n---\n\n### System Requirements\n\n**Linux** (glibc >= 2.17): Ubuntu 18.04+, Debian 10+, CentOS 7+, RHEL 7+, Rocky 8+, Alma 8+\n\n**Windows**: Windows 10+, Windows Server 2016+"
-          printf "%b" "$BODY$FOOTER" | gh release edit "$V" --repo bityuan/bityuan -F -
-      # release 是 semantic-release 发布后才补资产的，中间任何一步失败都会留下
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: .github/scripts/add_release_footer.sh "${{ steps.tag.outputs.tag }}"
+      # release 是发布后才补资产的，中间任何一步失败都会留下
       # 「已经公开但缺包」的半成品 release（v6.9.1 就这样漏了一次）。这里兜底断言。
       - name: Assert release is complete
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           V="${{ steps.tag.outputs.tag }}"
-          HAVE=$(gh api "repos/bityuan/bityuan/releases/tags/$V" --jq '.assets[].name')
+          VER="${V#v}"
+          HAVE=$(gh api "repos/${{ github.repository }}/releases/tags/$V" --jq '.assets[].name')
           MISSING=""
-          for f in bityuan-linux-amd64.tar.gz bityuan-windows-amd64.zip \
-                   bityuan-windows-amd64-qt.exe bityuan-darwin-amd64.tar.gz \
-                   bityuan-darwin-arm64.tar.gz SHA256SUMS; do
+          for f in "bityuan-linux-amd64-$VER.tar.gz" "bityuan-windows-amd64-$VER.zip" \
+                   "bityuan-windows-amd64-qt-$VER.exe" "bityuan-darwin-amd64-$VER.tar.gz" \
+                   "bityuan-darwin-arm64-$VER.tar.gz" SHA256SUMS; do
             echo "$HAVE" | grep -qx "$f" || MISSING="$MISSING $f"
           done
           if [ -n "$MISSING" ]; then

@@ -24,4 +24,4 @@ jobs:
         with:
           name: bityuan-linux-amd64.tar.gz
           path: |
-            build/bityuan-linux-amd64.tar.gz
+            build/bityuan-linux-amd64-*.tar.gz
