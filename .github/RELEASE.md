@@ -1,258 +1,224 @@
 # Release flow / manual re-packaging
 
-A release happens **only** when a release pull request is merged, and the release page is
-published by **`bityuan-release-bot[bot]`**: no personal access token (PAT) is involved anywhere,
-and nothing is ever pushed straight to master.
+A release happens **only** when a release pull request is merged, and its page is published by
+**`bityuan-release-bot[bot]`**. No personal access token is involved, and nothing is pushed straight
+to master.
 
-## Cutting a release: merge a commit, then the bot does the rest
+## Cutting a release
 
-1. **Merge a commit that cuts a release** (`feat:` / `fix:`, next section) into master.
-2. **The bot opens a release pull request on its own**: within a minute, a pull request titled
-   `chore(release): X.Y.Z` appears on the `release/pending` branch. If master moves again before it
-   is merged, that same pull request is updated -- the branch is rebuilt, the title and the body are
-   rewritten -- and a second one is never opened.
-   The branch and the pull request are created with the App token, so the pull request **does run
-   the normal checks** (`build`, `check_fmt`, the three platform builds, the release tooling's own
-   dry run and lint).
-3. **Review it.** The diff *is* the release: it bumps `version/version.go` and `README.md` and adds
-   one section to `CHANGELOG.md`. The body of the pull request is the semantic-release note; the
-   release page, however, is built from that **CHANGELOG section**, so an operator-facing warning
-   ("upgrade every node together", ...) belongs in the CHANGELOG diff, where it is reviewed like any
-   other change.
-   **That edit lives on the branch, and the branch is rebuilt from master -- and force-pushed -- on
-   every later merge, so it is dropped if master moves before this pull request is merged.** Review
-   and merge it promptly, or apply the warning again after the next rebuild.
-4. **You do not merge it -- the bot does**, and only once the checks on it are green. The job that
-   does it waits for the checks master requires, and for the two release-tooling checks that master
-   does not require (the dry run with the shape round trip, and the lint and script tests), then
-   merges with **Rebase and merge** through the API. Three things to know:
-   - **Rebase, not "Create a merge commit".** A merge commit is authored by whoever merged, so the
-     newest commit on master would carry that name. Rebasing keeps the release commit exactly as the
-     bot wrote it -- `author=bityuan-release-bot[bot]` -- as the top commit of master, and the tag
-     lands on it.
-   - the merge is a push to master performed by a GitHub App, and **events an App causes do run
-     workflows**, which is the whole reason the App is here: a merge done with `GITHUB_TOKEN` would
-     leave the release unpublished, with no run to point at.
-   - a red check does not merge anything. The pull request stays open and the failing job is the
-     place to look; fixing it means pushing to master, which rebuilds the branch and starts over.
-   - **master requires one approving review, and the bot cannot give itself one** -- a pull request
-     cannot be approved by whoever opened it, and this one is opened by the bot. It merges anyway
-     because `bityuan-release-bot` is on the branch protection's bypass list ("Allow specified
-     actors to bypass required pull requests"). Removing it there stops every release at the merge
-     step, with a green release pull request sitting open. The job merges through the REST API
-     (`PUT /pulls/N/merge`), which honours the bypass; `gh pr merge` does not, because it reads the
-     pull request's mergeable state first and refuses locally with "the base branch policy prohibits
-     the merge" without ever asking the server.
-   GitHub's own auto-merge is deliberately **not** used for this: it is a repository-wide setting,
-   and a pull request of your own that is not ready yet must not be merged by GitHub on its own.
-5. **That push releases.** `publish-release` reads the version, takes the matching section of
-   `CHANGELOG.md` as the release body, and creates the tag and the release in a single call, with the
-   tag on the commit this push carries -- the bot's own release commit. Meanwhile `build-windows` / `build-macos` / `build-linux` build and
-   smoke-test the five packages; only when all three pass does `upload-win-mac` upload them, write
-   `SHA256SUMS`, add the System Requirements footer and assert that the asset list is complete.
+1. **Merge a commit that cuts a release** (`feat:` / `fix:` -- see below) into master.
+2. **The bot opens a release pull request**: within a minute a `chore(release): X.Y.Z` pull request
+   appears on the `release/pending` branch, opened with the App token so it **does run the normal
+   checks**. If master moves before it merges, the same pull request is rebuilt and rewritten; a
+   second one is never opened.
+3. **Review it.** The diff *is* the release: `version/version.go`, `README.md`, one `CHANGELOG.md`
+   section. The release page is built from that **CHANGELOG section**, so an operator-facing warning
+   belongs in the CHANGELOG diff, where it gets reviewed like anything else. That edit lives on the
+   branch, and the branch is rebuilt from master (force-pushed) on every later merge -- so **merge it
+   promptly**, or reapply the warning after the next rebuild.
+4. **You do not merge it -- the bot does**, once the checks on it are green: master's required checks
+   plus the two release-tooling jobs master does not require (the shape round trip; lint and the
+   script tests). It merges with **Rebase and merge** through the API.
+   - Rebase, not a merge commit: a merge commit is authored by whoever merged, and the newest commit
+     on master -- and the tag -- has to be the bot's. Either way the top commit of master is
+     `author=bityuan-release-bot[bot]`.
+   - An App's events are **not** suppressed, which is the whole reason for the App: a merge made with
+     `GITHUB_TOKEN` would leave the release unpublished, with no run to point at.
+   - **master requires one approving review, and the bot cannot approve its own pull request.** It
+     merges because `bityuan-release-bot` is on the branch protection's **bypass list**; removing it
+     there stops every release at this step, leaving a green pull request open. The merge goes through
+     the REST API (`PUT /pulls/N/merge`), which honours the bypass -- **`gh pr merge` does not**: it
+     reads the pull request's mergeable state first and refuses locally with "the base branch policy
+     prohibits the merge", without ever asking the server.
+   - A red check merges nothing, by design. Fix it by pushing to master, which rebuilds the branch.
+   - GitHub's own auto-merge is deliberately unused: it is a repository-wide setting, and a pull
+     request that is not ready must not be merged by GitHub on its own.
+5. **That push releases.** `publish-release` takes the matching `CHANGELOG.md` section as the body and
+   creates the tag and the release in one call, on the bot's own release commit. Meanwhile
+   `build-windows` / `build-macos` / `build-linux` build and smoke-test the five packages; only when
+   all three pass does `upload-win-mac` upload them, write `SHA256SUMS`, append the operator footer
+   and assert the asset list is complete.
 
-The version is read from **`version/version.go`**, never from the commit subject, so the flow does not
-depend on how the release pull request is merged -- but the merge strategy does decide who the newest
-commit on master belongs to, which is why Rebase and merge is the one to use. A version whose tag
-(`refs/tags/vX.Y.Z`) already exists is never released twice.
+The version is read from **`version/version.go`**, never from the commit subject, so the merge method
+does not change *what* is released -- only who the newest commit belongs to. A tag that already exists
+(`refs/tags/vX.Y.Z`) is never released twice.
 
 ### The release bot
 
-Everything that writes on this path runs with a **GitHub App installation token**: the branch push,
-the pull request, the merge, the tag and the release. The App is `bityuan-release-bot` (owned by the
-`bityuan` organisation, App ID `5246955`), installed on `bityuan/bityuan` and
-`bityuan/release-rehearsal` with exactly two write permissions -- `Contents` and `Pull requests` --
-and no webhook.
+Everything that writes runs with a **GitHub App installation token**: the branch push, the pull
+request, the merge, the tag, the release. The App is `bityuan-release-bot`, owned by the `bityuan`
+organisation, App ID `5246955`, installed on `bityuan/bityuan`, with two write permissions --
+`Contents` and `Pull requests` -- and no webhook.
 
-Its App ID and private key live in the two repository secrets `APP_ID` and `APP_PRIVATE_KEY`. The
-workflow mints a token from them per job with `actions/create-github-app-token`; the token expires
-with the job, so nothing long-lived sits in the repository.
+`APP_ID` and `APP_PRIVATE_KEY` are repository secrets; the workflow mints a per-job token from them
+with `actions/create-github-app-token`, so nothing long-lived sits in the repository.
 
-Why an App and not `GITHUB_TOKEN`, which needs no secrets at all: **GitHub starts no workflow run for
-an event `GITHUB_TOKEN` caused.** The release pull request is opened by the bot, so with the built-in
-token it carries no checks, and the merge -- which is what pushes to master -- would not trigger the
-run that publishes the release. An App's events are not suppressed, so the same automation works with
-the built-in token's problem gone.
+Why not `GITHUB_TOKEN`, which needs no secrets: **GitHub starts no workflow run for an event
+`GITHUB_TOKEN` caused.** The release pull request would carry no checks, and its merge would publish
+nothing.
 
-**Rotating the key** (do this every 6-12 months, or immediately if it leaks):
+**Rotating the key** (every 6-12 months, or at once if it leaks): App settings -> Private keys ->
+Generate. The old key keeps working and an App may hold 25, so there is no downtime.
 
-1. App settings -> Private keys -> **Generate a private key**. GitHub downloads a `.pem`; it is shown
-   once and never again. The old key keeps working, and an App may hold up to 25 keys, so there is no
-   downtime and no need to touch the installation or the permissions.
-2. Store the new key in both repositories:
-   `gh secret set APP_PRIVATE_KEY --repo bityuan/bityuan < new-key.pem` and the same for
-   `bityuan/release-rehearsal`. `APP_ID` does not change.
-3. Wait for one release pull request to be opened, merged and published, then delete the old key in
-   the App settings.
+```bash
+gh secret set APP_PRIVATE_KEY --repo bityuan/bityuan < new-key.pem
+```
 
-Losing the key is not fatal either: generate a new one the same way. The App is never locked out.
+`APP_ID` does not change. Delete the old key after one release has gone through. Losing the key is not
+fatal either.
 
-## 什么样的提交才会发版
+## What a commit has to look like to release
 
-发版由 semantic-release 判定，用的是 **Conventional Commits / angular 格式**
-（`.releaserc.yml` 里 `preset: angular`，跟 chain33、plugin 一致）：
+semantic-release decides, using **Conventional Commits / angular** (`.releaserc.yml`,
+`preset: angular` -- the same convention as chain33 and plugin).
 
-| 提交标题写成 | 结果 |
+| Subject | Result |
 |---|---|
-| `feat: 描述` 或 `feat(scope): 描述` | 发 minor（6.8.x → 6.9.0），CHANGELOG 归入 Features |
-| `fix: 描述` / `perf: 描述` | 发 patch（6.8.21 → 6.8.22），归入 Bug Fixes / Performance |
-| `git revert` 生成的 `Revert "..."` + 正文 `This reverts commit <sha>.` | 发 patch |
-| 正文里**独立一行**以 `BREAKING CHANGE:` 开头（允许缩进） | 发 major |
+| `feat: ...` / `feat(scope): ...` | minor, under Features |
+| `fix: ...` / `perf: ...` | patch, under Bug Fixes / Performance |
+| the `Revert "..."` message `git revert` writes, with `This reverts commit <sha>.` in the body | patch |
+| a line of its own starting `BREAKING CHANGE:` (indentation allowed) | major |
 
-有两点**反直觉，而且实测过**（跑的是本仓同版本的 `commit-analyzer`，不是读它的规则表推的）：
+Two things measured against this repository's own `commit-analyzer`, both counter-intuitive:
 
-- **手写 `revert: 描述` 不发版**——触发它的是 parser 的 revert **报文模式**，不是 `revert` 这个 type；
-- **`!` 在这里一律不发版**：`feat!:` / `chore!:` **连 minor 都不发**，因为本 preset 的 parser 根本解析不了带 `!` 的 header，type 压根没被读出来。要 major 就在正文里单独写一行 `BREAKING CHANGE:`。写了 `!` 会被 `release note` 检查**直接判红**（exit 4），不会让你静默踩过去。
+- **a hand-written `revert: ...` releases nothing** -- what triggers a patch is the parser's revert
+  *message* pattern, not the `revert` type;
+- **`!` releases nothing here**: `feat!:` / `chore!:` do not even release a minor, because this
+  preset's parser cannot read a header carrying `!`, so the type is never read at all. For a major,
+  write `BREAKING CHANGE:` on its own line in the body. A `!` header fails the `release note` check
+  (exit 4) -- it is not something you can step over in silence.
 
-**不发版**（也不进 CHANGELOG）：`docs:` / `refactor:` / `test:` / `chore:` / `build:` / `ci:`，
-以及没有任何类型前缀的纯中文描述。只改 CI / 文档、又想让版本号往前走时，提交类型得选
-`fix:`（"这是真 bug 修复"）——历史上这类提交见 CHANGELOG 6.8.21。
+**No release**, and no CHANGELOG entry: `docs:` / `refactor:` / `test:` / `chore:` / `build:` / `ci:`,
+and a subject with no type prefix at all.
 
-> **⚠️ 格式换过了：`[[FEAT]]` / `[[FIX]]` 从这次改动起不再触发发版。**
-> 老写法现在**静默不发版**——不会报错，只是新版本出不来。为了不让这件事悄悄发生，
-> `release-note.yml` 会在 PR 上按 `.releaserc.yml` 的分类规则逐提交判断：一个 PR 里有
-> 老写法的提交，检查会直接点出来（见下面「Release note 检查」）。
+> **The format changed: `[[FEAT]]` / `[[FIX]]` no longer cut a release.** They now fail silently -- no
+> error, just no release. `release-note.yml` classifies every commit of a pull request against
+> `.releaserc.yml` and names the old form, so this does not go unnoticed.
 
-## Release note 检查（每个 PR 一条）
+## The release note check (one per pull request)
 
-发版页面上除了 CHANGELOG（说"改了什么"，自动生成），还有一节 **Upgrade Notes**（说"运维要做什么"，
-由 PR 作者写）。这两件事问的不是同一个问题，所以来源也不同。
+The release page carries the CHANGELOG ("what changed", generated) and **Upgrade Notes** ("what an
+operator has to do", written by the author) -- different questions, so different sources.
 
-规则只有一条：**一个会触发发版的 PR，必须在其描述里用一个 `## Release note` 段落说明它对运维意味着什么。**
+The rule: **a pull request that cuts a release must say what it means for an operator, under a
+`## Release note` heading in its description.**
 
-- 写在 PR 描述里的 `## Release note` 标题下，到下一个标题为止，**整段**就是这条 note；
-  模板 `.github/pull_request_template.md` 里已经有这个段落；
-- **一个 PR 一条**，不是每个提交一条；粒度是"这次变更"，不是"这次 diff"；
-- 写**后果**，不写改动复述。反面例子就是 6.9.1：verLimit 提到 6.9.0，而 `checkVersionLimit`
-  不只是拒绝老节点——它会**断连并拉黑 24 小时**，这种事写不进提交标题；
-- 一两句话（~300 字符），**超过 600 字符检查直接失败**（详情放 PR 正文）；
-- 用**英文**（它会被发布到 release 页面）；
-- 确实没有运维可见影响时，标题下写 `NONE`。
+- Everything under that heading, up to the next heading. `.github/pull_request_template.md` has the
+  section already.
+- **One per pull request**, not one per commit -- the unit is the change, not the diff.
+- Write the **consequence**, not a restatement. 6.9.1 is the counter-example: raising verLimit to
+  6.9.0 does not merely reject old nodes, it disconnects and blacklists them for 24 hours -- which no
+  commit subject was going to carry.
+- One or two sentences (~300 characters); **over 600 fails the check**. Put detail in the body.
+- **English** -- it is published to the release page.
+- `NONE` when there really is nothing.
 
-**这条检查是 master 的必需检查**（与 `build`、`check_fmt`、三个 `Build *` 并列），所以它会真的挡住合并。
-**补写 note 不需要再推一次提交**：它订阅了 `edited` 事件，改完 PR 描述会自动重跑。
-（release PR 本身被跳过——它的描述是脚本生成的，没有作者可以应答。）
+It is a **required check on master** (next to `build`, `check_fmt`, the three `Build *`), so it really
+does block the merge. **Rewriting the description is enough** -- it subscribes to `edited`, no new
+commit needed. The release pull request itself is skipped: its description is generated.
 
-检查由 `.github/workflows/release-note.yml` 承担：它拿 `.github/scripts/commit_cuts_release.sh`
-按 `.releaserc.yml` 的分类规则逐提交判断这个 PR 会不会发版——会，就必须有 note。**note 写得对不对
-不是 CI 的事**（CI 只能查有没有、格式合不合规），内容是否属实靠 review 对着 diff 看。
-推 master 而没走 PR 的提交，回退用提交正文里的 `Release-Note:` 行。
+`.github/workflows/release-note.yml` runs `.github/scripts/commit_cuts_release.sh` over the pull
+request's commits. **It checks that a note is present and well formed, not that it is true** -- that
+half is review, against the diff. A commit pushed straight to master falls back to a `Release-Note:`
+line in its body.
 
-发布时由 `.github/scripts/add_release_footer.sh` 收集：它把上一个 release 到本次 tag 之间
-**合并进来的每个 PR** 的 note 渲染成一条 bullet，连同 System Requirements 一起追加到 release 正文后面。
-幂等，可重复跑。
+At publish time `.github/scripts/add_release_footer.sh` collects one bullet per pull request merged
+between the previous release and this tag, and appends them with the System Requirements block.
+Idempotent.
 
-## 谁可以操作
+## Who can operate
 
-仓库 **write 权限**（能合并 PR 的人）：合并 release PR 就行；下面的手动补包入口在
-仓库 → Actions → 选 workflow → **Run workflow**。上传用的是 workflow 自带的 `GITHUB_TOKEN`，
-操作者不需要自己的 token，也不需要本地环境。
+Anyone with **write** on the repository (anyone who can merge a pull request): merge the release pull
+request and you are done. The manual re-pack below runs from Actions and uses the workflow's own
+`GITHUB_TOKEN` -- no personal token, no local setup.
 
-## 最常用：重新打包并上传（补齐所有平台的包）
+## Re-packaging by hand (refill every platform)
 
-**入口**：Actions → **release** → Run workflow，在弹出的输入框里填：
+Actions -> **release** -> Run workflow, with one input: `manual_upload` = an **existing release tag**
+(with the `v`), e.g. `v6.9.0`.
 
-| 参数 | 填什么 | 举例 |
+It rebuilds all five packages (linux, windows `.zip`, windows Qt installer, darwin amd64/arm64),
+smoke-tests each platform, validates the Qt installer (SFX script intact, no 32-bit leftovers, binary
+matches the zip), then overwrites all five on that release (`--clobber`) and refreshes `SHA256SUMS`.
+
+- **One package cannot be refilled alone** -- one run is all five, all from one build.
+- **The input is a tag, not a commit** -- the target is an existing release.
+
+## When something is wrong
+
+| Symptom | What to do |
+|---|---|
+| The release pull request sits there unmerged | Look at the `merge-release-pr` job: it is either waiting or red on a check. **A red check merges nothing, by design** -- land another `fix:`/`feat:` on master and the branch is rebuilt. If it never ran, check the head branch is `release/pending` and the head repository is this one |
+| A platform's package is missing | Re-pack with the entry above, on that tag |
+| No release at all (no tag) | Did a release pull request appear (`plan-release` computes the version, pushes the branch, opens it)? Then find which of `publish-release` / `build-*` went red. Transient (network, runner): re-run. Code: land another `fix:`/`feat:` |
+| Tag exists, release page does not | The one state that needs a human: `is_release` only looks at tags, so CI will not create the page (later pushes skip publishing). Either `gh release create vX.Y.Z --target <commit>`, or delete the tag and let the next push release again. Deleting a release page (GitHub keeps the tag) or tagging by hand lands here |
+| `check` says the tag exists, or `publish-release` says the release exists | Normal protection: that version is published. Re-pack for assets; a new version number needs another `fix:`/`feat:` |
+| Re-pack finished but the release is still short | See which job went red. **A failed smoke test blocks the upload** -- deliberately: no unverified package is published |
+| Verifying a download | `SHA256SUMS` is on the release: `shasum -a 256 -c SHA256SUMS` |
+
+## What runs where
+
+Everything that **writes** can only run during a release, but the decision logic and the scripts run
+on every pull request, so a release is not the first time they run at all.
+
+| File / job | What it does | On a pull request |
 |---|---|---|
-| `manual_upload` | **一个已经存在的 release tag**（要带 `v`） | `v6.9.0` |
+| `release.yml` · `check` | reads the version from `version/version.go`; tag exists -> `is_release=false` | same code the release path uses |
+| `release.yml` · `plan-release` | semantic-release **dry run** (computes version and notes, writes nothing); on a push, calls `release_pr.sh` with the **App token** to maintain the release pull request | semantic-release really starts: plugins install, configuration loads, the branch is one it may release from. It does **not** reach the version -- semantic-release returns early on a pull request (`isCi && isPr`), so version and notes are computed on the push to master, which every merge produces |
+| `release.yml` · `publish-release` | after the merge, takes the version's `CHANGELOG.md` section as the body and creates tag + release in one call, with the **App token** | skipped (push only) |
+| `release.yml` · `merge-release-pr` | release pull request only: waits for master's required checks plus the two tooling jobs, then `merge_method=rebase`. Does not use the repository's auto-merge | exercised for real every release; a wrong branch name in its `if` shows up as a job that never runs -- check `gh pr checks <n>` |
+| `.github/scripts/merge_release_pr.sh` | that job's logic: wait for checks to appear, wait for the required ones (`--required --watch --fail-fast`) and the two by name, verify the head sha was not rebuilt, merge with `sha` | — |
+| `release.yml` · `lint` | actionlint, shellcheck, and the test scripts | runs |
+| `.github/scripts/release_plan.sh` | writes the version into `version/version.go`, `README.md`, `CHANGELOG.md` (working tree only) | the shape check drives it with a synthetic version |
+| `.github/scripts/release_pr.sh` | rebuilds `release/pending`, commits as the bot, pushes with `--force-with-lease`, opens or updates the release pull request | `test_release_pr.sh` replays its git half against a local bare repository with a stub `gh` |
+| `.github/scripts/check_release_shape.sh` | `release_plan.sh` -> `changelog_section.sh` round trip: a README title, a `version/version.go` line or a `CHANGELOG.md` header that stopped matching fails | runs |
+| `.github/scripts/changelog_section.sh` | reads one version's section out of `CHANGELOG.md` | used by the shape check |
+| `.github/scripts/add_release_footer.sh` | appends the Upgrade Notes and the System Requirements block at publish time | `test_release_footer.sh` runs it against a stub `gh` |
+| `.github/scripts/commit_cuts_release.sh` | classifies one commit against `.releaserc.yml`: exit 0 cuts a release, 1 does not, 2 unmodelled rules, 3 the old `[[FIX]]` form, 4 a `!` header | `test_release_notes.sh`, 30 cases |
+| `.github/scripts/extract_release_note.sh` | pulls the note out of a pull request description | `test_release_notes.sh` |
+| `.releaserc.yml` | commit-analyzer and release-notes-generator only; everything that writes lives in the workflow and the scripts | — |
 
-点 **Run workflow** 就行。它会：
+`CHANGELOG.md` sections written from the dry-run notes link a short sha (`([5f45ca3](...))`); the
+6.9.x entries have empty link text (`([](...))`). Both are shapes this file has always had, not errors.
 
-1. 按这个 tag 重新构建**全部 5 个包**：linux、windows `.zip`、windows Qt 安装包、darwin amd64 / arm64；
-2. 每个平台起节点跑一次冒烟测试；
-3. 校验 Qt 安装包（SFX 脚本完整、无 32 位残留、包内二进制与 zip 一致）；
-4. 把这 5 个包**覆盖上传**（`--clobber`）到该 tag 的 release，并刷新 `SHA256SUMS`。
+## Two things not to touch
 
-两点注意：
+- **`bityuan-windows-amd64-qt.exe` in the v6.8.18 release**: not to be deleted, renamed or
+  overwritten -- it is the Qt installer's shell, downloaded (76 MB) at packaging time.
+- The wallet GUI inside the Qt package (`bityuan-qt.exe`) is still from 2022, and CI only replaces the
+  node binary and the config: **the GUI is not verified**. Only a manual run on Windows tells you
+  whether it works.
 
-- **不能只补某一个包**——一次触发就是 5 个一起重传（它们必须是同一次构建的产物）；
-- 输入框里**必须填 tag，不能填 commit 哈希**（上传目标是已存在的 release）。
+## Removed entry point
 
-## 出问题了怎么判断
+`automake.yml` (Actions: `manually auto publish release`) is **deleted**. It ran a full
+semantic-release with a **PAT**: it pushed the release commit and the tag straight to master and
+published the release, bypassing the pull request and every check on it, with the page authored by
+whoever owned the token. A live way around every protection is better deleted than documented. There
+is one way to release, and it is the one above.
 
-| 现象 | 怎么办 |
-|---|---|
-| release PR 一直在那儿、没被合并 | 看 `merge-release-pr` 那个 job：它要么在等检查，要么红在某个检查上。**红了的检查不合并任何东西**（这是设计）——修完要再落一个 `fix:` 或 `feat:` 提交到 master，分支会重建、流程重来。若是 job 压根没跑，先看 PR 的 head 分支是不是 `release/pending`、head 仓库是不是本仓 |
-| 某个平台的包没上传 | 用上面「重新打包」入口，填那个 tag 重跑一遍 |
-| 整个 release 都没出来（tag 都没打） | 先看 release PR 有没有出现（`plan-release` 负责算版本、推分支、开 PR）；再看这次 push 的 `publish-release` / `build-*` 哪一步红了。偶发问题（网络 / runner）重跑那次 run；代码问题就修好后再落一个 `fix:` 或 `feat:` 提交 |
-| tag 存在、但 release 页面不存在 | 这是唯一必须人动手的状态：`is_release` 只看 tag，所以 CI 不会再为它建 release（每次后续 push 都会跳过发布）。要么手工建（`gh release create vX.Y.Z --target <该提交>`），要么删掉那个 tag 让下一次 push 重新发。删 release 页面（GitHub 保留 tag）、或手工打了 tag，都会落到这里 |
-| `check` 说 tag 已存在，或 `publish-release` 说 release 已存在 | 这是**正常保护**：该版本已经发布过，不会再发第二次。要补包走上面的入口；版本号往前走要等下一个 `fix:` / `feat:` |
-| 手动补包跑完，release 里还是缺东西 | 看那次 run 里哪个 job 红了。**冒烟测试没通过时上传会被拦住**（故意的：宁可不上传，也不发没验证过的包） |
-| 想核对下载到的文件 | release 里有 `SHA256SUMS`，`shasum -a 256 -c SHA256SUMS`（macOS / Linux） |
+## Package names and the version
 
-## What a pull request already checks
+Package file names carry the version (`<ver>` below is the version without `v`); for v6.9.1:
 
-Everything in this flow that **writes** -- pushing the branch, opening the pull request, creating the
-tag and the release -- can only happen while a release is being cut. Their decision logic and their
-scripts, however, run on every pull request, so a release is not the first time they run at all:
-
-| On a pull request | What it proves |
-|---|---|
-| `check` | the version/tag decision, the same code the release path uses |
-| `plan-release` | semantic-release is really started, installs the plugins, loads the configuration and checks that the branch is one it may release from. A broken `.releaserc.yml`, an unresolvable preset or a node setup that drifted shows up here. It does **not** get as far as computing the version on a pull request: semantic-release returns early when it sees a pull request (`isCi && isPr`), so the version and the notes are computed on the push to master instead -- which every merge produces |
-| `plan-release` shape check | `release_plan.sh` rewrites the three files for a synthetic version and `changelog_section.sh` reads the section back; a README title, a `version/version.go` line or a `CHANGELOG.md` header that stopped matching what the scripts expect fails the pull request |
-| `lint` | actionlint on the workflow, shellcheck on the release scripts, and `test_release_pr.sh`: the branch push and the lease, replayed against a local bare repository with a stub `gh` (the one part of the flow that cannot run on a pull request at all) |
-| `build-*` + smoke tests | the three platforms build and pass their smoke test (already the case before) |
-| `merge-release-pr` | only on the release pull request: it is the merge itself, so it is exercised for real every release rather than first on the day it matters. A mistaken branch name in its `if` shows up as a job that never runs on the release pull request -- check `gh pr checks <n>` on one |
-
-## 机制速查（维护 release.yml 的人看）
-
-| 文件 / job | 干什么 |
-|---|---|
-| `release.yml` · `check` | 从 `version/version.go` 读版本号；该版本的 tag 已存在 → `is_release=false`，反之 `is_release=true` |
-| `release.yml` · `plan-release` | semantic-release **dry run** 只算下一个版本号和 note（dry run 不写文件、不打 tag）：push 时用 **App token** 调 `release_pr.sh` 维护 release PR，PR 时只跑形状检查 |
-| `release.yml` · `publish-release` | 合并后从 `CHANGELOG.md` 取该版本的段落当正文，用 **App token** 一次调用打好 tag、建出 release（作者因此是 `bityuan-release-bot[bot]`） |
-| `release.yml` · `merge-release-pr` | 只对 release PR 生效：等 master 要求的检查 + 两个 release 工具检查全绿，再调合并接口（`merge_method=rebase`）。**不依赖仓库的 auto-merge 开关** |
-| `.github/scripts/merge_release_pr.sh` | 上面那个 job 的逻辑：先等检查出现（否则 `gh pr checks` 直接报 no checks reported）、`--required --watch --fail-fast` 等必需的、按名字等那两个非必需的、核对 head sha 没被重建、再带 `sha` 合并 |
-| `release.yml` · `lint` | actionlint 查 workflow、shellcheck 查 `.github/scripts/*.sh`（PR 与 push 都跑） |
-| `.releaserc.yml` | 只剩 commit-analyzer / release-notes-generator（负责算版本号与生成 note）；改版本号、写 CHANGELOG、提交、打 tag、发 release 现在都在 workflow 与脚本里做 |
-| `.github/scripts/release_plan.sh` | 把版本号写进 `version/version.go`、`README.md`、`CHANGELOG.md`（只改工作区，不碰 git） |
-| `.github/scripts/release_pr.sh` | 重建 `release/pending`、提交（作者是 bot）、push（带 `--force-with-lease`）、开或更新 release PR |
-| `.github/scripts/changelog_section.sh` | 从 `CHANGELOG.md` 取某版本的段落：发布时当 release 正文，PR 上被形状检查用来验算 |
-| `.github/scripts/check_release_shape.sh` | 合成版本跑一遍 `release_plan.sh` → `changelog_section.sh` 的往返，验证三个文件与读取逻辑仍然对得上 |
-| `.github/scripts/test_release_pr.sh` | 用本地裸仓库 + stub `gh` 跑 `release_pr.sh` 的 git 半部分：首次建分支、master 前进后强推、lease 拒绝竞态、同版本连跑不叠加 |
-
-`CHANGELOG.md` 的段落由 dry run 的 note 写成，所以新条目的提交链接文字是短 sha
-（`([5f45ca3](...))`），而 6.9.x 那几条是空的 `([](...))`；这是历史格式本来就有过的两种写法，
-不是错误。
-
-## 两个不能碰的地方
-
-- **v6.8.18 release 里的 `bityuan-windows-amd64-qt.exe` 不能删、不能改名、不能覆盖**——
-  它是 Qt 安装包的"壳"，打包时会去下载它（76MB）。要换壳得改 `release.yml` 里那一行。
-- Qt 包里的钱包 GUI（`bityuan-qt.exe`）还是 2022 年的版本，CI 只替换里面的节点二进制和配置，
-  **不验证 GUI**；装完能不能正常用，只能在 Windows 上人工点一遍确认。
-
-## 已删除的旧入口
-
-`automake.yml`（Actions 里的 `manually auto publish release`）**已随这次改动删除**。它是旧流程：用
-**PAT 跑一次完整 semantic-release，直接往 master 推提交和 tag、并发布 release**——绕过 release PR
-这道闸门，release 页作者也会是 PAT 的持有人。留着它就是个活的坑（页面上点一下就能绕开全部保护），
-所以不是标注"不要用"，而是删掉。发版只有上面那一条路。
-
-## 包名与版本号
-
-发行包的文件名现在带版本号（下文的 `<ver>` 指不带 `v` 的版本号）。以 v6.9.1 为例：
-
-| 包 | 文件名 |
+| Package | File name |
 |---|---|
 | Linux | `bityuan-linux-amd64-6.9.1.tar.gz` |
 | Windows zip | `bityuan-windows-amd64-6.9.1.zip` |
-| Windows Qt 安装包 | `bityuan-windows-amd64-qt-6.9.1.exe` |
-| macOS | `bityuan-darwin-amd64-6.9.1.tar.gz`、`bityuan-darwin-arm64-6.9.1.tar.gz` |
+| Windows Qt installer | `bityuan-windows-amd64-qt-6.9.1.exe` |
+| macOS | `bityuan-darwin-amd64-6.9.1.tar.gz`, `bityuan-darwin-arm64-6.9.1.tar.gz` |
 
-版本号**取自 `version/version.go`**（`check` 作业把它作为 `version` 输出传下去），**不用 `git describe`**：
-自动发版这条路上 tag 是在提交之后才打的，`git describe` 那时可能还解析到上一个 tag，会把这一版命名成
-它的前任。手动补包时用的是输入的那个 tag 去掉 `v`。
+The version comes from **`version/version.go`** (the `check` job passes it down), **not `git describe`**:
+on this path the tag is pushed after the commit, so `git describe` could still name the previous
+release. The manual re-pack uses the tag that was typed in, minus the `v`.
 
-Windows 的 zip 现在也含 `CHANGELOG.md`（Linux / macOS 的 tar 本来就有），包被下载解压后仍能自己说明
-是哪个版本。
+The Windows zip carries `CHANGELOG.md` too (the Linux and macOS tarballs always did).
 
-例外只有一处：**v6.8.18 release 里的 `bityuan-windows-amd64-qt.exe` 保持无版本号命名**——打包时要按
-这个名字去下载它当“壳”，不能改名；CI 拿它打出来的包是带版本号的。
+One exception: **`bityuan-windows-amd64-qt.exe` in the v6.8.18 release keeps its unversioned name** --
+packaging downloads it by that name as the shell. What CI builds from it is versioned.
 
-> **⚠️ 改名会打破仓外的消费方。** 任何写死了老名字的东西都要一起改：直接拼
-> `releases/download/<tag>/bityuan-linux-amd64.tar.gz` 的下载链接现在 404，解包脚本里写死
-> `tar xzf bityuan-linux-amd64.tar.gz` 的会找不到文件（包内文件名同样带版本号了）。已知的一处是
-> `~/.claude/monitors/bityuan_seed_replace.sh`，已改成通配。
-> 新名字可以用 `bityuan-linux-amd64-*.tar.gz` 这类通配匹配，别把版本号写死。
+> **A rename breaks consumers outside this repository.** Anything with the old name hard-coded has to
+> change with it: `releases/download/<tag>/bityuan-linux-amd64.tar.gz` now 404s, and a script that runs
+> `tar xzf bityuan-linux-amd64.tar.gz` finds nothing (the file inside the archive is versioned too).
+> One known consumer is `~/.claude/monitors/bityuan_seed_replace.sh`, now a glob. Match with
+> `bityuan-linux-amd64-*.tar.gz` rather than pinning a version.
