@@ -51,6 +51,25 @@ else
   for sha in $(gh api "repos/$REPO/compare/$prev...$V" --jq '.commits[].sha' 2>/dev/null || true); do
     # A lookup that fails is counted, not swallowed: the notes end up in the release
     # body, and "the API said no" and "the API refused" look identical from here.
+    if ! msg=$(gh api "repos/$REPO/commits/$sha" --jq .commit.message 2>/dev/null); then
+      failed=$((failed + 1))
+      continue
+    fi
+    # Only a commit that cuts a release contributes a note. A note answers "what does
+    # this release mean for an operator", so a pull request that changes nothing an
+    # operator would see has nothing to answer -- and asking it anyway is what put
+    # "NONE -- CI only, no operator action." on a release page: the sentence was written
+    # to satisfy a form, and the footer read it as a note. Exit 3 and 4 are forms this
+    # preset cannot read as a release either; anything else means the classifier could
+    # not model the rules at all, which is counted and the note kept rather than dropped
+    # on a guess.
+    rc=0
+    printf '%s' "$msg" | bash "$HERE/commit_cuts_release.sh" >/dev/null 2>&1 || rc=$?
+    case "$rc" in
+      0) ;;
+      1 | 3 | 4) continue ;;
+      *) failed=$((failed + 1)) ;;
+    esac
     if ! pr=$(gh api "repos/$REPO/commits/$sha/pulls" --jq '.[0].number' 2>/dev/null); then
       failed=$((failed + 1))
       continue
@@ -66,11 +85,15 @@ else
       fi
       note=$(printf '%s' "$body" | bash "$HERE/extract_release_note.sh" || true)
     else
-      note=$(gh api "repos/$REPO/commits/$sha" --jq .commit.message 2>/dev/null | sed -n 's/^Release-Note:[[:space:]]*//p' || true)
+      note=$(printf '%s' "$msg" | sed -n 's/^Release-Note:[[:space:]]*//p' || true)
     fi
     # a note is one bullet, so a wrapped block collapses to a single line
     note=$(printf '%s' "$note" | tr '\n' ' ' | sed 's/  */ /g; s/^ //; s/ $//')
-    case "$(printf '%s' "$note" | tr '[:upper:]' '[:lower:]')" in
+    # "NONE" says there is nothing for an operator, however the author spells it out
+    # after the word -- so the opening word is what decides, and "NONE -- CI only" reads
+    # the same as a bare "NONE".
+    first=$(printf '%s' "$note" | tr '[:upper:]' '[:lower:]' | awk '{print $1}' | sed 's/[^a-z]*$//')
+    case "$first" in
       "" | none) continue ;;
     esac
     notes="$notes$note"$'\n'
