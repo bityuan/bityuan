@@ -74,7 +74,7 @@ serverStart=true
 #bootstraps是内置不能修改的引导节点
 bootstraps=["/ip4/13.115.235.168/tcp/13803/p2p/16Uiu2HAkz1pQpLAtuyTx1oYzki9tcSW5ACDR4M4TzriEm2tmZbR2",
 "/ip4/3.37.26.153/tcp/13803/p2p/16Uiu2HAmAkjLnyN8qgb35fY7ryWBWGXPRzsxLoY7NmBTYa2cL8aq",
-"/ip4/174.139.188.98/tcp/13803/p2p/16Uiu2HAm7nyy2yYhHW5VkhbXpTo8vqoZNsgzEH8hMNn98UWWfaK6"]
+"/ip4/67.43.152.190/tcp/13803/p2p/16Uiu2HAm7nyy2yYhHW5VkhbXpTo8vqoZNsgzEH8hMNn98UWWfaK6"]
 
 [p2p.sub.dht.broadcast]
 # 区块哈希广播最小大小 100KB
@@ -365,6 +365,8 @@ ForkAccountBlacklistV2=47467200
 #chain33 v1.72.0 新增，交易 chainID 严格校验，与 ForkAccountBlacklistV2 同高度一起生效
 ForkTxChainIDStrict=47467200
 ForkParaFee=-1
+#chain33 v1.72.6: genesis actions are only allowed at height 0
+ForkGenesisOnlyAtHeightZero=48050000
 
 [fork.sub.evm]
 Enable=19900000
@@ -380,9 +382,12 @@ ForkEVMAddressInit=25770000
 ForkEvmExecNonce=26670000
 ForkEvmExecNonceV2=29528000
 ForkEVMFixOverflow=46561600
+ForkEVMSuicidePayer=48050000
 
 [fork.sub.rollup]
 Enable=25770000
+#rollup commit checks: distinct validator pubkeys, one settlement per round
+ForkSecurityHardening=48050000
 
 
 [fork.sub.none]
@@ -396,6 +401,8 @@ ForkFriendExecer=23000000
 Enable=0
 ForkTicketId = 1600000
 ForkTicketVrf = 2270000
+ForkMinerExecerCheck=48050000
+ForkTicketCloseDup=48050000
 
 [fork.sub.retrieve]
 Enable=0
@@ -442,6 +449,7 @@ ForkParaFullMinerHeight=-1
 ForkParaRootHash=-1
 ForkParaFreeRegister=21000000
 ForkParaCheckTx=25200000
+ForkParaTitleExecMatch=48050000
 
 [fork.sub.multisig]
 Enable=1600000
