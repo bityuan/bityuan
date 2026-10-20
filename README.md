@@ -1,82 +1,75 @@
-[![pipeline status](https://api.travis-ci.org/bityuan/bityuan.svg?branch=master)](https://travis-ci.org/bityuan/bityuan/)
+# bityuan (v6.9.4)
+
+[![build](https://github.com/bityuan/bityuan/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/bityuan/bityuan/actions/workflows/build.yml)
+[![Release](https://img.shields.io/github/v/release/bityuan/bityuan?sort=semver)](https://github.com/bityuan/bityuan/releases/latest)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bityuan/bityuan)](https://goreportcard.com/report/github.com/bityuan/bityuan)
-[![Windows Build Status](https://ci.appveyor.com/api/projects/status/github/bityuan/bityuan?svg=true&branch=master&passingText=Windows%20-%20OK&failingText=Windows%20-%20failed&pendingText=Windows%20-%20pending)](https://ci.appveyor.com/project/bityuan/bityuan)
-[![Macos Build Status](https://github.com/bityuan/bityuan/actions/workflows/MacOS.yml/badge.svg)](https://github.com/bityuan/bityuan/actions/workflows/MacOS.yml)
 
-# 基于 chain33 区块链开发 框架 开发的 bityuan 系统（v6.9.4）
+`bityuan` (BTY) is an EVM-compatible blockchain with a parachain architecture, built
+on the [chain33](https://github.com/33cn/chain33) framework.
 
-官方网站: https://www.bityuan.com
+- Website: <https://www.bityuan.com>
+- Block explorer: <https://mainnet.bityuan.com>
+- chain33: [source](https://github.com/33cn/chain33), [website and documentation](https://chain.33.cn)
 
-区块链浏览器: https://mainnet.bityuan.com
+> **`master` is not a release branch.** Do not run it in production -- use the
+> [latest release](https://github.com/bityuan/bityuan/releases/latest).
 
-开发框架：https://chain.33.cn
+## Where the code lives
 
-```
-注意: master 分支不是 发布版本, 不要用于生产环境
-```
+The node is assembled from two upstream repositories: [chain33](https://github.com/33cn/chain33),
+the blockchain framework, and [plugin](https://github.com/33cn/plugin), which holds the
+dapps and the consensus plugins. This repository pins them, carries the network
+parameters and the fork heights, and ships the binaries. Code changes belong upstream;
+a pull request here is normally a version sync or a configuration change.
 
-# bug 奖励
+## Download
 
-我们会对bug 评价4个等级(不会奖励人民币，等值虚拟资产)。
-只有影响现有在线运行系统的，并且会产生严重分叉等行为的，才会评价为 L3
+Releases since v6.9.3 ship binaries for every supported platform, named as below,
+plus a `SHA256SUMS` file covering them. Earlier releases used other names, and
+before v6.9.1 they shipped no checksum file -- read the release page for those.
 
-```
-L0 1000
-L1 3000
-L2 10000
-L3 20000
-```
+| Platform | Package |
+| --- | --- |
+| Linux (glibc >= 2.17) | `bityuan-linux-amd64-<version>.tar.gz` |
+| macOS 14+ | `bityuan-darwin-amd64-<version>.tar.gz`, `bityuan-darwin-arm64-<version>.tar.gz` |
+| Windows (CLI) | `bityuan-windows-amd64-<version>.zip` |
+| Windows (wallet) | `bityuan-windows-amd64-qt-<version>.exe` |
 
-## 安装
+## Build from source
 
-#### golang 1.19+
+Go 1.22 or newer, and a C compiler: the build sets `CGO_ENABLED=1`, so on Windows
+you need MinGW and elsewhere `gcc` or `clang`.
 
-
-#### 支持make file的平台
-
-```
-git clone https://github.com/bityuan/bityuan $GOPATH/src/github.com/bityuan/bityuan
-
-//开启mod功能
-export GO111MODULE=on
-
-//国内用户需要导入阿里云代理，用于下载依赖包
-export GOPROXY=https://mirrors.aliyun.com/goproxy
-
-cd $GOPATH/src/github.com/bityuan/bityuan
-
-make
+```sh
+git clone https://github.com/bityuan/bityuan.git
+cd bityuan
+make          # builds ./bityuan and ./bityuan-cli
+make update   # refreshes go.mod and go.sum
 ```
 
-就可以完成编译安装
+## Running a node
 
-### 更新go.mod
+Operator settings live in `bityuan.toml`; the archives above ship the configuration
+the public network runs with. Network parameters, bootstrap peers, genesis and fork
+heights are compiled into the binary, so they change with a release, not with the
+file. The value operators most often change is `dbCache` -- see
+[docs/db-cache.md](docs/db-cache.md).
 
-```
-make update
-```
+## Documentation
 
-## Database cache (dbCache)
+<https://docs.bityuan.com> -- quick start, running a main-chain node, the API
+reference, wallets and DApp development, in English and Chinese.
 
-`dbCache` is a config value consumed by `chain33/common/db/go_level_db.go` -- one integer that sets three leveldb parameters at once.
+## Security
 
-```
-open file handles = dbCache
-block cache       = dbCache/2 MiB
-write buffer      = min(dbCache/4, 16) MiB   (two are held in memory; cap from 33cn/chain33#1398)
-```
+Do not open a public issue for a vulnerability. Report it privately through the
+[security policy](SECURITY.md).
 
-Four databases each carry their own, all editable in `bityuan.toml` / `bityuan-fullnode.toml`:
+## Community
 
-| database | setting | default | can be raised to |
-|---|---|---|---|
-| chain `blockchain.db` (~380k SST files) | `[blockchain] dbCache` | 64 | 256 - 1024 |
-| state `mavltree` | `[store] dbCache` | 128 | 128 - 512 |
-| addrbook / wallet (a few MB) | `[p2p] dbCache` / `[wallet] dbCache` | 4 / 16 | leave at default |
+- X: <https://x.com/Bityuanofficial>
+- Telegram: <https://t.me/bityuanblockchain>
 
-Only the chain database is worth raising. goleveldb must hold a handle on every table it touches, and with hundreds of thousands of SST files against 64 slots the read path is effectively uncached -- while every state read (transaction execution, block production) goes through it.
+## License
 
-**The default stays 64.** Raising it has not been measured to help: chain33 exposes no read-latency metric, and a node at the chain tip sees too little read pressure to show one. The only workload that would produce that evidence is a full genesis sync. Memory cost if raised: ~+0.25 GiB at 256, ~+0.5 GiB at 512, ~+1 GiB at 1024. Note that `0` falls back to the default rather than disabling the cache, and that a restart is required.
-
-
-
+BSD-2-Clause -- see [LICENSE](LICENSE).
