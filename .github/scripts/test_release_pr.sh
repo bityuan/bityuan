@@ -65,7 +65,7 @@ cp "$HERE/release_plan.sh" "$HERE/release_pr.sh" .github/scripts/
 # The fixture stands one release behind, so that 9.9.9 is the release to plan.
 sed -i.bak 's/^\(\s*\)Version\s*=.*/\1Version   = "9.9.8"/' version/version.go
 rm -f version/version.go.bak
-sed -i.bak 's/（v[0-9.]*）/（v9.9.8）/' README.md
+sed -i.bak 's/(v[0-9.]*)/(v9.9.8)/' README.md
 rm -f README.md.bak
 git add version/version.go README.md CHANGELOG.md .github/scripts
 git commit -qm "chore(release): 9.9.8"

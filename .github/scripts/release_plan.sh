@@ -8,7 +8,7 @@
 # operation at all (no commit, no tag, no branch):
 #
 #   version/version.go   Version   = "<version>"
-#   README.md            the title line, ...（v<version>）
+#   README.md            the title line, ... (v<version>)
 #   CHANGELOG.md         one new section, taken from <notes-file>, on top
 #
 # Every rewrite is verified: a file that does not have the expected shape
@@ -57,17 +57,17 @@ grep -Fq "Version   = \"$VERSION\"" version/version.go \
   || fail "version/version.go was not updated to $VERSION"
 
 # --- README.md --------------------------------------------------------------
-README_TITLE='# 基于 chain33 区块链开发 框架 开发的 bityuan 系统（'
+README_TITLE='# bityuan ('
 if ! grep -Fq "$README_TITLE" README.md; then
   fail 'README.md has no bityuan title line to update'
 fi
 
-# ${VERSION} is braced on purpose: a bare $VERSION followed by the full-width
-# "）" would be read as a variable whose name includes that character.
-sed "s|^${README_TITLE}.*）$|${README_TITLE}v${VERSION}）|" README.md > "$WORK/README.md"
+# Everything from the parenthesis to the end of the line is replaced, so the
+# title keeps its shape whatever version it currently names.
+sed "s|^${README_TITLE}.*)$|${README_TITLE}v${VERSION})|" README.md > "$WORK/README.md"
 mv "$WORK/README.md" README.md
 
-grep -Fq "${README_TITLE}v${VERSION}）" README.md \
+grep -Fq "${README_TITLE}v${VERSION})" README.md \
   || fail "README.md was not updated to v$VERSION"
 
 # --- CHANGELOG.md -----------------------------------------------------------

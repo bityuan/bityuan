@@ -54,9 +54,7 @@ EOF
 # --- what release_plan.sh had to produce ------------------------------------
 grep -qF "Version   = \"$VERSION\"" "$WORK/version/version.go" \
   || fail "version/version.go did not take the version"
-# ${VERSION} is braced on purpose: a bare $VERSION followed by the full-width "）"
-# would be read as a variable whose name includes that character.
-grep -qF "（v${VERSION}）" "$WORK/README.md" \
+grep -qF "(v${VERSION})" "$WORK/README.md" \
   || fail "README.md did not take the version"
 [ "$(head -n 1 "$WORK/CHANGELOG.md")" = "changelog" ] \
   || fail "CHANGELOG.md lost its header line"
