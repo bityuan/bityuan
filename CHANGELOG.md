@@ -1,5 +1,14 @@
 changelog
 
+## [6.9.4](https://github.com/bityuan/bityuan/compare/v6.9.3...v6.9.4) (2026-10-20)
+
+
+### Bug Fixes
+
+* **deps:** sync chain33 v1.72.7 and plugin v1.76.3 ([6b849d1](https://github.com/bityuan/bityuan/commit/6b849d1a9a2be10bab8237c5ae282cf2813d2333))
+* **deps:** sync chain33 v1.72.7 and plugin v1.76.3 ([#222](https://github.com/bityuan/bityuan/issues/222)) ([4c466eb](https://github.com/bityuan/bityuan/commit/4c466eb686614872d9cdc66508ccee9942953e07))
+* **p2p:** point the built-in bootstrap at the replacement seed node ([c0a29a0](https://github.com/bityuan/bityuan/commit/c0a29a0f20f8877c544385dc0ba1d24e7c1cdc69))
+
 ## [6.9.3](https://github.com/bityuan/bityuan/compare/v6.9.2...v6.9.3) (2026-10-09)
 
 
