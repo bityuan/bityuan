@@ -1,4 +1,4 @@
-# bityuan (v6.9.4)
+# bityuan (v6.9.5)
 
 [![build](https://github.com/bityuan/bityuan/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/bityuan/bityuan/actions/workflows/build.yml)
 [![Release](https://img.shields.io/github/v/release/bityuan/bityuan?sort=semver)](https://github.com/bityuan/bityuan/releases/latest)

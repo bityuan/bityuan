@@ -1,5 +1,12 @@
 changelog
 
+## [6.9.5](https://github.com/bityuan/bityuan/compare/v6.9.4...v6.9.5) (2026-11-04)
+
+
+### Bug Fixes
+
+* bind eth-signed transactions to their envelope and make reverted value transfers revertible ([5033d9d](https://github.com/bityuan/bityuan/commit/5033d9d0083f46db956de7feb3420d3949af733b))
+
 ## [6.9.4](https://github.com/bityuan/bityuan/compare/v6.9.3...v6.9.4) (2026-10-20)
 
 
