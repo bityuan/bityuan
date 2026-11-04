@@ -367,6 +367,8 @@ ForkTxChainIDStrict=47467200
 ForkParaFee=-1
 #chain33 v1.72.6: genesis actions are only allowed at height 0
 ForkGenesisOnlyAtHeightZero=48050000
+#eth-signed txs must carry a chain33 envelope that matches the signed payload
+ForkEthSignEnvelope=48206000
 
 [fork.sub.evm]
 Enable=19900000
@@ -383,6 +385,7 @@ ForkEvmExecNonce=26670000
 ForkEvmExecNonceV2=29528000
 ForkEVMFixOverflow=46561600
 ForkEVMSuicidePayer=48050000
+ForkEVMTransferRevert=48206000
 
 [fork.sub.rollup]
 Enable=25770000
